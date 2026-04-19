@@ -10,7 +10,6 @@ import '../views/mission/challenge_brief_view.dart';
 import '../views/mission/feedback_view.dart';
 import '../views/crafting/crafting_view.dart';
 import '../views/progress/progress_view.dart';
-import '../views/progress/badge_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
 
 GoRouter getRouter(String initialRoute) => GoRouter(
@@ -59,10 +58,6 @@ GoRouter getRouter(String initialRoute) => GoRouter(
     GoRoute(
       path: '/progress',
       builder: (context, state) => const ProgressView(),
-    ),
-    GoRoute(
-      path: '/progress/badges',
-      builder: (context, state) => const BadgeView(),
     ),
     GoRoute(
       path: '/leaderboard',
