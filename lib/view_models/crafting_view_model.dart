@@ -6,22 +6,30 @@ class CraftingState {
   final bool craftingDone;
   final int currentPoints;
   final int requiredPoints;
+  final int bridgeProgress;
+  final int maxBridgeSegments;
 
   CraftingState({
     this.craftingDone = false,
     this.currentPoints = 0,
-    this.requiredPoints = 100, // example
+    this.requiredPoints = 1000, // as per user's image, 1000 point for crafting
+    this.bridgeProgress = 0,
+    this.maxBridgeSegments = 5,
   });
 
   CraftingState copyWith({
     bool? craftingDone,
     int? currentPoints,
     int? requiredPoints,
+    int? bridgeProgress,
+    int? maxBridgeSegments,
   }) {
     return CraftingState(
       craftingDone: craftingDone ?? this.craftingDone,
       currentPoints: currentPoints ?? this.currentPoints,
       requiredPoints: requiredPoints ?? this.requiredPoints,
+      bridgeProgress: bridgeProgress ?? this.bridgeProgress,
+      maxBridgeSegments: maxBridgeSegments ?? this.maxBridgeSegments,
     );
   }
 }
@@ -41,24 +49,32 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
   void loadCraftingStatus() {
     final user = _ref.read(authViewModelProvider).currentUser;
     if (user != null) {
-      state = state.copyWith(currentPoints: user.points);
+      state = state.copyWith(
+        currentPoints: user.points,
+        bridgeProgress: user.bridgeProgress,
+      );
     }
   }
 
   bool get hasSufficientPoints => state.currentPoints >= state.requiredPoints;
 
   Future<void> doCrafting(int pointCost) async {
-    if (!hasSufficientPoints) return;
+    // Only craft if we have enough points AND bridge is not finished
+    if (!hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments) return;
 
     final success = await _userService.doCrafting(pointCost);
     if (success) {
       final user = _ref.read(authViewModelProvider).currentUser;
       if (user != null) {
         user.points -= pointCost;
+        user.bridgeProgress += 1;
       }
+      
+      final newProgress = state.bridgeProgress + 1;
       state = state.copyWith(
-        craftingDone: true,
+        craftingDone: newProgress >= state.maxBridgeSegments,
         currentPoints: state.currentPoints - pointCost,
+        bridgeProgress: newProgress,
       );
     }
   }
