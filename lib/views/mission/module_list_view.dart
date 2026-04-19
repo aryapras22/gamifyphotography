@@ -66,9 +66,9 @@ class _ModuleListViewState extends ConsumerState<ModuleListView> {
                     onTap: () => context.push('/crafting'),
                     child: Row(
                       children: [
-                        const Icon(Icons.diamond_rounded, color: Color(0xFF1CB0F6), size: 28),
+                        const Icon(Icons.build_circle_rounded, color: Color(0xFF1CB0F6), size: 28),
                         const SizedBox(width: 6),
-                        Text('Craft', style: TextStyle(color: const Color(0xFF1CB0F6), fontSize: 18, fontWeight: FontWeight.w800)),
+                        const Text('Craft', style: TextStyle(color: Color(0xFF1CB0F6), fontSize: 18, fontWeight: FontWeight.w800)),
                       ],
                     ),
                   )
