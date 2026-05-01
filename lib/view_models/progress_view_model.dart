@@ -3,7 +3,7 @@ import '../models/user_model.dart';
 import '../models/badge_model.dart';
 import '../services/user_service.dart';
 import 'auth_view_model.dart';
-import 'crafting_view_model.dart'; // To get userServiceProvider
+import '../providers/service_providers.dart';
 
 class ProgressState {
   final UserModel? user;
