@@ -13,20 +13,20 @@ lib/
 │   ├── app.dart               ✅ Entry point, ProviderScope
 │   └── routes.dart            ✅ Semua route MVP terdaftar (go_router)
 ├── models/
-│   ├── user_model.dart        ⚠️  Mutable fields — belum @freezed
-│   ├── badge_model.dart       ⚠️  Belum @freezed
-│   ├── challenge_model.dart   ⚠️  Mutable — belum @freezed
-│   ├── module_model.dart      ⚠️  Belum @freezed
-│   └── leaderboard_model.dart ⚠️  Belum @freezed
+│   ├── user_model.dart        ✅ @freezed
+│   ├── badge_model.dart       ✅ @freezed
+│   ├── challenge_model.dart   ✅ @freezed
+│   ├── module_model.dart      ✅ @freezed
+│   └── leaderboard_model.dart ✅ @freezed
 ├── services/
 │   ├── auth_service.dart      🔴 Mock only
 │   ├── challenge_service.dart 🔴 Mock only
 │   ├── module_service.dart    🔴 Mock only
 │   └── user_service.dart      🔴 Mock only
 ├── view_models/
-│   ├── auth_view_model.dart       🔴 Mock bypass login aktif!
-│   ├── challenge_view_model.dart  🔴 State mutation langsung (bug)
-│   ├── crafting_view_model.dart   ⚠️  userServiceProvider salah tempat
+│   ├── auth_view_model.dart       ✅ Mock bypass dihapus
+│   ├── challenge_view_model.dart  ✅ State mutation & camera package fixed
+│   ├── crafting_view_model.dart   ✅ Menggunakan service_providers.dart
 │   ├── home_view_model.dart       ✅ Minimal, OK
 │   ├── mission_view_model.dart    ✅ Struktur OK
 │   └── progress_view_model.dart   ✅ Struktur OK
@@ -41,7 +41,7 @@ lib/
 ```
 
 **File yang BELUM ADA (perlu dibuat):**
-- `lib/providers/service_providers.dart`
+- `lib/views/profile/profile_view.dart`
 - `lib/views/profile/profile_view.dart`
 - `lib/view_models/daily_login_view_model.dart`
 - `lib/view_models/badge_view_model.dart`
@@ -73,10 +73,10 @@ lib/
 
 | ID | Severity | Status | File | Deskripsi |
 |----|----------|--------|------|-----------|
-| BUG-01 | 🔴 Critical | Open | `challenge_view_model.dart` | State mutation langsung |
-| BUG-02 | 🔴 Critical | Open | `auth_view_model.dart` | Mock bypass login |
-| BUG-03 | 🟠 High | Open | `user_model.dart` | Semua field non-final |
-| BUG-04 | 🟠 High | Open | `challenge_view_model.dart` | Import cross-ViewModel |
-| BUG-05 | 🟡 Medium | Open | `crafting_view_model.dart` | `userServiceProvider` salah tempat |
-| BUG-06 | 🟡 Medium | Open | `models/*.dart` | Semua model belum `@freezed` |
-| BUG-07 | 🟡 Medium | Open | `challenge_view_model.dart` | `image_picker` harus diganti `camera` |
+| BUG-01 | 🔴 Critical | Closed | `challenge_view_model.dart` | State mutation langsung |
+| BUG-02 | 🔴 Critical | Closed | `auth_view_model.dart` | Mock bypass login |
+| BUG-03 | 🟠 High | Closed | `user_model.dart` | Semua field non-final |
+| BUG-04 | 🟠 High | Closed | `challenge_view_model.dart` | Import cross-ViewModel |
+| BUG-05 | 🟡 Medium | Closed | `crafting_view_model.dart` | `userServiceProvider` salah tempat |
+| BUG-06 | 🟡 Medium | Closed | `models/*.dart` | Semua model belum `@freezed` |
+| BUG-07 | 🟡 Medium | Closed | `challenge_view_model.dart` | `image_picker` harus diganti `camera` |

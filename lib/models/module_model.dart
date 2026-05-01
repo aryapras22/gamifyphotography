@@ -1,17 +1,18 @@
-class ModuleModel {
-  final String id;
-  final String title;
-  final String description;
-  final String materialContent; // teks materi
-  final int order;              // urutan level
-  bool isCompleted;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  ModuleModel({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.materialContent,
-    required this.order,
-    this.isCompleted = false,
-  });
+part 'module_model.freezed.dart';
+part 'module_model.g.dart';
+
+@freezed
+class ModuleModel with _$ModuleModel {
+  factory ModuleModel({
+    required String id,
+    required String title,
+    required String description,
+    required String materialContent, // teks materi
+    required int order,              // urutan level
+    @Default(false) bool isCompleted,
+  }) = _ModuleModel;
+
+  factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);
 }

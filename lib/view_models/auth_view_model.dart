@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
-
+import '../providers/service_providers.dart';
 class AuthState {
   final bool isLoading;
   final String? errorMessage;
@@ -26,8 +26,6 @@ class AuthState {
   }
 }
 
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());
-
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>(
   (ref) => AuthViewModel(ref.read(authServiceProvider)),
 );
@@ -35,17 +33,7 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>(
 class AuthViewModel extends StateNotifier<AuthState> {
   final AuthService _authService;
 
-  AuthViewModel(this._authService) : super(AuthState(
-    // BYPASS LOGIN: Auto-mock a user
-    currentUser: UserModel(
-      id: 'mock_1',
-      name: 'Player One',
-      email: 'player@mock.com',
-      points: 50,
-      level: 1,
-      earnedBadgeIds: [],
-    )
-  ));
+  AuthViewModel(this._authService) : super(AuthState());
 
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
@@ -69,5 +57,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   void logout() {
     state = AuthState(); // clear state
+  }
+
+  void updateUser(UserModel newUser) {
+    state = state.copyWith(currentUser: newUser);
   }
 }
