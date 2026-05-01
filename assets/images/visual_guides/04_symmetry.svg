@@ -1,0 +1,34 @@
+<svg viewBox="0 0 500 800" width="500" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- main vertical axis -->
+  <line x1="250" y1="0" x2="250" y2="800" stroke="#ffffff" stroke-width="1.5" opacity="0.75"/>
+  <!-- horizontal axis -->
+  <line x1="0" y1="400" x2="500" y2="400" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+  <!-- mirror guide lines left -->
+  <line x1="80" y1="60" x2="80" y2="740" stroke="#ffffff" stroke-width="0.6" opacity="0.22" stroke-dasharray="6 8"/>
+  <line x1="160" y1="60" x2="160" y2="740" stroke="#ffffff" stroke-width="0.5" opacity="0.15" stroke-dasharray="4 8"/>
+  <!-- mirror guide lines right -->
+  <line x1="420" y1="60" x2="420" y2="740" stroke="#ffffff" stroke-width="0.6" opacity="0.22" stroke-dasharray="6 8"/>
+  <line x1="340" y1="60" x2="340" y2="740" stroke="#ffffff" stroke-width="0.5" opacity="0.15" stroke-dasharray="4 8"/>
+  <!-- horizontal guides -->
+  <line x1="40" y1="200" x2="460" y2="200" stroke="#ffffff" stroke-width="0.5" opacity="0.18"/>
+  <line x1="40" y1="600" x2="460" y2="600" stroke="#ffffff" stroke-width="0.5" opacity="0.18"/>
+  <!-- pattern dots left - suggesting repeating elements -->
+  <circle cx="130" cy="200" r="3" fill="#ffffff30"/>
+  <circle cx="130" cy="270" r="3" fill="#ffffff30"/>
+  <circle cx="130" cy="340" r="3" fill="#ffffff30"/>
+  <circle cx="130" cy="400" r="3" fill="#ffffff30"/>
+  <circle cx="130" cy="470" r="3" fill="#ffffff30"/>
+  <circle cx="130" cy="540" r="3" fill="#ffffff30"/>
+  <!-- pattern dots right (mirror) -->
+  <circle cx="370" cy="200" r="3" fill="#ffffff30"/>
+  <circle cx="370" cy="270" r="3" fill="#ffffff30"/>
+  <circle cx="370" cy="340" r="3" fill="#ffffff30"/>
+  <circle cx="370" cy="400" r="3" fill="#ffffff30"/>
+  <circle cx="370" cy="470" r="3" fill="#ffffff30"/>
+  <circle cx="370" cy="540" r="3" fill="#ffffff30"/>
+  <!-- subject circle center-upper -->
+  <circle cx="250" cy="267" r="24" fill="none" stroke="#e03030" stroke-width="2"/>
+  <line x1="232" y1="267" x2="268" y2="267" stroke="#e03030" stroke-width="1.2"/>
+  <line x1="250" y1="249" x2="250" y2="285" stroke="#e03030" stroke-width="1.2"/>
+</svg>

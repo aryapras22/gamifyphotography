@@ -1,0 +1,57 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg3" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#12100a"/>
+      <stop offset="100%" stop-color="#060502"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff0a0"/>
+      <stop offset="25%" stop-color="#f5c800"/>
+      <stop offset="60%" stop-color="#d4a000"/>
+      <stop offset="100%" stop-color="#8a6000"/>
+    </linearGradient>
+    <filter id="glow3">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="195" fill="url(#bg3)"/>
+
+  <!-- Outer decorative rings -->
+  <circle cx="200" cy="200" r="190" fill="none" stroke="#d4a000" stroke-width="1.5" opacity="0.5"/>
+  <circle cx="200" cy="200" r="180" fill="none" stroke="#f5c800" stroke-width="0.7" opacity="0.3"/>
+
+  <!-- Ornate frame top/bottom -->
+  <path d="M60,200 Q60,60 200,50 Q340,60 340,200 Q340,340 200,350 Q60,340 60,200Z" fill="none" stroke="url(#gold)" stroke-width="2.5"/>
+
+  <!-- Diamond separators on ring -->
+  <g fill="#f5c800" opacity="0.8">
+    <polygon points="200,12 204,20 200,28 196,20"/>
+    <polygon points="200,372 204,380 200,388 196,380"/>
+    <polygon points="12,200 20,204 28,200 20,196"/>
+    <polygon points="372,200 380,204 388,200 380,196"/>
+  </g>
+
+  <!-- Crown -->
+  <g filter="url(#glow3)">
+    <path d="M120,250 L120,175 L160,215 L200,140 L240,215 L280,175 L280,250 Z" fill="url(#gold)" opacity="0.95"/>
+    <!-- Crown base band -->
+    <rect x="115" y="248" width="170" height="22" rx="3" fill="#d4a000"/>
+    <rect x="115" y="248" width="170" height="22" rx="3" fill="none" stroke="#f5c800" stroke-width="1"/>
+    <!-- Jewel dots on crown -->
+    <circle cx="200" cy="192" r="8" fill="#fff0a0" opacity="0.9"/>
+    <circle cx="155" cy="235" r="6" fill="#f5c800" opacity="0.9"/>
+    <circle cx="245" cy="235" r="6" fill="#f5c800" opacity="0.9"/>
+    <circle cx="138" cy="257" r="4" fill="#fff0a0" opacity="0.7"/>
+    <circle cx="200" cy="257" r="4" fill="#fff0a0" opacity="0.7"/>
+    <circle cx="262" cy="257" r="4" fill="#fff0a0" opacity="0.7"/>
+  </g>
+
+  <!-- Level 30 -->
+  <text x="200" y="308" text-anchor="middle" font-family="Georgia, serif" font-size="15" fill="#d4a000" opacity="0.8" letter-spacing="2">LEVEL 30</text>
+
+  <text x="200" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="bold" fill="url(#gold)" letter-spacing="3">VETERAN</text>
+  <line x1="110" y1="362" x2="290" y2="362" stroke="#d4a000" stroke-width="1" opacity="0.5"/>
+  <circle cx="200" cy="362" r="3" fill="#f5c800" opacity="0.6"/>
+</svg>

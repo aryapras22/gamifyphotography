@@ -1,0 +1,25 @@
+<svg viewBox="0 0 500 800" width="500" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- horizon line -->
+  <line x1="0" y1="560" x2="500" y2="560" stroke="#ffffff" stroke-width="1" opacity="0.4"/>
+  <!-- rule of thirds ghost grid -->
+  <line x1="167" y1="0" x2="167" y2="800" stroke="#ffffff" stroke-width="0.5" opacity="0.14"/>
+  <line x1="333" y1="0" x2="333" y2="800" stroke="#ffffff" stroke-width="0.5" opacity="0.14"/>
+  <line x1="0" y1="267" x2="500" y2="267" stroke="#ffffff" stroke-width="0.5" opacity="0.14"/>
+  <line x1="0" y1="533" x2="500" y2="533" stroke="#ffffff" stroke-width="0.5" opacity="0.14"/>
+  <!-- empty sky texture dots -->
+  <circle cx="120" cy="100" r="1.5" fill="#ffffff12"/>
+  <circle cx="290" cy="60" r="1.2" fill="#ffffff10"/>
+  <circle cx="400" cy="140" r="1.5" fill="#ffffff12"/>
+  <circle cx="60" cy="220" r="1" fill="#ffffff10"/>
+  <circle cx="350" cy="200" r="1.2" fill="#ffffff10"/>
+  <circle cx="200" cy="170" r="1" fill="#ffffff10"/>
+  <circle cx="440" cy="80" r="1.5" fill="#ffffff12"/>
+  <!-- bracket showing large negative space -->
+  <path d="M18,30 L18,18 L220,18" fill="none" stroke="#ffffff28" stroke-width="1"/>
+  <path d="M482,30 L482,18 L280,18" fill="none" stroke="#ffffff28" stroke-width="1"/>
+  <!-- subject circle at lower-left power point -->
+  <circle cx="167" cy="533" r="26" fill="none" stroke="#e03030" stroke-width="2"/>
+  <line x1="149" y1="533" x2="185" y2="533" stroke="#e03030" stroke-width="1.2"/>
+  <line x1="167" y1="515" x2="167" y2="551" stroke="#e03030" stroke-width="1.2"/>
+</svg>

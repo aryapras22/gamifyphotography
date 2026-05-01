@@ -1,0 +1,61 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg9" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#050a18"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </radialGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c0e8ff"/>
+      <stop offset="35%" stop-color="#2080ff"/>
+      <stop offset="100%" stop-color="#0030a0"/>
+    </linearGradient>
+    <radialGradient id="targetGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2080ff"/>
+      <stop offset="100%" stop-color="#0030a0"/>
+    </radialGradient>
+    <filter id="glow9">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="195" fill="url(#bg9)"/>
+  <!-- Outer dashed circle -->
+  <circle cx="200" cy="200" r="188" fill="none" stroke="#2080ff" stroke-width="2" opacity="0.5" stroke-dasharray="10 6"/>
+
+  <!-- Crosshair lines -->
+  <g stroke="#2080ff" stroke-width="1" opacity="0.4">
+    <line x1="200" y1="20" x2="200" y2="80"/>
+    <line x1="200" y1="320" x2="200" y2="380"/>
+    <line x1="20" y1="200" x2="80" y2="200"/>
+    <line x1="320" y1="200" x2="380" y2="200"/>
+  </g>
+
+  <!-- Target rings -->
+  <g filter="url(#glow9)">
+    <circle cx="200" cy="200" r="130" fill="none" stroke="#2080ff" stroke-width="2.5" opacity="0.7"/>
+    <circle cx="200" cy="200" r="100" fill="none" stroke="#2080ff" stroke-width="2.5" opacity="0.8"/>
+    <circle cx="200" cy="200" r="70"  fill="none" stroke="#2080ff" stroke-width="2.5" opacity="0.9"/>
+    <circle cx="200" cy="200" r="42"  fill="none" stroke="#c0e8ff" stroke-width="2" opacity="0.9"/>
+    <!-- Bullseye -->
+    <circle cx="200" cy="200" r="20"  fill="url(#targetGrad)" opacity="0.95"/>
+  </g>
+
+  <!-- Arrow/dart hitting center -->
+  <g filter="url(#glow9)">
+    <line x1="320" y1="80" x2="215" y2="188" stroke="#c0e8ff" stroke-width="3" stroke-linecap="round"/>
+    <!-- Arrowhead -->
+    <polygon points="214,188 200,198 220,204 225,182" fill="#c0e8ff" opacity="0.9"/>
+    <!-- Arrow tail fletching -->
+    <path d="M320,80 L335,68 M320,80 L330,90" stroke="#c0e8ff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.7"/>
+  </g>
+
+  <!-- 100 score burst -->
+  <g opacity="0.85">
+    <text x="200" y="158" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#2080ff" letter-spacing="2">PERFECT</text>
+    <text x="145" y="340" text-anchor="middle" font-family="Georgia, serif" font-size="38" font-weight="bold" fill="#c0e8ff" opacity="0.7">100</text>
+  </g>
+
+  <text x="200" y="360" text-anchor="middle" font-family="Georgia, serif" font-size="24" font-weight="bold" fill="url(#blue)" letter-spacing="2">SHARPSHOOTER</text>
+  <text x="200" y="382" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#2080ff" opacity="0.65" letter-spacing="2">PERFECT SCORE</text>
+</svg>

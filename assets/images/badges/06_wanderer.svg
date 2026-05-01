@@ -1,0 +1,75 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg6" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#030e12"/>
+      <stop offset="100%" stop-color="#020608"/>
+    </radialGradient>
+    <linearGradient id="teal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a0fff0"/>
+      <stop offset="40%" stop-color="#20c8b0"/>
+      <stop offset="100%" stop-color="#006858"/>
+    </linearGradient>
+    <filter id="glow6">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="195" fill="url(#bg6)"/>
+
+  <!-- Outer circle with dashes -->
+  <circle cx="200" cy="200" r="188" fill="none" stroke="#20c8b0" stroke-width="2" opacity="0.5" stroke-dasharray="8 5"/>
+  <circle cx="200" cy="200" r="178" fill="none" stroke="#20c8b0" stroke-width="0.8" opacity="0.25"/>
+
+  <!-- Compass outer ring with cardinal marks -->
+  <circle cx="200" cy="200" r="140" fill="none" stroke="url(#teal)" stroke-width="2.5"/>
+  <g fill="#20c8b0" opacity="0.7" font-family="Georgia, serif" font-size="16" font-weight="bold" text-anchor="middle">
+    <text x="200" y="55">N</text>
+    <text x="200" y="363">S</text>
+    <text x="352" y="206">E</text>
+    <text x="46" y="206">W</text>
+  </g>
+
+  <!-- Compass tick marks -->
+  <g stroke="#20c8b0" stroke-width="1.5" opacity="0.5">
+    <line x1="200" y1="65" x2="200" y2="80"/>
+    <line x1="200" y1="320" x2="200" y2="335"/>
+    <line x1="65" y1="200" x2="80" y2="200"/>
+    <line x1="320" y1="200" x2="335" y2="200"/>
+    <!-- intercardinal -->
+    <line x1="299" y1="101" x2="290" y2="110"/>
+    <line x1="101" y1="101" x2="110" y2="110"/>
+    <line x1="299" y1="299" x2="290" y2="290"/>
+    <line x1="101" y1="299" x2="110" y2="290"/>
+  </g>
+
+  <!-- Compass rose / needle -->
+  <g filter="url(#glow6)">
+    <!-- North needle (teal) -->
+    <polygon points="200,100 193,200 200,215 207,200" fill="url(#teal)" opacity="0.95"/>
+    <!-- South needle (dark) -->
+    <polygon points="200,300 193,200 200,185 207,200" fill="#006858" opacity="0.8"/>
+    <!-- Center cap -->
+    <circle cx="200" cy="200" r="12" fill="#030e12" stroke="#a0fff0" stroke-width="2"/>
+    <circle cx="200" cy="200" r="5" fill="#20c8b0"/>
+  </g>
+
+  <!-- Decorative diamonds on compass ring -->
+  <g fill="#a0fff0" opacity="0.7">
+    <polygon points="200,67 203,74 200,81 197,74"/>
+    <polygon points="333,200 340,203 333,206 326,203"/>
+    <polygon points="200,319 203,326 200,333 197,326"/>
+    <polygon points="67,200 74,203 67,206 60,203"/>
+  </g>
+
+  <!-- Footprint path (wanderer) -->
+  <g fill="#20c8b0" opacity="0.3">
+    <ellipse cx="170" cy="345" rx="6" ry="10" transform="rotate(-15,170,345)"/>
+    <ellipse cx="185" cy="360" rx="6" ry="10" transform="rotate(15,185,360)"/>
+    <ellipse cx="215" cy="360" rx="6" ry="10" transform="rotate(-15,215,360)"/>
+    <ellipse cx="230" cy="345" rx="6" ry="10" transform="rotate(15,230,345)"/>
+  </g>
+
+  <text x="200" y="382" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="bold" fill="url(#teal)" letter-spacing="3">WANDERER</text>
+  <text x="200" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#20c8b0" opacity="0.6" letter-spacing="2">ALL TASKS COMPLETE</text>
+</svg>

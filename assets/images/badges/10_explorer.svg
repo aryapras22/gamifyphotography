@@ -1,0 +1,73 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg10" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#030f08"/>
+      <stop offset="100%" stop-color="#010503"/>
+    </radialGradient>
+    <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a0ffc0"/>
+      <stop offset="35%" stop-color="#20c060"/>
+      <stop offset="100%" stop-color="#006028"/>
+    </linearGradient>
+    <filter id="glow10">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="195" fill="url(#bg10)"/>
+  <circle cx="200" cy="200" r="190" fill="none" stroke="#20c060" stroke-width="2" opacity="0.5"/>
+
+  <!-- Octagon border -->
+  <polygon points="200,20 335,65 380,200 335,335 200,380 65,335 20,200 65,65" fill="none" stroke="url(#emerald)" stroke-width="2.5"/>
+  <polygon points="200,38 322,80 362,200 322,320 200,362 78,320 38,200 78,80" fill="none" stroke="#20c060" stroke-width="0.8" opacity="0.3"/>
+
+  <!-- Map path lines -->
+  <g stroke="#20c060" stroke-width="1" opacity="0.3" fill="none">
+    <path d="M90,160 L140,130 L170,160 L210,140 L260,170 L290,145 L320,165"/>
+    <path d="M80,230 L130,210 L165,240 L200,215 L240,245 L280,220 L325,240"/>
+    <!-- Map grid -->
+    <line x1="70" y1="120" x2="70" y2="280"/>
+    <line x1="130" y1="100" x2="130" y2="300"/>
+    <line x1="200" y1="90" x2="200" y2="310"/>
+    <line x1="270" y1="100" x2="270" y2="300"/>
+    <line x1="330" y1="120" x2="330" y2="280"/>
+  </g>
+
+  <!-- Binoculars -->
+  <g filter="url(#glow10)">
+    <!-- Left lens barrel -->
+    <rect x="135" y="155" width="55" height="65" rx="12" fill="#030f08" stroke="#20c060" stroke-width="2.5"/>
+    <!-- Right lens barrel -->
+    <rect x="210" y="155" width="55" height="65" rx="12" fill="#030f08" stroke="#20c060" stroke-width="2.5"/>
+    <!-- Bridge -->
+    <rect x="187" y="172" width="26" height="14" rx="4" fill="#006028" stroke="#20c060" stroke-width="1.5"/>
+    <!-- Left lens glass -->
+    <circle cx="162" cy="187" r="22" fill="#030f08" stroke="#a0ffc0" stroke-width="2"/>
+    <circle cx="162" cy="187" r="14" fill="#20c060" opacity="0.25"/>
+    <circle cx="162" cy="187" r="8" fill="#20c060" opacity="0.4"/>
+    <circle cx="157" cy="182" r="3" fill="#a0ffc0" opacity="0.5"/>
+    <!-- Right lens glass -->
+    <circle cx="238" cy="187" r="22" fill="#030f08" stroke="#a0ffc0" stroke-width="2"/>
+    <circle cx="238" cy="187" r="14" fill="#20c060" opacity="0.25"/>
+    <circle cx="238" cy="187" r="8" fill="#20c060" opacity="0.4"/>
+    <circle cx="233" cy="182" r="3" fill="#a0ffc0" opacity="0.5"/>
+  </g>
+
+  <!-- Pin markers on map -->
+  <g fill="#20c060" opacity="0.8">
+    <circle cx="140" cy="255" r="4"/>
+    <line x1="140" y1="255" x2="140" y2="270" stroke="#20c060" stroke-width="1.5"/>
+    <circle cx="255" cy="265" r="4"/>
+    <line x1="255" y1="265" x2="255" y2="280" stroke="#20c060" stroke-width="1.5"/>
+    <circle cx="195" cy="248" r="4"/>
+    <line x1="195" y1="248" x2="195" y2="263" stroke="#20c060" stroke-width="1.5"/>
+  </g>
+
+  <!-- Dotted path between pins -->
+  <path d="M140,255 Q168,240 195,248 Q225,256 255,265" fill="none" stroke="#20c060" stroke-width="1" stroke-dasharray="4 5" opacity="0.6"/>
+
+  <text x="200" y="330" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#20c060" opacity="0.7" letter-spacing="2">ALL COMPOSITIONS MASTERED</text>
+  <text x="200" y="357" text-anchor="middle" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="url(#emerald)" letter-spacing="2">EXPLORER</text>
+  <line x1="110" y1="370" x2="290" y2="370" stroke="#20c060" stroke-width="1" opacity="0.4"/>
+</svg>

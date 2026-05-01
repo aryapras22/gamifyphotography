@@ -1,0 +1,80 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1a1008"/>
+      <stop offset="100%" stop-color="#0a0704"/>
+    </radialGradient>
+    <radialGradient id="bronze1" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#f5c97a"/>
+      <stop offset="40%" stop-color="#d4852a"/>
+      <stop offset="100%" stop-color="#7a4010"/>
+    </radialGradient>
+    <filter id="glow1">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="195" fill="url(#bgGrad)"/>
+  <circle cx="200" cy="200" r="195" fill="none" stroke="#d4852a" stroke-width="2" opacity="0.4"/>
+
+  <!-- Outer badge ring -->
+  <circle cx="200" cy="200" r="172" fill="none" stroke="url(#bronze1)" stroke-width="3.5"/>
+
+  <!-- Gear-like outer ring decoration (16 notches) -->
+  <g opacity="0.55" stroke="#d4852a" stroke-width="2" fill="none">
+    <circle cx="200" cy="200" r="162" stroke-width="1" opacity="0.3"/>
+    <!-- tick marks -->
+    <line x1="200" y1="32" x2="200" y2="50" stroke-width="2.5"/>
+    <line x1="200" y1="350" x2="200" y2="368" stroke-width="2.5"/>
+    <line x1="32" y1="200" x2="50" y2="200" stroke-width="2.5"/>
+    <line x1="350" y1="200" x2="368" y2="200" stroke-width="2.5"/>
+    <line x1="83" y1="83" x2="96" y2="96" stroke-width="2"/>
+    <line x1="304" y1="304" x2="317" y2="317" stroke-width="2"/>
+    <line x1="317" y1="83" x2="304" y2="96" stroke-width="2"/>
+    <line x1="96" y1="304" x2="83" y2="317" stroke-width="2"/>
+    <line x1="50" y1="120" x2="65" y2="127" stroke-width="1.5"/>
+    <line x1="335" y1="273" x2="350" y2="280" stroke-width="1.5"/>
+    <line x1="120" y1="50" x2="127" y2="65" stroke-width="1.5"/>
+    <line x1="273" y1="335" x2="280" y2="350" stroke-width="1.5"/>
+    <line x1="350" y1="120" x2="335" y2="127" stroke-width="1.5"/>
+    <line x1="65" y1="273" x2="50" y2="280" stroke-width="1.5"/>
+    <line x1="280" y1="50" x2="273" y2="65" stroke-width="1.5"/>
+    <line x1="127" y1="335" x2="120" y2="350" stroke-width="1.5"/>
+  </g>
+
+  <!-- Aperture blades (camera) -->
+  <g filter="url(#glow1)" opacity="0.9">
+    <!-- 6 aperture blades -->
+    <path d="M200,110 Q240,155 220,200 Q255,165 200,110Z" fill="#d4852a" opacity="0.7"/>
+    <path d="M200,110 Q160,155 180,200 Q145,165 200,110Z" fill="#c07020" opacity="0.7"/>
+    <path d="M275,245 Q230,220 220,200 Q245,238 275,245Z" fill="#d4852a" opacity="0.7"/>
+    <path d="M275,155 Q230,180 220,200 Q255,162 275,155Z" fill="#c07020" opacity="0.7"/>
+    <path d="M125,245 Q170,220 180,200 Q155,238 125,245Z" fill="#d4852a" opacity="0.7"/>
+    <path d="M125,155 Q170,180 180,200 Q145,162 125,155Z" fill="#c07020" opacity="0.7"/>
+
+    <!-- Aperture outer ring -->
+    <circle cx="200" cy="200" r="78" fill="none" stroke="#f5c97a" stroke-width="2.5"/>
+    <!-- Aperture center -->
+    <circle cx="200" cy="200" r="28" fill="#0a0704" stroke="#f5c97a" stroke-width="1.8"/>
+    <circle cx="200" cy="200" r="18" fill="none" stroke="#d4852a" stroke-width="1"/>
+  </g>
+
+  <!-- Star sparkles -->
+  <g fill="#f5c97a" opacity="0.8">
+    <polygon points="200,55 203,64 212,64 205,70 208,79 200,73 192,79 195,70 188,64 197,64" transform="scale(0.7) translate(86,22)"/>
+    <circle cx="148" cy="88" r="2.5"/>
+    <circle cx="252" cy="88" r="2.5"/>
+    <circle cx="148" cy="312" r="2"/>
+    <circle cx="252" cy="312" r="2"/>
+  </g>
+
+  <!-- Badge label -->
+  <text x="200" y="310" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="bold" fill="url(#bronze1)" letter-spacing="3">STARTER</text>
+  <text x="200" y="340" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#d4852a" opacity="0.7" letter-spacing="1">PHOTOGRAPHY MODULE</text>
+
+  <!-- Bottom decorative line -->
+  <line x1="120" y1="355" x2="280" y2="355" stroke="#d4852a" stroke-width="1" opacity="0.5"/>
+  <circle cx="200" cy="355" r="3" fill="#d4852a" opacity="0.5"/>
+</svg>

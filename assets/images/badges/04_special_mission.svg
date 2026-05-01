@@ -1,0 +1,64 @@
+<svg viewBox="0 0 400 400" width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg4" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#0e0818"/>
+      <stop offset="100%" stop-color="#050308"/>
+    </radialGradient>
+    <linearGradient id="purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0b0ff"/>
+      <stop offset="40%" stop-color="#9040e0"/>
+      <stop offset="100%" stop-color="#4010a0"/>
+    </linearGradient>
+    <linearGradient id="purpleGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c060ff"/>
+      <stop offset="100%" stop-color="#6020c0"/>
+    </linearGradient>
+    <filter id="glow4">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="200" cy="200" r="195" fill="url(#bg4)"/>
+
+  <!-- Hexagon outer border -->
+  <polygon points="200,20 355,107 355,293 200,380 45,293 45,107" fill="none" stroke="url(#purple)" stroke-width="3"/>
+  <polygon points="200,40 338,120 338,280 200,360 62,280 62,120" fill="none" stroke="#7030c0" stroke-width="1" opacity="0.4"/>
+
+  <!-- Rotating star lines -->
+  <g stroke="#7030c0" stroke-width="1" opacity="0.4">
+    <line x1="200" y1="55" x2="200" y2="345"/>
+    <line x1="63" y1="127" x2="337" y2="273"/>
+    <line x1="337" y1="127" x2="63" y2="273"/>
+  </g>
+
+  <!-- Lightning bolt -->
+  <g filter="url(#glow4)">
+    <path d="M220,95 L165,210 L198,210 L175,310 L240,185 L205,185 L235,95 Z" fill="url(#purpleGlow)" opacity="0.95"/>
+    <path d="M220,95 L165,210 L198,210 L175,310 L240,185 L205,185 Z" fill="none" stroke="#e0b0ff" stroke-width="1.5" opacity="0.6"/>
+  </g>
+
+  <!-- Star sparkles around bolt -->
+  <g fill="#c060ff" opacity="0.8">
+    <circle cx="135" cy="140" r="3"/>
+    <circle cx="268" cy="140" r="3"/>
+    <circle cx="115" cy="240" r="2.5"/>
+    <circle cx="288" cy="240" r="2.5"/>
+    <circle cx="155" cy="320" r="2"/>
+    <circle cx="248" cy="75" r="2"/>
+    <!-- 4-point stars -->
+    <path d="M148,90 l3,8 l3,-8 l-3,-8Z" opacity="0.6"/>
+    <path d="M140,85 l8,3 l-8,3 l-8,-3Z" opacity="0.6"/>
+    <path d="M258,320 l3,8 l3,-8 l-3,-8Z" opacity="0.6"/>
+    <path d="M250,315 l8,3 l-8,3 l-8,-3Z" opacity="0.6"/>
+  </g>
+
+  <!-- SPECIAL text arc top -->
+  <path id="arcTop" d="M 80,200 A 120,120 0 0,1 320,200" fill="none"/>
+  <text font-family="Georgia, serif" font-size="14" fill="#9040e0" letter-spacing="3" opacity="0.8">
+    <textPath href="#arcTop" startOffset="10%">★  SPECIAL  MISSION  ★</textPath>
+  </text>
+
+  <text x="200" y="358" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#9040e0" opacity="0.7" letter-spacing="2">LEVEL 10 ACHIEVEMENT</text>
+  <text x="200" y="383" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="bold" fill="url(#purple)" letter-spacing="2">SPECIAL MISSION</text>
+</svg>

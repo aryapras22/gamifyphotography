@@ -1,0 +1,39 @@
+<svg viewBox="0 0 500 800" width="500" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- divider line between two views -->
+  <line x1="0" y1="400" x2="500" y2="400" stroke="#ffffff" stroke-width="1.2" opacity="0.5"/>
+  <!-- label Bird Eye -->
+  <text x="250" y="44" text-anchor="middle" fill="#ffffff45" font-size="13" font-family="sans-serif" letter-spacing="2">BIRD'S EYE VIEW</text>
+  <!-- Bird Eye View: top-down grid perspective -->
+  <line x1="120" y1="80" x2="380" y2="80" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="120" y1="150" x2="380" y2="150" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="120" y1="220" x2="380" y2="220" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="120" y1="290" x2="380" y2="290" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="120" y1="80" x2="120" y2="340" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="210" y1="80" x2="210" y2="340" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="295" y1="80" x2="295" y2="340" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <line x1="380" y1="80" x2="380" y2="340" stroke="#ffffff" stroke-width="0.8" opacity="0.45"/>
+  <!-- arrow from above -->
+  <line x1="250" y1="62" x2="250" y2="195" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <polygon points="250,60 244,74 256,74" fill="#ffffff" opacity="0.45"/>
+  <!-- subject (top-down circle) -->
+  <circle cx="250" cy="220" r="24" fill="none" stroke="#e03030" stroke-width="2"/>
+  <line x1="232" y1="220" x2="268" y2="220" stroke="#e03030" stroke-width="1.2"/>
+  <line x1="250" y1="202" x2="250" y2="238" stroke="#e03030" stroke-width="1.2"/>
+  <!-- label Frog Eye -->
+  <text x="250" y="450" text-anchor="middle" fill="#ffffff45" font-size="13" font-family="sans-serif" letter-spacing="2">FROG'S EYE VIEW</text>
+  <!-- Frog Eye View: dramatic low-angle lines -->
+  <line x1="0" y1="800" x2="500" y2="480" stroke="#ffffff" stroke-width="0.8" opacity="0.4"/>
+  <line x1="0" y1="780" x2="500" y2="500" stroke="#ffffff" stroke-width="0.5" opacity="0.22"/>
+  <line x1="0" y1="755" x2="500" y2="520" stroke="#ffffff" stroke-width="0.4" opacity="0.15"/>
+  <line x1="0" y1="730" x2="500" y2="550" stroke="#ffffff" stroke-width="0.3" opacity="0.1"/>
+  <!-- arrow from below -->
+  <line x1="250" y1="780" x2="250" y2="638" stroke="#ffffff" stroke-width="1" opacity="0.5"/>
+  <polygon points="250,782 244,768 256,768" fill="#ffffff" opacity="0.45"/>
+  <!-- vertical guide -->
+  <line x1="250" y1="460" x2="250" y2="800" stroke="#ffffff" stroke-width="0.6" opacity="0.2"/>
+  <!-- subject looking up -->
+  <circle cx="250" cy="610" r="24" fill="none" stroke="#e03030" stroke-width="2"/>
+  <line x1="232" y1="610" x2="268" y2="610" stroke="#e03030" stroke-width="1.2"/>
+  <line x1="250" y1="592" x2="250" y2="628" stroke="#e03030" stroke-width="1.2"/>
+</svg>

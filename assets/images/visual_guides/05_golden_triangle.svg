@@ -1,0 +1,25 @@
+<svg viewBox="0 0 500 800" width="500" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- main diagonal top-left to bottom-right -->
+  <line x1="0" y1="0" x2="500" y2="800" stroke="#ffffff" stroke-width="1.4" opacity="0.7"/>
+  <!-- perpendicular from top-right to main diagonal -->
+  <!-- The perpendicular from (500,0) to line y=1.6x hits at approx (192, 308) -->
+  <line x1="500" y1="0" x2="192" y2="308" stroke="#ffffff" stroke-width="1.2" opacity="0.65"/>
+  <!-- perpendicular from bottom-left to main diagonal -->
+  <!-- The perpendicular from (0,800) to line hits at approx (308, 492) -->
+  <line x1="0" y1="800" x2="308" y2="492" stroke="#ffffff" stroke-width="1.2" opacity="0.65"/>
+  <!-- secondary subtle triangle lines -->
+  <line x1="500" y1="0" x2="0" y2="800" stroke="#ffffff" stroke-width="0.4" opacity="0.12" stroke-dasharray="5 8"/>
+  <line x1="192" y1="308" x2="308" y2="492" stroke="#ffffff" stroke-width="0.5" opacity="0.25"/>
+  <!-- faint inner guides -->
+  <line x1="0" y1="0" x2="308" y2="492" stroke="#ffffff" stroke-width="0.3" opacity="0.12"/>
+  <line x1="500" y1="800" x2="192" y2="308" stroke="#ffffff" stroke-width="0.3" opacity="0.12"/>
+  <!-- subject at top-right perpendicular foot (upper zone) -->
+  <circle cx="192" cy="308" r="22" fill="none" stroke="#e03030" stroke-width="2"/>
+  <line x1="176" y1="308" x2="208" y2="308" stroke="#e03030" stroke-width="1.2"/>
+  <line x1="192" y1="292" x2="192" y2="324" stroke="#e03030" stroke-width="1.2"/>
+  <!-- secondary subject at bottom-left foot -->
+  <circle cx="308" cy="492" r="18" fill="none" stroke="#e03030" stroke-width="1.6" opacity="0.7"/>
+  <line x1="295" y1="492" x2="321" y2="492" stroke="#e03030" stroke-width="1" opacity="0.7"/>
+  <line x1="308" y1="479" x2="308" y2="505" stroke="#e03030" stroke-width="1" opacity="0.7"/>
+</svg>
