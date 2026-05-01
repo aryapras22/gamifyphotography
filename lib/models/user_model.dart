@@ -1,19 +1,19 @@
-class UserModel {
-  final String id;
-  final String name;
-  final String email;
-  int points;
-  int level;
-  List<String> earnedBadgeIds;
-  int bridgeProgress; // Tracker untuk jembatan
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  UserModel({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.points = 0,
-    this.level = 1,
-    this.earnedBadgeIds = const [],
-    this.bridgeProgress = 0,
-  });
+part 'user_model.freezed.dart';
+part 'user_model.g.dart';
+
+@freezed
+class UserModel with _$UserModel {
+  factory UserModel({
+    required String id,
+    required String name,
+    required String email,
+    @Default(0) int points,
+    @Default(1) int level,
+    @Default([]) List<String> earnedBadgeIds,
+    @Default(0) int bridgeProgress, // Tracker untuk jembatan
+  }) = _UserModel;
+
+  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
 }

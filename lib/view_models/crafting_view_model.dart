@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_view_model.dart';
+import '../providers/service_providers.dart';
 import '../services/user_service.dart';
-
 class CraftingState {
   final bool craftingDone;
   final int currentPoints;
@@ -34,8 +34,6 @@ class CraftingState {
   }
 }
 
-final userServiceProvider = Provider<UserService>((ref) => UserService());
-
 final craftingViewModelProvider = StateNotifierProvider<CraftingViewModel, CraftingState>(
   (ref) => CraftingViewModel(ref, ref.read(userServiceProvider)),
 );
@@ -66,8 +64,11 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
     if (success) {
       final user = _ref.read(authViewModelProvider).currentUser;
       if (user != null) {
-        user.points -= pointCost;
-        user.bridgeProgress += 1;
+        final updatedUser = user.copyWith(
+          points: user.points - pointCost,
+          bridgeProgress: user.bridgeProgress + 1,
+        );
+        _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
       }
       
       final newProgress = state.bridgeProgress + 1;
