@@ -41,6 +41,13 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
       appBar: AppBar(
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
         title: Text(
           'Papan Peringkat',
           style: AppTextStyles.heading,
@@ -271,24 +278,6 @@ class _LeaderboardTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Delta Rank indicator (mock)
-                    if (entry.rank % 3 == 0)
-                      Text(
-                        '+2 ↑',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.forestGreen,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    else if (entry.rank % 4 == 0)
-                      Text(
-                        '-1 ↓',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.coralRed,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                   ],
                 ),
                 if (isCurrentUser)

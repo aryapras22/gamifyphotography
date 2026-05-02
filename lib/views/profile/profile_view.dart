@@ -36,10 +36,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         backgroundColor: AppColors.surfaceWhite,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
+                onPressed: () => Navigator.of(context).maybePop(),
+              )
+            : null,
         title: Text(
           'PROFIL',
           style: AppTextStyles.heading.copyWith(letterSpacing: 1.5),
