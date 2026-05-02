@@ -6,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../home/home_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_view.dart';
+import '../progress/progress_view.dart';
+import '../crafting/crafting_view.dart';
+import '../mission/challenge_brief_view.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
 import 'daily_login_view.dart';
@@ -25,7 +28,9 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   final List<Widget> _pages = [
     const HomeView(),
     const LeaderboardView(),
+    const ProgressView(),
     const ProfileView(),
+    const CraftingView(),
   ];
 
   @override
@@ -38,9 +43,13 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
 
   Future<void> _triggerDailyLoginIfNeeded() async {
     if (!mounted) return;
-    final authUser = ref.read(authViewModelProvider).currentUser;
-    final userId = authUser?.id ?? _kFallbackUserId;
-    await showDailyLoginSheet(context, ref, userId);
+    try {
+      final authUser = ref.read(authViewModelProvider).currentUser;
+      final userId = authUser?.id ?? _kFallbackUserId;
+      await showDailyLoginSheet(context, ref, userId);
+    } catch (e) {
+      debugPrint('[DailyLogin] Error: $e');
+    }
   }
 
   @override
@@ -80,8 +89,16 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
               label: 'Peringkat',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_rounded, size: 28),
+              label: 'Progress',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.person_rounded, size: 28),
               label: 'Profil',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.handyman_rounded, size: 28),
+              label: 'Crafting',
             ),
           ],
         ),
