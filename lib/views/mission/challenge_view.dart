@@ -5,7 +5,8 @@ import 'package:camera/camera.dart';
 import '../../view_models/challenge_view_model.dart';
 import '../widgets/animated_3d_button.dart';
 import 'custom_camera_view.dart';
-import 'dart:io'; 
+import 'dart:io';
+import '../../core/app_colors.dart';
 
 class ChallengeView extends ConsumerStatefulWidget {
   const ChallengeView({super.key});
@@ -27,7 +28,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
     final hasPhoto = challenge.uploadedPhotoUrl != null && challenge.uploadedPhotoUrl!.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F5),
+      backgroundColor: AppColors.backgroundGray,
       body: SafeArea(
         child: Column(
           children: [
@@ -38,14 +39,14 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                 children: [
                   GestureDetector(
                     onTap: () => context.pop(),
-                    child: const Icon(Icons.close_rounded, size: 32, color: Color(0xFF4B4B4B)),
+                    child: const Icon(Icons.close_rounded, size: 32, color: AppColors.bodyText),
                   ),
                   Expanded(
                     child: Container(
                       height: 16,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE5E5E5),
+                        color: AppColors.cardBorder,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: FractionallySizedBox(
@@ -53,7 +54,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                         widthFactor: hasPhoto ? 1.0 : 0.5,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFF58CC02),
+                            color: AppColors.forestGreen,
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
@@ -75,17 +76,17 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-                        boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 6))],
+                        border: Border.all(color: AppColors.cardBorder, width: 2),
+                        boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 6))],
                       ),
                       child: Column(
                         children: [
-                          const Text('MISI KAMU:', style: TextStyle(fontSize: 16, color: Color(0xFF1CB0F6), fontWeight: FontWeight.w900, letterSpacing: 1.2)), 
+                          const Text('MISI KAMU:', style: TextStyle(fontSize: 16, color: AppColors.brandBlue, fontWeight: FontWeight.w900, letterSpacing: 1.2)), 
                           const SizedBox(height: 12),
                           Text(
                             challenge.instruction,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF4B4B4B)),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.bodyText),
                           ),
                         ],
                       ),
@@ -125,15 +126,15 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-                            boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 6))],
+                            border: Border.all(color: AppColors.cardBorder, width: 2),
+                            boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 6))],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.camera_alt_rounded, size: 80, color: Color(0xFF1CB0F6)),
+                            children: [
+                              Icon(Icons.camera_alt_rounded, size: 80, color: AppColors.brandBlue),
                               SizedBox(height: 16),
-                              Text('AMBIL FOTO', style: TextStyle(color: Color(0xFF1CB0F6), fontSize: 20, fontWeight: FontWeight.w900)),
+                              Text('AMBIL FOTO', style: TextStyle(color: AppColors.brandBlue, fontSize: 20, fontWeight: FontWeight.w900)),
                             ],
                           ),
                         ),
@@ -142,8 +143,8 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     const SizedBox(height: 40),
                     
                     Animated3DButton(
-                      color: hasPhoto ? const Color(0xFF58CC02) : const Color(0xFFE5E5E5),
-                      shadowColor: hasPhoto ? const Color(0xFF58A700) : const Color(0xFFC4C4C4),
+                      color: hasPhoto ? AppColors.forestGreen : AppColors.cardBorder,
+                      shadowColor: hasPhoto ? const Color(0xFF2D8A00) : const Color(0xFFC4C4C4),
                       onPressed: hasPhoto && !state.isUploading
                           ? () async {
                               await ref.read(challengeViewModelProvider.notifier).completeChallenge();
@@ -159,7 +160,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                               style: TextStyle(
                                 fontSize: 20, 
                                 fontWeight: FontWeight.w900, 
-                                color: hasPhoto ? Colors.white : const Color(0xFFAFAFAF), 
+                                color: hasPhoto ? Colors.white : AppColors.disabled, 
                                 letterSpacing: 1.2
                               )
                             ),
