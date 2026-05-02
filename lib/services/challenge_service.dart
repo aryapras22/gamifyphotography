@@ -29,8 +29,9 @@ class ChallengeService {
   }
 
   Future<String> uploadPhoto(XFile file) async {
-    await Future.delayed(const Duration(seconds: 2));
-    return 'https://mockurl.com/photo.jpg';
+    await Future.delayed(const Duration(seconds: 1)); // simulasi upload
+    // Mock: kembalikan path lokal asli agar foto bisa ditampilkan di FeedbackView
+    return file.path;
   }
 
   Future<void> completeChallenge(String challengeId) async {
