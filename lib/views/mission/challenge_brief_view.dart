@@ -10,14 +10,13 @@ import '../widgets/animated_3d_button.dart';
 /// Layout: Level badge | Poin badge → Level label small → Title big
 ///          → Description → Task (red) → Visual Guide phone wireframe → Mulai
 class ChallengeBriefView extends ConsumerWidget {
-  const ChallengeBriefView({Key? key}) : super(key: key);
+  const ChallengeBriefView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(missionViewModelProvider);
     final module = state.activeModule;
-    final authState = ref.watch(authViewModelProvider);
-    final points = authState.currentUser?.points ?? 0;
+    ref.watch(authViewModelProvider);
 
     if (module == null) {
       return const Scaffold(body: Center(child: Text('No module selected')));

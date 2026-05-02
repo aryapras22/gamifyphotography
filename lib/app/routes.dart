@@ -11,6 +11,7 @@ import '../views/mission/feedback_view.dart';
 import '../views/crafting/crafting_view.dart';
 import '../views/progress/progress_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
+import '../views/profile/profile_view.dart';
 
 GoRouter getRouter(String initialRoute) => GoRouter(
   initialLocation: initialRoute,
@@ -63,6 +64,9 @@ GoRouter getRouter(String initialRoute) => GoRouter(
       path: '/leaderboard',
       builder: (context, state) => const LeaderboardView(),
     ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileView(),
+    ),
   ],
 );
-

@@ -3,8 +3,8 @@ import 'package:camera/camera.dart';
 import '../models/challenge_model.dart';
 import '../services/challenge_service.dart';
 import 'auth_view_model.dart';
-import '../services/user_service.dart';
 import '../providers/service_providers.dart';
+
 class ChallengeState {
   final ChallengeModel? challenge;
   final bool isUploading;
@@ -57,6 +57,7 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
 
   Future<void> completeChallenge() async {
     if (state.challenge == null) return;
+    if (state.challenge!.isCompleted) return; // Guard idempotent (fix BUG-09)
     
     await _challengeService.completeChallenge(state.challenge!.id);
     final updatedChallenge = state.challenge!.copyWith(isCompleted: true);
@@ -66,25 +67,32 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
     // Update user points
     final authState = _ref.read(authViewModelProvider);
     if (authState.currentUser != null) {
-      var user = authState.currentUser!.copyWith(points: authState.currentUser!.points + points);
-      
-      // Simple logic: level up every 100 points
+      var user = authState.currentUser!.copyWith(
+        points: authState.currentUser!.points + points,
+      );
+
+      // Level up setiap 100 poin
       user = user.copyWith(level: (user.points ~/ 100) + 1);
-      
-      final userService = _ref.read(userServiceProvider);
-      final badges = await userService.getBadges();
-      
-      final newBadgeIds = List<String>.from(user.earnedBadgeIds);
-      for (var badge in badges) {
-        if (user.points >= badge.requiredPoints && !newBadgeIds.contains(badge.id)) {
-          newBadgeIds.add(badge.id);
-        }
+
+      // Cek badge baru via BadgeService (konsisten dengan BadgeViewModel)
+      final badgeService = _ref.read(badgeServiceProvider);
+      final newBadges = await badgeService.checkNewBadges(
+        level: user.level,
+        streak: 0, // streak dari dailyLoginService — gunakan 0 untuk sekarang
+        earnedBadgeIds: user.earnedBadgeIds,
+        completedFirstMission: user.level >= 1,
+      );
+      if (newBadges.isNotEmpty) {
+        final newIds = newBadges.map((b) => b.id).toList();
+        user = user.copyWith(
+          earnedBadgeIds: [...user.earnedBadgeIds, ...newIds],
+        );
       }
-      user = user.copyWith(earnedBadgeIds: newBadgeIds);
-      
+
       _ref.read(authViewModelProvider.notifier).updateUser(user);
     }
-    
+
     state = state.copyWith(challenge: updatedChallenge, pointsEarned: points);
   }
 }
+

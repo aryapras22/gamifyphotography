@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../mission/module_list_view.dart';
 import '../leaderboard/leaderboard_view.dart';
-import '../progress/progress_view.dart';
+import '../profile/profile_view.dart';
 import '../../view_models/auth_view_model.dart';
 import 'daily_login_view.dart';
 
 const String _kFallbackUserId = 'user_1';
 
 class MainLayoutView extends ConsumerStatefulWidget {
-  const MainLayoutView({Key? key}) : super(key: key);
+  const MainLayoutView({super.key});
 
   @override
   ConsumerState<MainLayoutView> createState() => _MainLayoutViewState();
@@ -24,7 +24,7 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   final List<Widget> _pages = [
     const ModuleListView(),
     const LeaderboardView(),
-    const ProgressView(),
+    const ProfileView(),
   ];
 
   @override
@@ -62,7 +62,7 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
             });
           },
           selectedItemColor: const Color(0xFF1CB0F6),
-          unselectedItemColor: const Color(0xFF4B4B4B).withOpacity(0.5),
+          unselectedItemColor: const Color(0xFF4B4B4B).withValues(alpha: 0.5),
           showSelectedLabels: true,
           showUnselectedLabels: true,
           selectedFontSize: 12,
