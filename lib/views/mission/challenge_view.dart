@@ -108,8 +108,8 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                         onTap: () async {
                           final XFile? xfile = await Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => const CustomCameraView(
-                                gridType: 'rule_of_thirds', 
+                              builder: (context) => CustomCameraView(
+                                moduleId: challenge.moduleId, 
                               ),
                             ),
                           );

@@ -59,7 +59,7 @@ lib/
 |-------|------|-----------|---------|----------|
 | Onboarding | ✅ | ✅ | — | 80% |
 | Login/Register | ✅ | 🔴 Mock bypass | 🔴 Mock | 30% |
-| Mission List | ✅ | ✅ | 🔴 Mock | 45% |
+| Mission List | ✅ | ✅ | ✅ Mock | 75% |
 | Challenge (Kamera) | ✅ | 🔴 Bug mutation | 🔴 Mock | 25% |
 | Crafting | ✅ | ⚠️ Bug minor | 🔴 Mock | 45% |
 | Leaderboard | ✅ | ❌ Belum ada | 🔴 Mock | 20% |

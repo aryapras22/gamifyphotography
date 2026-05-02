@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:go_router/go_router.dart';
+import 'package:camera/camera.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomCameraView extends StatefulWidget {
-  final String gridType; // e.g., 'rule_of_thirds', 'golden_ratio'
+  final String moduleId; 
 
-  const CustomCameraView({Key? key, this.gridType = 'rule_of_thirds'}) : super(key: key);
+  const CustomCameraView({Key? key, required this.moduleId}) : super(key: key);
 
   @override
   State<CustomCameraView> createState() => _CustomCameraViewState();
@@ -20,6 +21,22 @@ class _CustomCameraViewState extends State<CustomCameraView> {
   void initState() {
     super.initState();
     _initCamera();
+  }
+
+  String _getVisualGuideAsset(String moduleId) {
+    switch (moduleId) {
+      case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
+      case 'M02': return 'assets/images/visual_guides/02_leading_lines.svg';
+      case 'M03': return 'assets/images/visual_guides/03_framing.svg';
+      case 'M04': return 'assets/images/visual_guides/04_symmetry.svg';
+      case 'M05': return 'assets/images/visual_guides/05_golden_triangle.svg';
+      case 'M06': return 'assets/images/visual_guides/06_negative_space.svg';
+      case 'M07': return 'assets/images/visual_guides/07_rule_of_odds.svg';
+      case 'M08': return 'assets/images/visual_guides/08_depth_of_field.svg';
+      case 'M09': return 'assets/images/visual_guides/09_point_of_view.svg';
+      case 'M10': return 'assets/images/visual_guides/10_center_dominance.svg';
+      default: return 'assets/images/visual_guides/01_rule_of_thirds.svg';
+    }
   }
 
   Future<void> _initCamera() async {
@@ -67,10 +84,13 @@ class _CustomCameraViewState extends State<CustomCameraView> {
             child: CameraPreview(_controller!),
           ),
           
-          // Custom Grid Overlay
+          // Custom Grid Overlay (SVG)
           Positioned.fill(
-            child: CustomPaint(
-              painter: GridPainter(gridType: widget.gridType),
+            child: IgnorePointer(
+              child: SvgPicture.asset(
+                _getVisualGuideAsset(widget.moduleId),
+                fit: BoxFit.fill,
+              ),
             ),
           ),
 
@@ -100,7 +120,7 @@ class _CustomCameraViewState extends State<CustomCameraView> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 4),
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -120,51 +140,4 @@ class _CustomCameraViewState extends State<CustomCameraView> {
       ),
     );
   }
-}
-
-class GridPainter extends CustomPainter {
-  final String gridType;
-
-  GridPainter({required this.gridType});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withOpacity(0.7)
-      ..strokeWidth = 1.5;
-
-    if (gridType == 'rule_of_thirds' || true) { // Default fallback
-      final thirdW = size.width / 3;
-      final thirdH = size.height / 3;
-      
-      // Vertical lines
-      canvas.drawLine(Offset(thirdW, 0), Offset(thirdW, size.height), paint);
-      canvas.drawLine(Offset(thirdW * 2, 0), Offset(thirdW * 2, size.height), paint);
-      // Horizontal lines
-      canvas.drawLine(Offset(0, thirdH), Offset(size.width, thirdH), paint);
-      canvas.drawLine(Offset(0, thirdH * 2), Offset(size.width, thirdH * 2), paint);
-
-      // Red cross + circle at intersections
-      final redPaint = Paint()
-        ..color = const Color(0xFFE63946)
-        ..strokeWidth = 1.5;
-      final circlePaint = Paint()
-        ..color = const Color(0xFFE63946)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-
-      for (int row = 1; row < 3; row++) {
-        for (int col = 1; col < 3; col++) {
-          final cx = thirdW * col;
-          final cy = thirdH * row;
-          canvas.drawCircle(Offset(cx, cy), 10, circlePaint);
-          canvas.drawLine(Offset(cx - 6, cy), Offset(cx + 6, cy), redPaint);
-          canvas.drawLine(Offset(cx, cy - 6), Offset(cx, cy + 6), redPaint);
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
