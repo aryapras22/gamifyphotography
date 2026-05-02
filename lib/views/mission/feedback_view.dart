@@ -129,7 +129,9 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
 
                   // ── Buttons ────────────────────────────────────
                   Animated3DButton(
-                    onPressed: () => context.go('/home'),
+                    onPressed: () {
+                      context.go('/home');
+                    },
                     color: AppColors.brandBlue,
                     shadowColor: const Color(0xFF1590C8),
                     child: Text('MISI BERIKUTNYA →', style: AppTextStyles.button),
