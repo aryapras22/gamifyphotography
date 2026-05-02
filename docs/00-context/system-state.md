@@ -81,3 +81,20 @@ lib/
 - **ChallengeView** menggunakan pola: buka `CustomCameraView` via `Navigator.push`, menerima `XFile` via pop, lalu upload foto → tampilkan preview → user tap "CEK HASIL" → completeChallenge() → navigate ke feedback (kembali ke Home).
 - **BadgeModel** menggunakan field `iconPath` (bukan `svgPath`) — semua badge service dan view sudah menggunakan field yang benar
 - **build_runner** sudah dijalankan, semua `.freezed.dart` dan `.g.dart` sudah ter-generate
+
+---
+
+## Known Issues (Bugfix Sprint)
+
+| ID | Prioritas | Status | File | Deskripsi Fix |
+|----|-----------|--------|------|---------------|
+| BUG-11 | 🔴 Critical | ✅ Closed | `feedback_view.dart` | Lottie.network crash offline → Lottie.asset |
+| BUG-12 | 🔴 Critical | ✅ Closed | `feedback_view.dart` | CircularProgressIndicator infinite saat pointsEarned=0 |
+| BUG-13 | 🔴 Critical | ✅ Closed | `challenge_view_model.dart` | Module tidak pernah marked isCompleted setelah challenge selesai |
+| BUG-14 | 🔴 Critical | ✅ Closed | `mission_view_model.dart` | copyWith tidak bisa clear activeModule ke null |
+| BUG-15 | 🔴 Critical | ✅ Closed | `auth_view_model.dart` | copyWith tidak bisa clear errorMessage ke null |
+| BUG-16 | 🔴 Critical | ✅ Closed | `challenge_view_model.dart` | ChallengeState tidak reset saat loadChallenge misi baru |
+| BUG-17 | 🟠 High | ✅ Closed | `feedback_view.dart` | Dua tombol navigate ke tujuan identik |
+| BUG-18 | 🟠 High | ✅ Closed | `routes.dart` | /mission/brief dead code — dihapus dari router |
+| BUG-19 | 🟠 High | ✅ Closed | `home_view.dart` | PathPainter.shouldRepaint false — map tidak update |
+| BUG-20 | 🟠 High | ✅ Closed | `challenge_service.dart` | uploadPhoto return URL mock, foto tidak tampil di FeedbackView |
