@@ -43,8 +43,8 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
           alignment: Alignment.center,
           children: [
             // Confetti background
-            Lottie.network(
-              'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json',
+            Lottie.asset(
+              'assets/lottie/confetti.json',
               repeat: false,
               fit: BoxFit.cover,
               width: MediaQuery.of(context).size.width,
