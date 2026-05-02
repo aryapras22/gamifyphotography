@@ -55,11 +55,8 @@ class ProfileState {
 
 final profileViewModelProvider =
     StateNotifierProvider<ProfileViewModel, ProfileState>((ref) {
-  return ProfileViewModel(
-    ref,
-    ref.read(badgeServiceProvider),
-  );
-});
+      return ProfileViewModel(ref, ref.read(badgeServiceProvider));
+    });
 
 // ---------------------------------------------------------------------------
 // ViewModel
@@ -69,8 +66,7 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
   final Ref _ref;
   final BadgeService _badgeService;
 
-  ProfileViewModel(this._ref, this._badgeService)
-      : super(const ProfileState());
+  ProfileViewModel(this._ref, this._badgeService) : super(const ProfileState());
 
   /// Muat data profil dari authViewModelProvider + badge service.
   Future<void> loadProfile() async {

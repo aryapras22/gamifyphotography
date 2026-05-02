@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_view_model.dart';
 import '../providers/service_providers.dart';
 import '../services/user_service.dart';
+
 class CraftingState {
   final bool craftingDone;
   final int currentPoints;
@@ -38,9 +39,10 @@ class CraftingState {
   }
 }
 
-final craftingViewModelProvider = StateNotifierProvider<CraftingViewModel, CraftingState>(
-  (ref) => CraftingViewModel(ref, ref.read(userServiceProvider)),
-);
+final craftingViewModelProvider =
+    StateNotifierProvider<CraftingViewModel, CraftingState>(
+      (ref) => CraftingViewModel(ref, ref.read(userServiceProvider)),
+    );
 
 class CraftingViewModel extends StateNotifier<CraftingState> {
   final Ref _ref;
@@ -56,10 +58,7 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
         bridgeProgress: user.bridgeProgress,
       );
     } else {
-      state = state.copyWith(
-        currentPoints: 0,
-        bridgeProgress: 0,
-      );
+      state = state.copyWith(currentPoints: 0, bridgeProgress: 0);
     }
   }
 
@@ -67,7 +66,8 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
 
   Future<void> doCrafting(int pointCost) async {
     // Only craft if we have enough points AND bridge is not finished
-    if (!hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments) return;
+    if (!hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments)
+      return;
 
     state = state.copyWith(isLoading: true);
     try {
@@ -81,7 +81,7 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
           );
           _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
         }
-        
+
         final newProgress = state.bridgeProgress + 1;
         state = state.copyWith(
           craftingDone: newProgress >= state.maxBridgeSegments,

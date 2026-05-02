@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../home/home_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_view.dart';
-import '../progress/progress_view.dart';
 import '../crafting/crafting_view.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
@@ -27,9 +26,8 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   final List<Widget> _pages = [
     const HomeView(),
     const LeaderboardView(),
-    const ProgressView(),
-    const ProfileView(),
     const CraftingView(),
+    const ProfileView(),
   ];
 
   @override
@@ -54,10 +52,7 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.surfaceWhite,
@@ -88,16 +83,12 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
               label: 'Peringkat',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_rounded, size: 28),
-              label: 'Progress',
+              icon: Icon(Icons.handyman_rounded, size: 28),
+              label: 'Crafting',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_rounded, size: 28),
               label: 'Profil',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.handyman_rounded, size: 28),
-              label: 'Crafting',
             ),
           ],
         ),
@@ -105,4 +96,3 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
     );
   }
 }
-

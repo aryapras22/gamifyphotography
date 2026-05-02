@@ -79,9 +79,13 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
       // Level up setiap 100 poin
       user = user.copyWith(level: (user.points ~/ 100) + 1);
 
-      if (state.challenge!.uploadedPhotoUrl != null && state.challenge!.uploadedPhotoUrl!.isNotEmpty) {
+      if (state.challenge!.uploadedPhotoUrl != null &&
+          state.challenge!.uploadedPhotoUrl!.isNotEmpty) {
         user = user.copyWith(
-          completedPhotoUrls: [...user.completedPhotoUrls, state.challenge!.uploadedPhotoUrl!],
+          completedPhotoUrls: [
+            ...user.completedPhotoUrls,
+            state.challenge!.uploadedPhotoUrl!,
+          ],
         );
       }
 

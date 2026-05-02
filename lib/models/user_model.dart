@@ -16,5 +16,6 @@ class UserModel with _$UserModel {
     @Default(0) int bridgeProgress, // Tracker untuk jembatan
   }) = _UserModel;
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
 }

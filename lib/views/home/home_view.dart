@@ -42,10 +42,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   double _getOffset(int index, double screenWidth) {
     const List<double> pathMultipliers = [
-      0.0, 0.4, 0.7, 0.4, 0.0, -0.4, -0.7, -0.4, 0.0, 0.4,
+      0.0,
+      0.4,
+      0.7,
+      0.4,
+      0.0,
+      -0.4,
+      -0.7,
+      -0.4,
+      0.0,
+      0.4,
     ];
     final multiplier = pathMultipliers[index % pathMultipliers.length];
-    final maxSwing = (screenWidth / 2) - 80; 
+    final maxSwing = (screenWidth / 2) - 80;
     return multiplier * maxSwing;
   }
 
@@ -54,7 +63,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
     ref.listen(missionViewModelProvider, (prev, next) {
       if (!_hasAutoScrolled && next.modules.isNotEmpty) {
         _hasAutoScrolled = true;
-        final firstUncompletedIndex = next.modules.indexWhere((m) => !m.isCompleted);
+        final firstUncompletedIndex = next.modules.indexWhere(
+          (m) => !m.isCompleted,
+        );
         if (firstUncompletedIndex != -1) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
@@ -105,9 +116,19 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('MISI ANDA', style: AppTextStyles.title.copyWith(fontSize: 14, color: AppColors.secondaryText)),
+                        Text(
+                          'MISI ANDA',
+                          style: AppTextStyles.title.copyWith(
+                            fontSize: 14,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
                         if (missionState.isLoading)
-                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                       ],
                     ),
                   ],
@@ -120,70 +141,85 @@ class _HomeViewState extends ConsumerState<HomeView> {
               const SliverFillRemaining(
                 child: Center(child: CircularProgressIndicator()),
               )
-            else if (missionState.errorMessage != null && missionState.modules.isEmpty)
+            else if (missionState.errorMessage != null &&
+                missionState.modules.isEmpty)
               SliverFillRemaining(
                 child: Center(child: Text(missionState.errorMessage!)),
               )
             else
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final module = missionState.modules[index];
-                    final screenWidth = MediaQuery.of(context).size.width;
-                    
-                    double currentOffset = _getOffset(index, screenWidth);
-                    double prevOffset = index > 0 ? _getOffset(index - 1, screenWidth) : currentOffset;
-                    double nextOffset = index < missionState.modules.length - 1 ? _getOffset(index + 1, screenWidth) : currentOffset;
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final module = missionState.modules[index];
+                  final screenWidth = MediaQuery.of(context).size.width;
 
-                    return SizedBox(
-                      height: 120,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: PathPainter(
-                                currentOffset: currentOffset,
-                                prevOffset: prevOffset,
-                                nextOffset: nextOffset,
-                                isFirst: index == 0,
-                                isLast: index == missionState.modules.length - 1,
-                                isCompleted: module.isCompleted,
+                  double currentOffset = _getOffset(index, screenWidth);
+                  double prevOffset = index > 0
+                      ? _getOffset(index - 1, screenWidth)
+                      : currentOffset;
+                  double nextOffset = index < missionState.modules.length - 1
+                      ? _getOffset(index + 1, screenWidth)
+                      : currentOffset;
+
+                  return SizedBox(
+                    height: 120,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: PathPainter(
+                              currentOffset: currentOffset,
+                              prevOffset: prevOffset,
+                              nextOffset: nextOffset,
+                              isFirst: index == 0,
+                              isLast: index == missionState.modules.length - 1,
+                              isCompleted: module.isCompleted,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: (screenWidth / 2) - 40 + currentOffset,
+                          child: BouncingNode(
+                            isPulsing:
+                                !module.isCompleted &&
+                                (index == 0 ||
+                                    missionState
+                                        .modules[index - 1]
+                                        .isCompleted),
+                            onTap: () =>
+                                _showMissionBottomSheet(context, module),
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: module.isCompleted
+                                    ? AppColors.lensGold
+                                    : AppColors.brandBlue,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: module.isCompleted
+                                        ? const Color(0xFFD6A600)
+                                        : const Color(0xFF1590C8),
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '${index + 1}',
+                                style: AppTextStyles.display.copyWith(
+                                  color: AppColors.surfaceWhite,
+                                  fontSize: 28,
+                                ),
                               ),
                             ),
                           ),
-                          Positioned(
-                            left: (screenWidth / 2) - 40 + currentOffset, 
-                            child: BouncingNode(
-                              isPulsing: !module.isCompleted && (index == 0 || missionState.modules[index - 1].isCompleted),
-                              onTap: () => _showMissionBottomSheet(context, module),
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: module.isCompleted ? AppColors.lensGold : AppColors.brandBlue,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: module.isCompleted ? const Color(0xFFD6A600) : const Color(0xFF1590C8),
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: AppTextStyles.display.copyWith(color: AppColors.surfaceWhite, fontSize: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  childCount: missionState.modules.length,
-                ),
+                        ),
+                      ],
+                    ),
+                  );
+                }, childCount: missionState.modules.length),
               ),
 
             // ── Footer Padding ──────────────────────────────
@@ -217,14 +253,18 @@ class _HomeViewState extends ConsumerState<HomeView> {
               const SizedBox(height: 12),
               Text(
                 module.description,
-                style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.secondaryText,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ref.read(missionViewModelProvider.notifier).selectModule(module.id);
+                  ref
+                      .read(missionViewModelProvider.notifier)
+                      .selectModule(module.id);
                   context.push('/mission/detail');
                 },
                 child: Text('MULAI MISI', style: AppTextStyles.button),
@@ -233,7 +273,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
             ],
           ),
         );
-      }
+      },
     );
   }
 }
@@ -265,7 +305,12 @@ class _XpCard extends StatelessWidget {
   final int points;
   final double xpProgress;
   final int streak;
-  const _XpCard({required this.level, required this.points, required this.xpProgress, required this.streak});
+  const _XpCard({
+    required this.level,
+    required this.points,
+    required this.xpProgress,
+    required this.streak,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -279,8 +324,18 @@ class _XpCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: AppColors.brandBlue, borderRadius: BorderRadius.circular(12)),
-            child: Text('Lv.$level', style: AppTextStyles.caption.copyWith(color: AppColors.surfaceWhite, fontWeight: FontWeight.w800, fontSize: 12)),
+            decoration: BoxDecoration(
+              color: AppColors.brandBlue,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Lv.$level',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.surfaceWhite,
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -289,10 +344,20 @@ class _XpCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: LinearProgressIndicator(value: xpProgress, minHeight: 8, backgroundColor: AppColors.cardBorder, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.xpBarFill)),
+                  child: LinearProgressIndicator(
+                    value: xpProgress,
+                    minHeight: 8,
+                    backgroundColor: AppColors.cardBorder,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.xpBarFill,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text('$points XP', style: AppTextStyles.caption.copyWith(fontSize: 11)),
+                Text(
+                  '$points XP',
+                  style: AppTextStyles.caption.copyWith(fontSize: 11),
+                ),
               ],
             ),
           ),
@@ -301,7 +366,14 @@ class _XpCard extends StatelessWidget {
             children: [
               const Text('🔥', style: TextStyle(fontSize: 16)),
               const SizedBox(width: 4),
-              Text('$streak', style: AppTextStyles.body.copyWith(color: AppColors.streakFire, fontWeight: FontWeight.w800, fontSize: 14)),
+              Text(
+                '$streak',
+                style: AppTextStyles.body.copyWith(
+                  color: AppColors.streakFire,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ],
@@ -318,7 +390,14 @@ class PathPainter extends CustomPainter {
   final bool isLast;
   final bool isCompleted;
 
-  PathPainter({required this.currentOffset, required this.prevOffset, required this.nextOffset, required this.isFirst, required this.isLast, required this.isCompleted});
+  PathPainter({
+    required this.currentOffset,
+    required this.prevOffset,
+    required this.nextOffset,
+    required this.isFirst,
+    required this.isLast,
+    required this.isCompleted,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -348,6 +427,6 @@ class PathPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant PathPainter oldDelegate) {
     return oldDelegate.isCompleted != isCompleted ||
-           oldDelegate.currentOffset != currentOffset;
+        oldDelegate.currentOffset != currentOffset;
   }
 }

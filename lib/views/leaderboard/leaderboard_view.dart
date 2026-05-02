@@ -44,14 +44,14 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
         automaticallyImplyLeading: Navigator.of(context).canPop(),
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.bodyText,
+                ),
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
-        title: Text(
-          'Papan Peringkat',
-          style: AppTextStyles.heading,
-        ),
+        title: Text('Papan Peringkat', style: AppTextStyles.heading),
         elevation: 1,
         backgroundColor: AppColors.surfaceWhite,
         actions: [
@@ -74,8 +74,8 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
       body: state.isLoading
           ? _buildLoadingSkeleton()
           : state.errorMessage != null
-              ? _buildError(state.errorMessage!)
-              : _buildList(state.entries, currentUserId),
+          ? _buildError(state.errorMessage!)
+          : _buildList(state.entries, currentUserId),
     );
   }
 
@@ -131,7 +131,10 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
         children: [
           const Icon(Icons.error_outline, size: 48, color: AppColors.coralRed),
           const SizedBox(height: 12),
-          Text(message, style: AppTextStyles.body.copyWith(color: AppColors.coralRed)),
+          Text(
+            message,
+            style: AppTextStyles.body.copyWith(color: AppColors.coralRed),
+          ),
         ],
       ),
     );
@@ -195,7 +198,12 @@ class _LeaderboardTile extends StatelessWidget {
     }
 
     final String initials = entry.userName.isNotEmpty
-        ? entry.userName.trim().split(RegExp(' +')).take(2).map((e) => e[0].toUpperCase()).join()
+        ? entry.userName
+              .trim()
+              .split(RegExp(' +'))
+              .take(2)
+              .map((e) => e[0].toUpperCase())
+              .join()
         : '?';
 
     final List<Color> avatarColors = [
@@ -214,16 +222,21 @@ class _LeaderboardTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor, width: isCurrentUser || isTop3 ? 2 : 1),
+        border: Border.all(
+          color: borderColor,
+          width: isCurrentUser || isTop3 ? 2 : 1,
+        ),
         boxShadow: isCurrentUser
             ? [
                 BoxShadow(
                   color: AppColors.brandBlue.withOpacity(0.2),
                   offset: const Offset(0, 4),
                   blurRadius: 8,
-                )
+                ),
               ]
-            : const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
+            : const [
+                BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4)),
+              ],
       ),
       child: Row(
         children: [
@@ -255,7 +268,10 @@ class _LeaderboardTile extends StatelessWidget {
               backgroundColor: avatarBgColor,
               child: Text(
                 initials,
-                style: AppTextStyles.title.copyWith(color: Colors.white, fontSize: 16),
+                style: AppTextStyles.title.copyWith(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -273,7 +289,9 @@ class _LeaderboardTile extends StatelessWidget {
                         entry.userName,
                         style: AppTextStyles.body.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: isCurrentUser ? AppColors.brandBlue : AppColors.bodyText,
+                          color: isCurrentUser
+                              ? AppColors.brandBlue
+                              : AppColors.bodyText,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),

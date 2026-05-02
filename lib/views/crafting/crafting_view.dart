@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../view_models/crafting_view_model.dart';
+import '../../view_models/auth_view_model.dart';
 import '../widgets/animated_3d_button.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -16,7 +17,9 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(craftingViewModelProvider.notifier).loadCraftingStatus());
+    Future.microtask(
+      () => ref.read(craftingViewModelProvider.notifier).loadCraftingStatus(),
+    );
   }
 
   @override
@@ -40,7 +43,11 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
             padding: EdgeInsets.all(8.0),
             child: CircleAvatar(
               backgroundColor: Colors.white24,
-              child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
           ),
         ),
@@ -80,7 +87,9 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
           // Table with camera on left cliff
           Positioned(
             left: 20,
-            bottom: MediaQuery.of(context).size.height * 0.35 + 20, // slightly above the left cliff
+            bottom:
+                MediaQuery.of(context).size.height * 0.35 +
+                20, // slightly above the left cliff
             child: _buildCameraTable(),
           ),
 
@@ -125,16 +134,29 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                 if (state.craftingDone)
                   Container(
                     margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFF58CC02),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))],
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
                     ),
                     child: const Text(
                       'Jembatan Selesai! 🎉\nKamu mencapai New Creativity!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
 
@@ -142,19 +164,28 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.handyman_rounded, color: Colors.white, size: 28),
+                    const Icon(
+                      Icons.handyman_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                     const SizedBox(width: 12),
                     SizedBox(
                       width: 250,
                       child: LinearPercentIndicator(
                         lineHeight: 24.0,
-                        percent: (state.currentPoints / state.requiredPoints).clamp(0.0, 1.0),
+                        percent: (state.currentPoints / state.requiredPoints)
+                            .clamp(0.0, 1.0),
                         barRadius: const Radius.circular(12),
                         backgroundColor: Colors.white30,
                         progressColor: const Color(0xFFF59E0B), // Amber
                         center: Text(
                           '${state.requiredPoints} XP untuk Crafting',
-                          style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 12),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -164,31 +195,49 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
 
                 // Crafting Button
                 Animated3DButton(
-                  color: (!state.craftingDone && state.currentPoints >= state.requiredPoints && !state.isLoading)
+                  color:
+                      (!state.craftingDone &&
+                          state.currentPoints >= state.requiredPoints &&
+                          !state.isLoading)
                       ? const Color(0xFFF59E0B) // Active Orange
                       : const Color(0xFF9E9E9E), // Inactive Grey
-                  shadowColor: (!state.craftingDone && state.currentPoints >= state.requiredPoints && !state.isLoading)
+                  shadowColor:
+                      (!state.craftingDone &&
+                          state.currentPoints >= state.requiredPoints &&
+                          !state.isLoading)
                       ? const Color(0xFFD97706)
                       : const Color(0xFF616161),
-                  onPressed: (state.isLoading || state.craftingDone || state.currentPoints < state.requiredPoints)
-                      ? null
-                      : () => ref.read(craftingViewModelProvider.notifier).doCrafting(state.requiredPoints),
+                  onPressed:
+                      (state.isLoading ||
+                          state.craftingDone ||
+                          state.currentPoints < state.requiredPoints)
+                      ? () {}
+                      : () => ref
+                            .read(craftingViewModelProvider.notifier)
+                            .doCrafting(state.requiredPoints),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                    child: state.isLoading 
-                      ? const SizedBox(
-                          width: 24, height: 24, 
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                        )
-                      : const Text(
-                          'Crafting',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 1.2,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 8.0,
+                    ),
+                    child: state.isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Crafting',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
                   ),
                 ),
               ],
@@ -236,7 +285,13 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
             color: const Color(0xFFCD9551),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFF5C3A21), width: 3),
-            boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(2, 4))],
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black45,
+                blurRadius: 4,
+                offset: Offset(2, 4),
+              ),
+            ],
           ),
           child: Text(
             text,
@@ -249,11 +304,7 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
             ),
           ),
         ),
-        Container(
-          width: 10,
-          height: 30,
-          color: const Color(0xFF5C3A21),
-        ),
+        Container(width: 10, height: 30, color: const Color(0xFF5C3A21)),
       ],
     );
   }
@@ -270,12 +321,18 @@ class BridgeScenePainter extends CustomPainter {
     final cliffHeight = size.height * 0.35; // The bottom 35% is cliff
     final cliffY = size.height - cliffHeight;
     final cliffWidth = size.width * 0.3; // 30% width for each cliff
-    
+
     // Draw Left Cliff
     _drawCliff(canvas, 0, cliffY, cliffWidth, cliffHeight);
-    
+
     // Draw Right Cliff
-    _drawCliff(canvas, size.width - cliffWidth, cliffY, cliffWidth, cliffHeight);
+    _drawCliff(
+      canvas,
+      size.width - cliffWidth,
+      cliffY,
+      cliffWidth,
+      cliffHeight,
+    );
 
     // Draw Bridge Segments
     final gapWidth = size.width - (cliffWidth * 2);
@@ -295,41 +352,65 @@ class BridgeScenePainter extends CustomPainter {
     final path = Path();
     path.moveTo(cliffWidth, bridgeY - 5);
     // Quadratic bezier for slack rope
-    path.quadraticBezierTo(size.width / 2, bridgeY + 40, size.width - cliffWidth, bridgeY - 5);
+    path.quadraticBezierTo(
+      size.width / 2,
+      bridgeY + 40,
+      size.width - cliffWidth,
+      bridgeY - 5,
+    );
     canvas.drawPath(path, ropePaint);
-    
+
     path.reset();
     path.moveTo(cliffWidth, bridgeY + 15);
-    path.quadraticBezierTo(size.width / 2, bridgeY + 60, size.width - cliffWidth, bridgeY + 15);
+    path.quadraticBezierTo(
+      size.width / 2,
+      bridgeY + 60,
+      size.width - cliffWidth,
+      bridgeY + 15,
+    );
     canvas.drawPath(path, ropePaint);
 
     // Draw wood planks up to `progress`
     for (int i = 0; i < progress; i++) {
       final startX = cliffWidth + (i * segmentWidth);
-      
+
       // Plank Rect
       // Calculate curve drop for Y position
-      final t = (i + 0.5) / maxSegments; // parametric t for the center of the plank
-      final dropY = _calculateBezierDrop(t, 0, 40, 0); // using the control point drop
-      
+      final t =
+          (i + 0.5) / maxSegments; // parametric t for the center of the plank
+      final dropY = _calculateBezierDrop(
+        t,
+        0,
+        40,
+        0,
+      ); // using the control point drop
+
       final rect = RRect.fromRectAndRadius(
         Rect.fromLTWH(startX + 4, bridgeY + dropY, segmentWidth - 8, 12),
         const Radius.circular(4),
       );
-      
+
       // Draw Wood
       canvas.drawRRect(rect, woodPaint);
-      
+
       // Draw Vertical Rope Ties
       canvas.drawLine(
         Offset(startX + segmentWidth / 2, bridgeY - 5 + dropY),
         Offset(startX + segmentWidth / 2, bridgeY + 15 + dropY),
-        Paint()..color = const Color(0xFFD2B48C)..strokeWidth = 2,
+        Paint()
+          ..color = const Color(0xFFD2B48C)
+          ..strokeWidth = 2,
       );
     }
   }
 
-  void _drawCliff(Canvas canvas, double x, double y, double width, double height) {
+  void _drawCliff(
+    Canvas canvas,
+    double x,
+    double y,
+    double width,
+    double height,
+  ) {
     // Dirt
     final dirtPaint = Paint()..color = const Color(0xFF593E26);
     canvas.drawRect(Rect.fromLTWH(x, y, width, height), dirtPaint);
@@ -338,7 +419,11 @@ class BridgeScenePainter extends CustomPainter {
     final texturePaint = Paint()..color = const Color(0xFF422C1A);
     for (int i = 0; i < 5; i++) {
       for (int j = 0; j < 3; j++) {
-        canvas.drawCircle(Offset(x + 20 + i * 20, y + 30 + j * 40), 8, texturePaint);
+        canvas.drawCircle(
+          Offset(x + 20 + i * 20, y + 30 + j * 40),
+          8,
+          texturePaint,
+        );
       }
     }
 
@@ -346,7 +431,7 @@ class BridgeScenePainter extends CustomPainter {
     final grassPaint = Paint()..color = const Color(0xFF3B7119);
     final grassPath = Path();
     grassPath.moveTo(x, y + 10);
-    
+
     // Zig-zag grass pattern
     final steps = 10;
     final stepW = width / steps;
@@ -368,6 +453,7 @@ class BridgeScenePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BridgeScenePainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.maxSegments != maxSegments;
+    return oldDelegate.progress != progress ||
+        oldDelegate.maxSegments != maxSegments;
   }
 }

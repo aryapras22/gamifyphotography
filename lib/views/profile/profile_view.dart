@@ -39,7 +39,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         automaticallyImplyLeading: Navigator.of(context).canPop(),
         leading: Navigator.of(context).canPop()
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.bodyText,
+                ),
                 onPressed: () => Navigator.of(context).maybePop(),
               )
             : null,
@@ -49,30 +52,33 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         ),
       ),
       body: state.isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.brandBlue))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.brandBlue),
+            )
           : state.user == null
-              ? _buildErrorState(state.errorMessage)
-              : RefreshIndicator(
-                  color: const Color(0xFF1CB0F6),
-                  onRefresh: () =>
-                      ref.read(profileViewModelProvider.notifier).refreshProfile(),
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    children: [
-                      _ProfileHeader(user: state.user!),
-                      const SizedBox(height: 24),
-                      _BadgeSection(
-                        allBadges: state.allBadges,
-                        earnedBadgeIds: state.earnedBadgeIds,
-                      ),
-                      const SizedBox(height: 24),
-                      _PhotoSection(
-                        photoUrls: state.completedChallengePhotoUrls,
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+          ? _buildErrorState(state.errorMessage)
+          : RefreshIndicator(
+              color: const Color(0xFF1CB0F6),
+              onRefresh: () =>
+                  ref.read(profileViewModelProvider.notifier).refreshProfile(),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
                 ),
+                children: [
+                  _ProfileHeader(user: state.user!),
+                  const SizedBox(height: 24),
+                  _BadgeSection(
+                    allBadges: state.allBadges,
+                    earnedBadgeIds: state.earnedBadgeIds,
+                  ),
+                  const SizedBox(height: 24),
+                  _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
     );
   }
 
@@ -81,7 +87,11 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.person_off_rounded, size: 64, color: Color(0xFFAFAFAF)),
+          const Icon(
+            Icons.person_off_rounded,
+            size: 64,
+            color: Color(0xFFAFAFAF),
+          ),
           const SizedBox(height: 16),
           Text(
             message ?? 'Terjadi kesalahan.',
@@ -123,7 +133,9 @@ class _ProfileHeader extends StatelessWidget {
           backgroundColor: AppColors.brandBlue,
           child: Text(
             _initials,
-            style: AppTextStyles.display.copyWith(color: AppColors.surfaceWhite),
+            style: AppTextStyles.display.copyWith(
+              color: AppColors.surfaceWhite,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -132,10 +144,7 @@ class _ProfileHeader extends StatelessWidget {
           style: AppTextStyles.title.copyWith(fontSize: 22),
         ),
         const SizedBox(height: 4),
-        Text(
-          user.email as String,
-          style: AppTextStyles.caption,
-        ),
+        Text(user.email as String, style: AppTextStyles.caption),
         const SizedBox(height: 20),
         // Poin & Level cards
         Row(
@@ -156,7 +165,11 @@ class _StatCard extends StatelessWidget {
   final dynamic value;
   final bool isPoints;
 
-  const _StatCard({required this.label, required this.value, this.isPoints = false});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    this.isPoints = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -167,7 +180,9 @@ class _StatCard extends StatelessWidget {
         color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.cardBorder, width: 2),
-        boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
+        boxShadow: const [
+          BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4)),
+        ],
       ),
       child: Column(
         children: [
@@ -205,7 +220,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-
 // ---------------------------------------------------------------------------
 // Sub-widget: Badge Section
 // ---------------------------------------------------------------------------
@@ -214,17 +228,17 @@ class _BadgeSection extends StatelessWidget {
   final List<BadgeModel> allBadges;
   final List<String> earnedBadgeIds;
 
-  const _BadgeSection({
-    required this.allBadges,
-    required this.earnedBadgeIds,
-  });
+  const _BadgeSection({required this.allBadges, required this.earnedBadgeIds});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(icon: Icons.military_tech_rounded, label: 'LENCANA SAYA'),
+        const _SectionHeader(
+          icon: Icons.military_tech_rounded,
+          label: 'LENCANA SAYA',
+        ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
@@ -232,13 +246,18 @@ class _BadgeSection extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-            boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4))],
+            boxShadow: const [
+              BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4)),
+            ],
           ),
           child: allBadges.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text('Memuat badge...', style: TextStyle(color: Color(0xFFAFAFAF))),
+                    child: Text(
+                      'Memuat badge...',
+                      style: TextStyle(color: Color(0xFFAFAFAF)),
+                    ),
                   ),
                 )
               : GridView.builder(
@@ -256,7 +275,9 @@ class _BadgeSection extends StatelessWidget {
                     return _BadgeItem(
                       badge: badge,
                       isEarned: isEarned,
-                      onTap: isEarned ? () => _showBadgeDetail(context, badge) : null,
+                      onTap: isEarned
+                          ? () => _showBadgeDetail(context, badge)
+                          : null,
                     );
                   },
                 ),
@@ -281,11 +302,7 @@ class _BadgeItem extends StatelessWidget {
   final bool isEarned;
   final VoidCallback? onTap;
 
-  const _BadgeItem({
-    required this.badge,
-    required this.isEarned,
-    this.onTap,
-  });
+  const _BadgeItem({required this.badge, required this.isEarned, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -298,17 +315,37 @@ class _BadgeItem extends StatelessWidget {
             colorFilter: isEarned
                 ? null
                 : const ColorFilter.matrix(<double>[
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0,      0,      0,      0.4, 0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0.4,
+                    0,
                   ]),
           ),
           if (!isEarned)
             const Positioned.fill(
               child: Align(
                 alignment: Alignment.center,
-                child: Icon(Icons.lock_rounded, color: Colors.white70, size: 18),
+                child: Icon(
+                  Icons.lock_rounded,
+                  color: Colors.white70,
+                  size: 18,
+                ),
               ),
             ),
         ],
@@ -340,10 +377,7 @@ class _BadgeDetailSheet extends StatelessWidget {
           const SizedBox(height: 20),
           SvgPicture.asset(badge.iconPath, width: 80, height: 80),
           const SizedBox(height: 16),
-          Text(
-            badge.title,
-            style: AppTextStyles.heading,
-          ),
+          Text(badge.title, style: AppTextStyles.heading),
           const SizedBox(height: 8),
           Text(
             badge.description,
@@ -371,7 +405,10 @@ class _PhotoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader(icon: Icons.camera_alt_rounded, label: 'FOTO SAYA'),
+        const _SectionHeader(
+          icon: Icons.camera_alt_rounded,
+          label: 'FOTO SAYA',
+        ),
         const SizedBox(height: 12),
         Container(
           constraints: const BoxConstraints(minHeight: 120),
@@ -380,13 +417,19 @@ class _PhotoSection extends StatelessWidget {
             color: AppColors.surfaceWhite,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: AppColors.cardBorder, width: 2),
-            boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
+            boxShadow: const [
+              BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4)),
+            ],
           ),
           child: photoUrls.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.camera_alt_outlined, size: 48, color: Color(0xFFAFAFAF)),
+                    Icon(
+                      Icons.camera_alt_outlined,
+                      size: 48,
+                      color: Color(0xFFAFAFAF),
+                    ),
                     SizedBox(height: 12),
                     Text(
                       'Belum ada foto. Mulai misi!',
@@ -413,8 +456,10 @@ class _PhotoSection extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: const Color(0xFFF0F4F5),
-                          child: const Icon(Icons.broken_image_rounded,
-                              color: Color(0xFFAFAFAF)),
+                          child: const Icon(
+                            Icons.broken_image_rounded,
+                            color: Color(0xFFAFAFAF),
+                          ),
                         ),
                       ),
                     );
@@ -444,10 +489,7 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(width: 8),
         Text(
           label,
-          style: AppTextStyles.title.copyWith(
-            fontSize: 15,
-            letterSpacing: 1.2,
-          ),
+          style: AppTextStyles.title.copyWith(fontSize: 15, letterSpacing: 1.2),
         ),
       ],
     );
