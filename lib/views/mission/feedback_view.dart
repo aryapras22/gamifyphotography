@@ -101,7 +101,10 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
                       ),
                     )
                   else
-                    const CircularProgressIndicator(),
+                    Text(
+                      'Misi Selesai!',
+                      style: AppTextStyles.heading.copyWith(color: AppColors.forestGreen),
+                    ),
 
                   const SizedBox(height: 20),
 
