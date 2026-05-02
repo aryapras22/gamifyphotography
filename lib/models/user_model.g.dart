@@ -18,6 +18,11 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      completedPhotoUrls:
+          (json['completedPhotoUrls'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       bridgeProgress: (json['bridgeProgress'] as num?)?.toInt() ?? 0,
     );
 
@@ -29,5 +34,6 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'points': instance.points,
       'level': instance.level,
       'earnedBadgeIds': instance.earnedBadgeIds,
+      'completedPhotoUrls': instance.completedPhotoUrls,
       'bridgeProgress': instance.bridgeProgress,
     };

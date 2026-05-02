@@ -27,6 +27,7 @@ mixin _$UserModel {
   int get points => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
   List<String> get earnedBadgeIds => throw _privateConstructorUsedError;
+  List<String> get completedPhotoUrls => throw _privateConstructorUsedError;
   int get bridgeProgress => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
@@ -51,6 +52,7 @@ abstract class $UserModelCopyWith<$Res> {
     int points,
     int level,
     List<String> earnedBadgeIds,
+    List<String> completedPhotoUrls,
     int bridgeProgress,
   });
 }
@@ -76,6 +78,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? points = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
+    Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
   }) {
     return _then(
@@ -104,6 +107,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.earnedBadgeIds
                 : earnedBadgeIds // ignore: cast_nullable_to_non_nullable
                       as List<String>,
+            completedPhotoUrls: null == completedPhotoUrls
+                ? _value.completedPhotoUrls
+                : completedPhotoUrls // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
             bridgeProgress: null == bridgeProgress
                 ? _value.bridgeProgress
                 : bridgeProgress // ignore: cast_nullable_to_non_nullable
@@ -130,6 +137,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
     int points,
     int level,
     List<String> earnedBadgeIds,
+    List<String> completedPhotoUrls,
     int bridgeProgress,
   });
 }
@@ -154,6 +162,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? points = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
+    Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
   }) {
     return _then(
@@ -182,6 +191,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value._earnedBadgeIds
             : earnedBadgeIds // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        completedPhotoUrls: null == completedPhotoUrls
+            ? _value._completedPhotoUrls
+            : completedPhotoUrls // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
         bridgeProgress: null == bridgeProgress
             ? _value.bridgeProgress
             : bridgeProgress // ignore: cast_nullable_to_non_nullable
@@ -201,8 +214,10 @@ class _$UserModelImpl implements _UserModel {
     this.points = 0,
     this.level = 1,
     final List<String> earnedBadgeIds = const [],
+    final List<String> completedPhotoUrls = const [],
     this.bridgeProgress = 0,
-  }) : _earnedBadgeIds = earnedBadgeIds;
+  }) : _earnedBadgeIds = earnedBadgeIds,
+       _completedPhotoUrls = completedPhotoUrls;
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -228,13 +243,23 @@ class _$UserModelImpl implements _UserModel {
     return EqualUnmodifiableListView(_earnedBadgeIds);
   }
 
+  final List<String> _completedPhotoUrls;
+  @override
+  @JsonKey()
+  List<String> get completedPhotoUrls {
+    if (_completedPhotoUrls is EqualUnmodifiableListView)
+      return _completedPhotoUrls;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_completedPhotoUrls);
+  }
+
   @override
   @JsonKey()
   final int bridgeProgress;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, bridgeProgress: $bridgeProgress)';
+    return 'UserModel(id: $id, name: $name, email: $email, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress)';
   }
 
   @override
@@ -251,6 +276,10 @@ class _$UserModelImpl implements _UserModel {
               other._earnedBadgeIds,
               _earnedBadgeIds,
             ) &&
+            const DeepCollectionEquality().equals(
+              other._completedPhotoUrls,
+              _completedPhotoUrls,
+            ) &&
             (identical(other.bridgeProgress, bridgeProgress) ||
                 other.bridgeProgress == bridgeProgress));
   }
@@ -265,6 +294,7 @@ class _$UserModelImpl implements _UserModel {
     points,
     level,
     const DeepCollectionEquality().hash(_earnedBadgeIds),
+    const DeepCollectionEquality().hash(_completedPhotoUrls),
     bridgeProgress,
   );
 
@@ -290,6 +320,7 @@ abstract class _UserModel implements UserModel {
     final int points,
     final int level,
     final List<String> earnedBadgeIds,
+    final List<String> completedPhotoUrls,
     final int bridgeProgress,
   }) = _$UserModelImpl;
 
@@ -308,6 +339,8 @@ abstract class _UserModel implements UserModel {
   int get level;
   @override
   List<String> get earnedBadgeIds;
+  @override
+  List<String> get completedPhotoUrls;
   @override
   int get bridgeProgress;
 
