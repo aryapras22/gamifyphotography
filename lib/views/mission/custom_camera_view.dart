@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class CustomCameraView extends StatefulWidget {
   final String moduleId; 
 
-  const CustomCameraView({Key? key, required this.moduleId}) : super(key: key);
+  const CustomCameraView({super.key, required this.moduleId});
 
   @override
   State<CustomCameraView> createState() => _CustomCameraViewState();

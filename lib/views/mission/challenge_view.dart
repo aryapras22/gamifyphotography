@@ -3,13 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import '../../view_models/challenge_view_model.dart';
-import '../../view_models/mission_view_model.dart';
 import '../widgets/animated_3d_button.dart';
 import 'custom_camera_view.dart';
 import 'dart:io'; 
 
 class ChallengeView extends ConsumerStatefulWidget {
-  const ChallengeView({Key? key}) : super(key: key);
+  const ChallengeView({super.key});
 
   @override
   ConsumerState<ChallengeView> createState() => _ChallengeViewState();
@@ -115,13 +114,9 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           );
 
                           if (xfile != null) {
-                            // Upload photo
+                            // Hanya upload foto — user harus tap "CEK HASIL" secara eksplisit
                             await ref.read(challengeViewModelProvider.notifier).uploadPhoto(xfile);
-                            // Auto-complete challenge and proceed without validation
-                            await ref.read(challengeViewModelProvider.notifier).completeChallenge();
-                            if (context.mounted) {
-                              context.pushReplacement('/mission/feedback');
-                            }
+                            // TIDAK ada completeChallenge() di sini (fix BUG-09)
                           }
                         },
                         child: Container(

@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../view_models/onboarding_view_model.dart';
-import 'package:lottie/lottie.dart';
-
 class OnboardingView extends ConsumerWidget {
-  const OnboardingView({Key? key}) : super(key: key);
+  const OnboardingView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
