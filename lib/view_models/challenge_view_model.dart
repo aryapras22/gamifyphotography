@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import '../models/challenge_model.dart';
 import '../services/challenge_service.dart';
 import 'auth_view_model.dart';
+import 'mission_view_model.dart';
 import '../providers/service_providers.dart';
 
 class ChallengeState {
@@ -40,6 +41,7 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
   ChallengeViewModel(this._ref, this._challengeService) : super(ChallengeState());
 
   Future<void> loadChallenge(String moduleId) async {
+    state = ChallengeState();
     final challenge = await _challengeService.getChallenge(moduleId);
     state = state.copyWith(challenge: challenge);
   }
@@ -91,6 +93,9 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
 
       _ref.read(authViewModelProvider.notifier).updateUser(user);
     }
+
+    final moduleId = state.challenge!.moduleId;
+    _ref.read(missionViewModelProvider.notifier).markModuleCompleted(moduleId);
 
     state = state.copyWith(challenge: updatedChallenge, pointsEarned: points);
   }
