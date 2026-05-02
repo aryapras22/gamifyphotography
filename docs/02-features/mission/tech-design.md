@@ -7,46 +7,54 @@ Views
 ├── ModuleListView        → ModuleCard (reusable widget)
 ├── ModuleDetailView      → PageView.builder (Page1: Teori | Page2: VisualGuide)
 ├── ChallengeBriefView
-├── ChallengeView         → CameraPreview + CapturedPhotoPreview
-└── FeedbackView          → LottieAnimation + PointsDisplay
+├── ChallengeView         → CameraPlaceholder → Navigator.push(CustomCameraView)
+│                              ↳ setelah foto: uploadPhoto + completeChallenge + navigate /feedback
+├── CustomCameraView      → [BARU] CameraPreview + SVG Overlay + ShutterButton
+│                              ↳ return XFile via Navigator.pop(xfile)
+└── FeedbackView          → PointsDisplay (Lottie belum diimplementasi)
 
 ViewModels
 ├── MissionViewModel      (StateNotifier<MissionState>)
-└── ChallengeViewModel    (StateNotifier<ChallengeState>) — PERLU REFACTOR
+└── ChallengeViewModel    (StateNotifier<ChallengeState> — manual copyWith)
 
 Services
-├── ModuleService: getModules(), getModuleById(id)
-└── ChallengeService: getChallenge(moduleId), uploadPhoto(XFile), completeChallenge(id, url)
+├── ModuleService: getModules() — mock 10 misi lengkap
+└── ChallengeService: getChallenge(moduleId), uploadPhoto(XFile), completeChallenge(id)
+
+Providers (lib/providers/service_providers.dart)
+├── authServiceProvider
+├── challengeServiceProvider
+├── moduleServiceProvider
+└── userServiceProvider
 ```
 
 ---
 
-## Data Models (Setelah @freezed)
+## Data Models (Implementasi Aktual)
 
 ```dart
+// ModuleModel — field sesuai implementasi di module_service.dart
 @freezed
 class ModuleModel with _$ModuleModel {
-  const factory ModuleModel({
+  factory ModuleModel({
     required String id,
     required String title,
     required String description,
-    required String whenToUse,
-    required String howToUse,
-    required String exampleImageUrl,
-    required String visualGuideUrl,
-    @Default(100) int pointReward,
+    required String materialContent, // teks materi (bukan whenToUse/howToUse)
+    required int order,              // urutan level
     @Default(false) bool isCompleted,
   }) = _ModuleModel;
-  factory ModuleModel.fromJson(Map<String, dynamic> json) =>
-      _$ModuleModelFromJson(json);
+  factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);
 }
 
+// ChallengeModel
 @freezed
 class ChallengeModel with _$ChallengeModel {
   const factory ChallengeModel({
     required String id,
     required String moduleId,
     required String userId,
+    required String instruction,     // teks instruksi challenge
     required int pointReward,
     @Default(false) bool isCompleted,
     String? uploadedPhotoUrl,
@@ -55,42 +63,38 @@ class ChallengeModel with _$ChallengeModel {
   factory ChallengeModel.fromJson(Map<String, dynamic> json) =>
       _$ChallengeModelFromJson(json);
 }
+
+// ChallengeState — manual copyWith (bukan @freezed)
+class ChallengeState {
+  final ChallengeModel? challenge;
+  final bool isUploading;
+  final int pointsEarned;
+  // ...
+}
 ```
+
+> **Catatan:** `ChallengeState` menggunakan manual `copyWith` karena tidak perlu serialisasi JSON. Menggunakan `@freezed` hanya dibutuhkan untuk model data yang disimpan/dibaca dari storage.
 
 ---
 
-## Fix Wajib — ChallengeViewModel
+## Implementasi Kamera — CustomCameraView
 
-### Fix 1: Ganti image_picker → camera package
 ```dart
-// SESUDAH (benar):
-Future<void> capturePhoto(CameraController controller) async {
-  final XFile photo = await controller.takePicture();
-  state = state.copyWith(capturedPhoto: photo);
+// lib/views/mission/custom_camera_view.dart
+// Flow: ChallengView → Navigator.push(CustomCameraView) → Navigator.pop(XFile)
+
+class CustomCameraView extends StatefulWidget {
+  final String moduleId; // untuk menentukan SVG overlay yang sesuai
 }
 
-Future<void> submitPhoto() async {
-  if (state.capturedPhoto == null) return;
-  state = state.copyWith(isUploading: true);
-  try {
-    final url = await _challengeService.uploadPhoto(state.capturedPhoto!);
-    await _challengeService.completeChallenge(state.challenge!.id, url);
-    final notifier = _ref.read(authViewModelProvider.notifier);
-    final user = _ref.read(authViewModelProvider).currentUser!;
-    notifier.updateUser(user.copyWith(
-      points: user.points + state.challenge!.pointReward,
-    ));
-    state = state.copyWith(isUploading: false, isCompleted: true,
-      pointsEarned: state.challenge!.pointReward);
-  } catch (e) {
-    state = state.copyWith(isUploading: false, errorMessage: e.toString());
-  }
-}
+// SVG overlay dipilih berdasarkan moduleId (M01–M10)
+// Setiap misi punya visual guide grid yang berbeda:
+// M01 → 01_rule_of_thirds.svg, M02 → 02_leading_lines.svg, dst.
 ```
 
 ### Fix 2: Centralize Service Providers
 ```dart
-// lib/providers/service_providers.dart
+// lib/providers/service_providers.dart (SUDAH DIIMPLEMENTASI)
 final moduleServiceProvider = Provider<ModuleService>((ref) => ModuleService());
 final challengeServiceProvider = Provider<ChallengeService>((ref) => ChallengeService());
 final userServiceProvider = Provider<UserService>((ref) => UserService());

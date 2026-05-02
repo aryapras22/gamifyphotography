@@ -8,12 +8,12 @@
 ## Phase 0: Critical Fixes (Kerjakan Dulu!)
 
 | ID | Task | Estimasi | Status |
-|----|------|----------|--------|
-| TASK-M01 | Buat `lib/providers/service_providers.dart` dengan semua service provider | 30 mnt | ⏳ |
-| TASK-M02 | Konversi `ModuleModel` ke `@freezed` + jalankan `build_runner` | 30 mnt | ⏳ |
-| TASK-M03 | Konversi `ChallengeModel` ke `@freezed` + jalankan `build_runner` | 30 mnt | ⏳ |
-| TASK-M04 | Refactor `ChallengeViewModel`: hapus mutasi langsung, pakai `copyWith` | 45 mnt | ⏳ |
-| TASK-M05 | Ganti `image_picker` → `camera` package di `ChallengeView` + `ChallengeViewModel` | 60 mnt | ⏳ |
+|----|------|----------|---------|
+| TASK-M01 | Buat `lib/providers/service_providers.dart` dengan semua service provider | 30 mnt | ✅ Done |
+| TASK-M02 | Konversi `ModuleModel` ke `@freezed` + jalankan `build_runner` | 30 mnt | ✅ Done |
+| TASK-M03 | Konversi `ChallengeModel` ke `@freezed` + jalankan `build_runner` | 30 mnt | ✅ Done |
+| TASK-M04 | Refactor `ChallengeViewModel`: hapus mutasi langsung, pakai `copyWith` | 45 mnt | ✅ Done |
+| TASK-M05 | Ganti `image_picker` → `camera` package di `ChallengeView` + `ChallengeViewModel` | 60 mnt | ✅ Done |
 
 ## Phase 1: Mission Flow
 
@@ -28,13 +28,13 @@
 ## Phase 2: Challenge & Submit
 
 | ID | Task | Estimasi | Status |
-|----|------|----------|--------|
-| TASK-M11 | Buat `ChallengeState` yang immutable dengan `@freezed` | 30 mnt | ⏳ |
-| TASK-M12 | Implementasi kamera di `ChallengeView` menggunakan `camera` package | 60 mnt | ⏳ |
-| TASK-M13 | Implementasi preview foto + tombol Retake/Submit | 30 mnt | ⏳ |
-| TASK-M14 | Implementasi `ChallengeService.uploadPhoto()` (mock: kembalikan dummy URL) | 30 mnt | ⏳ |
-| TASK-M15 | Implementasi `ChallengeService.completeChallenge()` + update poin user | 45 mnt | ⏳ |
-| TASK-M16 | Implementasi `FeedbackView`: animasi Lottie + display poin diperoleh | 30 mnt | ⏳ |
+|----|------|----------|---------|
+| TASK-M11 | Buat `ChallengeState` yang immutable dengan `@freezed` | 30 mnt | ✅ Done (manual copyWith) |
+| TASK-M12 | Implementasi kamera di `ChallengeView` menggunakan `camera` package | 60 mnt | ✅ Done (via CustomCameraView) |
+| TASK-M13 | Implementasi preview foto + tombol Retake/Submit | 30 mnt | ⚠️ Parsial (preview ada, Retake belum) |
+| TASK-M14 | Implementasi `ChallengeService.uploadPhoto()` (mock: kembalikan dummy URL) | 30 mnt | ✅ Done |
+| TASK-M15 | Implementasi `ChallengeService.completeChallenge()` + update poin user | 45 mnt | ✅ Done (termasuk badge logic) |
+| TASK-M16 | Implementasi `FeedbackView`: animasi Lottie + display poin diperoleh | 30 mnt | ⚠️ Parsial (view ada, Lottie belum) |
 
 ## Phase 3: Polish
 

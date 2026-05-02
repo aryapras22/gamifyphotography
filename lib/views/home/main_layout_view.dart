@@ -1,16 +1,24 @@
+// lib/views/home/main_layout_view.dart
+// TASK-04 (lanjutan) — Trigger Daily Login Sheet via ConsumerStatefulWidget
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../mission/module_list_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../progress/progress_view.dart';
+import '../../view_models/auth_view_model.dart';
+import 'daily_login_view.dart';
 
-class MainLayoutView extends StatefulWidget {
+const String _kFallbackUserId = 'user_1';
+
+class MainLayoutView extends ConsumerStatefulWidget {
   const MainLayoutView({Key? key}) : super(key: key);
 
   @override
-  State<MainLayoutView> createState() => _MainLayoutViewState();
+  ConsumerState<MainLayoutView> createState() => _MainLayoutViewState();
 }
 
-class _MainLayoutViewState extends State<MainLayoutView> {
+class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -18,6 +26,25 @@ class _MainLayoutViewState extends State<MainLayoutView> {
     const LeaderboardView(),
     const ProgressView(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Jadwalkan setelah frame pertama selesai render agar context sudah valid
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _triggerDailyLoginIfNeeded();
+    });
+  }
+
+  Future<void> _triggerDailyLoginIfNeeded() async {
+    if (!mounted) return;
+
+    // Ambil userId dari auth state; fallback ke mock jika null
+    final authUser = ref.read(authViewModelProvider).currentUser;
+    final userId = authUser?.id ?? _kFallbackUserId;
+
+    await showDailyLoginSheet(context, ref, userId);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +61,9 @@ class _MainLayoutViewState extends State<MainLayoutView> {
               _currentIndex = index;
             });
           },
-          selectedItemColor: const Color(0xFF1CB0F6), // Dodger Blue
-          unselectedItemColor: const Color(0xFF4B4B4B).withOpacity(0.5), // Eel Black faded
-          showSelectedLabels: true, 
+          selectedItemColor: const Color(0xFF1CB0F6),
+          unselectedItemColor: const Color(0xFF4B4B4B).withOpacity(0.5),
+          showSelectedLabels: true,
           showUnselectedLabels: true,
           selectedFontSize: 12,
           unselectedFontSize: 12,
@@ -46,7 +73,7 @@ class _MainLayoutViewState extends State<MainLayoutView> {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.map_rounded, size: 28), 
+              icon: Icon(Icons.map_rounded, size: 28),
               label: 'Misi',
             ),
             BottomNavigationBarItem(
