@@ -25,19 +25,30 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
   }
 
   String _getVisualGuideAsset(String moduleId) {
-    switch (moduleId) {
-      case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
-      case 'M02': return 'assets/images/visual_guides/02_leading_lines.svg';
-      case 'M03': return 'assets/images/visual_guides/03_framing.svg';
-      case 'M04': return 'assets/images/visual_guides/04_symmetry.svg';
-      case 'M05': return 'assets/images/visual_guides/05_golden_triangle.svg';
-      case 'M06': return 'assets/images/visual_guides/06_negative_space.svg';
-      case 'M07': return 'assets/images/visual_guides/07_rule_of_odds.svg';
-      case 'M08': return 'assets/images/visual_guides/08_depth_of_field.svg';
-      case 'M09': return 'assets/images/visual_guides/09_point_of_view.svg';
-      case 'M10': return 'assets/images/visual_guides/10_center_dominance.svg';
-      default: return 'assets/images/visual_guides/01_rule_of_thirds.svg';
+    // Extract nomor dari moduleId (M01 → 01, M12 → 12, dll)
+    final numStr = moduleId.replaceAll('M', '').padLeft(2, '0');
+    final path = 'assets/images/visual_guides/${numStr}_guide.svg';
+
+    // Daftar yang sudah pasti ada (M01–M10)
+    const available = {'M01','M02','M03','M04','M05','M06','M07','M08','M09','M10'};
+    if (available.contains(moduleId)) {
+      // Gunakan nama file eksisting (nama bisa berbeda per modul)
+      switch (moduleId) {
+        case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
+        case 'M02': return 'assets/images/visual_guides/02_leading_lines.svg';
+        case 'M03': return 'assets/images/visual_guides/03_framing.svg';
+        case 'M04': return 'assets/images/visual_guides/04_symmetry.svg';
+        case 'M05': return 'assets/images/visual_guides/05_golden_triangle.svg';
+        case 'M06': return 'assets/images/visual_guides/06_negative_space.svg';
+        case 'M07': return 'assets/images/visual_guides/07_rule_of_odds.svg';
+        case 'M08': return 'assets/images/visual_guides/08_depth_of_field.svg';
+        case 'M09': return 'assets/images/visual_guides/09_point_of_view.svg';
+        case 'M10': return 'assets/images/visual_guides/10_center_dominance.svg';
+      }
     }
+    // Fallback eksplisit dengan komentar — bukan diam-diam pakai M01
+    debugPrint('WARNING: No visual guide asset for $moduleId — using fallback');
+    return 'assets/images/visual_guides/01_rule_of_thirds.svg';
   }
 
   @override
