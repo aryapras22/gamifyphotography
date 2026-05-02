@@ -25,10 +25,6 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
   }
 
   String _getVisualGuideAsset(String moduleId) {
-    // Extract nomor dari moduleId (M01 → 01, M12 → 12, dll)
-    final numStr = moduleId.replaceAll('M', '').padLeft(2, '0');
-    final path = 'assets/images/visual_guides/${numStr}_guide.svg';
-
     // Daftar yang sudah pasti ada (M01–M10)
     const available = {
       'M01',

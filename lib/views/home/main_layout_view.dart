@@ -8,7 +8,6 @@ import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_view.dart';
 import '../progress/progress_view.dart';
 import '../crafting/crafting_view.dart';
-import '../mission/challenge_brief_view.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
 import 'daily_login_view.dart';
