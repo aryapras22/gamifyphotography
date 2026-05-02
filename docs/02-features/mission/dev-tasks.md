@@ -19,11 +19,11 @@
 
 | ID | Task | Estimasi | Status |
 |----|------|----------|--------|
-| TASK-M06 | Buat `MissionState` dengan field: `modules`, `isLoading`, `errorMessage` | 30 mnt | ⏳ |
-| TASK-M07 | Implementasi `ModuleService.getModules()` dengan mock data 10 misi | 45 mnt | ⏳ |
-| TASK-M08 | Sambungkan `MissionViewModel` ke `ModuleService` via `moduleServiceProvider` | 30 mnt | ⏳ |
-| TASK-M09 | Update `ModuleListView`: tampilkan loading skeleton + error state | 30 mnt | ⏳ |
-| TASK-M10 | Update `ModuleDetailView`: PageView 2 halaman (Teori + Visual Guide) | 45 mnt | ⏳ |
+| TASK-M06 | Buat `MissionState` dengan field: `modules`, `isLoading`, `errorMessage` | 30 mnt | ✅ |
+| TASK-M07 | Implementasi `ModuleService.getModules()` dengan mock data 10 misi | 45 mnt | ✅ |
+| TASK-M08 | Sambungkan `MissionViewModel` ke `ModuleService` via `moduleServiceProvider` | 30 mnt | ✅ |
+| TASK-M09 | Update `ModuleListView`: tampilkan loading skeleton + error state | 30 mnt | ✅ |
+| TASK-M10 | Update `ModuleDetailView`: PageView 2 halaman (Teori + Visual Guide) | 45 mnt | ✅ |
 
 ## Phase 2: Challenge & Submit
 

@@ -77,74 +77,130 @@ class _ModuleListViewState extends ConsumerState<ModuleListView> {
             ),
             Expanded(
               child: state.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 40),
-              itemCount: state.modules.length,
-              itemBuilder: (context, index) {
-                final module = state.modules[index];
-                final screenWidth = MediaQuery.of(context).size.width;
-                
-                double currentOffset = _getOffset(index, screenWidth);
-                double prevOffset = index > 0 ? _getOffset(index - 1, screenWidth) : currentOffset;
-                double nextOffset = index < state.modules.length - 1 ? _getOffset(index + 1, screenWidth) : currentOffset;
-
-                return SizedBox(
-                  height: 110, // Slightly reduced height to match the compact zigzag look
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Connecting path line
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: PathPainter(
-                            currentOffset: currentOffset,
-                            prevOffset: prevOffset,
-                            nextOffset: nextOffset,
-                            isFirst: index == 0,
-                            isLast: index == state.modules.length - 1,
-                            isCompleted: module.isCompleted,
-                          ),
-                        ),
-                      ),
-                      // The Node
-                      Positioned(
-                        left: (screenWidth / 2) - 40 + currentOffset, 
-                        child: BouncingNode(
-                          isPulsing: !module.isCompleted && (index == 0 || state.modules[index - 1].isCompleted), // Pulse if it's the current active mission
-                          onTap: () {
-                            _showMissionBottomSheet(context, module);
-                          },
-                          child: Container(
-                            width: 80,
-                            height: 80,
+                  ? ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      itemCount: 5,
+                      itemBuilder: (context, index) {
+                        final screenWidth = MediaQuery.of(context).size.width;
+                        double currentOffset = _getOffset(index, screenWidth);
+                        double prevOffset = index > 0 ? _getOffset(index - 1, screenWidth) : currentOffset;
+                        double nextOffset = index < 4 ? _getOffset(index + 1, screenWidth) : currentOffset;
+                        return SizedBox(
+                          height: 110,
+                          child: Stack(
                             alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: module.isCompleted ? const Color(0xFFFFC800) : const Color(0xFF58CC02),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: module.isCompleted ? const Color(0xFFD6A600) : const Color(0xFF58A700),
-                                  offset: const Offset(0, 6),
+                            children: [
+                              Positioned.fill(
+                                child: CustomPaint(
+                                  painter: PathPainter(
+                                    currentOffset: currentOffset,
+                                    prevOffset: prevOffset,
+                                    nextOffset: nextOffset,
+                                    isFirst: index == 0,
+                                    isLast: index == 4,
+                                    isCompleted: false,
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
                               ),
-                            ),
+                              Positioned(
+                                left: (screenWidth / 2) - 40 + currentOffset,
+                                child: Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE5E5E5),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+                        );
+                      },
+                    )
+                  : state.errorMessage != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                              const SizedBox(height: 16),
+                              Text(state.errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center,),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () => ref.read(missionViewModelProvider.notifier).fetchModules(),
+                                child: const Text('Coba Lagi'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          itemCount: state.modules.length,
+                          itemBuilder: (context, index) {
+                            final module = state.modules[index];
+                            final screenWidth = MediaQuery.of(context).size.width;
+                            
+                            double currentOffset = _getOffset(index, screenWidth);
+                            double prevOffset = index > 0 ? _getOffset(index - 1, screenWidth) : currentOffset;
+                            double nextOffset = index < state.modules.length - 1 ? _getOffset(index + 1, screenWidth) : currentOffset;
+
+                            return SizedBox(
+                              height: 110, // Slightly reduced height to match the compact zigzag look
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Connecting path line
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: PathPainter(
+                                        currentOffset: currentOffset,
+                                        prevOffset: prevOffset,
+                                        nextOffset: nextOffset,
+                                        isFirst: index == 0,
+                                        isLast: index == state.modules.length - 1,
+                                        isCompleted: module.isCompleted,
+                                      ),
+                                    ),
+                                  ),
+                                  // The Node
+                                  Positioned(
+                                    left: (screenWidth / 2) - 40 + currentOffset, 
+                                    child: BouncingNode(
+                                      isPulsing: !module.isCompleted && (index == 0 || state.modules[index - 1].isCompleted), // Pulse if it's the current active mission
+                                      onTap: () {
+                                        _showMissionBottomSheet(context, module);
+                                      },
+                                      child: Container(
+                                        width: 80,
+                                        height: 80,
+                                        alignment: Alignment.center,
+                                        decoration: BoxDecoration(
+                                          color: module.isCompleted ? const Color(0xFFFFC800) : const Color(0xFF58CC02),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: module.isCompleted ? const Color(0xFFD6A600) : const Color(0xFF58A700),
+                                              offset: const Offset(0, 6),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          '${index + 1}',
+                                          style: const TextStyle(
+                                            fontSize: 32,
+                                            fontWeight: FontWeight.w900,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
             ), // Close Expanded
           ],
         ),
