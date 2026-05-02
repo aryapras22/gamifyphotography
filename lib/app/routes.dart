@@ -42,10 +42,6 @@ GoRouter getRouter(String initialRoute) => GoRouter(
       builder: (context, state) => const ModuleDetailView(),
     ),
     GoRoute(
-      path: '/mission/brief',
-      builder: (context, state) => const ChallengeBriefView(),
-    ),
-    GoRoute(
       path: '/mission/challenge',
       builder: (context, state) => const ChallengeView(),
     ),

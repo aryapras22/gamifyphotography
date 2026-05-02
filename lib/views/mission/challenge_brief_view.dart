@@ -1,3 +1,7 @@
+// NOTE: Screen ini tidak digunakan dalam flow aktif (2026-05-02).
+// Dipertahankan sebagai referensi layout alternatif.
+// Route /mission/brief dihapus dari routes.dart.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
