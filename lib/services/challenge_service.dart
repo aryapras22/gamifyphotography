@@ -13,18 +13,29 @@ class ChallengeService {
   }
 
   String _getInstruction(String moduleId) {
-    switch(moduleId) {
-      case 'M01': return 'Ambil foto menggunakan Rule of Thirds.';
-      case 'M02': return 'Ambil foto menggunakan Leading Lines.';
-      case 'M03': return 'Ambil foto menggunakan Framing within a Frame.';
-      case 'M04': return 'Ambil foto menggunakan Symmetry and Patterns.';
-      case 'M05': return 'Ambil foto menggunakan Golden Triangle.';
-      case 'M06': return 'Ambil foto menggunakan Negative Space.';
-      case 'M07': return 'Ambil foto menggunakan Rule of Odds.';
-      case 'M08': return 'Ambil foto menggunakan Depth of Field.';
-      case 'M09': return 'Ambil foto menggunakan Point of View.';
-      case 'M10': return 'Ambil foto menggunakan Center Dominance.';
-      default: return 'Ambil foto untuk menyelesaikan tantangan ini.';
+    switch (moduleId) {
+      case 'M01':
+        return 'Ambil foto menggunakan Rule of Thirds.';
+      case 'M02':
+        return 'Ambil foto menggunakan Leading Lines.';
+      case 'M03':
+        return 'Ambil foto menggunakan Framing within a Frame.';
+      case 'M04':
+        return 'Ambil foto menggunakan Symmetry and Patterns.';
+      case 'M05':
+        return 'Ambil foto menggunakan Golden Triangle.';
+      case 'M06':
+        return 'Ambil foto menggunakan Negative Space.';
+      case 'M07':
+        return 'Ambil foto menggunakan Rule of Odds.';
+      case 'M08':
+        return 'Ambil foto menggunakan Depth of Field.';
+      case 'M09':
+        return 'Ambil foto menggunakan Point of View.';
+      case 'M10':
+        return 'Ambil foto menggunakan Center Dominance.';
+      default:
+        return 'Ambil foto untuk menyelesaikan tantangan ini.';
     }
   }
 

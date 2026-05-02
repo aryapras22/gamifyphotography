@@ -30,20 +30,41 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     final path = 'assets/images/visual_guides/${numStr}_guide.svg';
 
     // Daftar yang sudah pasti ada (M01–M10)
-    const available = {'M01','M02','M03','M04','M05','M06','M07','M08','M09','M10'};
+    const available = {
+      'M01',
+      'M02',
+      'M03',
+      'M04',
+      'M05',
+      'M06',
+      'M07',
+      'M08',
+      'M09',
+      'M10',
+    };
     if (available.contains(moduleId)) {
       // Gunakan nama file eksisting (nama bisa berbeda per modul)
       switch (moduleId) {
-        case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
-        case 'M02': return 'assets/images/visual_guides/02_leading_lines.svg';
-        case 'M03': return 'assets/images/visual_guides/03_framing.svg';
-        case 'M04': return 'assets/images/visual_guides/04_symmetry.svg';
-        case 'M05': return 'assets/images/visual_guides/05_golden_triangle.svg';
-        case 'M06': return 'assets/images/visual_guides/06_negative_space.svg';
-        case 'M07': return 'assets/images/visual_guides/07_rule_of_odds.svg';
-        case 'M08': return 'assets/images/visual_guides/08_depth_of_field.svg';
-        case 'M09': return 'assets/images/visual_guides/09_point_of_view.svg';
-        case 'M10': return 'assets/images/visual_guides/10_center_dominance.svg';
+        case 'M01':
+          return 'assets/images/visual_guides/01_rule_of_thirds.svg';
+        case 'M02':
+          return 'assets/images/visual_guides/02_leading_lines.svg';
+        case 'M03':
+          return 'assets/images/visual_guides/03_framing.svg';
+        case 'M04':
+          return 'assets/images/visual_guides/04_symmetry.svg';
+        case 'M05':
+          return 'assets/images/visual_guides/05_golden_triangle.svg';
+        case 'M06':
+          return 'assets/images/visual_guides/06_negative_space.svg';
+        case 'M07':
+          return 'assets/images/visual_guides/07_rule_of_odds.svg';
+        case 'M08':
+          return 'assets/images/visual_guides/08_depth_of_field.svg';
+        case 'M09':
+          return 'assets/images/visual_guides/09_point_of_view.svg';
+        case 'M10':
+          return 'assets/images/visual_guides/10_center_dominance.svg';
       }
     }
     // Fallback eksplisit dengan komentar — bukan diam-diam pakai M01
@@ -80,18 +101,29 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                       GestureDetector(
                         onTap: () {
                           if (_currentPage > 0) {
-                            _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
                           } else {
                             context.pop();
                           }
                         },
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF4B4B4B), size: 24),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Color(0xFF4B4B4B),
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       _badge('Level ${module.order}'),
                     ],
                   ),
-                  _badge('Poin $points', icon: Icons.star_rounded, iconColor: const Color(0xFFFFC800)),
+                  _badge(
+                    'Poin $points',
+                    icon: Icons.star_rounded,
+                    iconColor: const Color(0xFFFFC800),
+                  ),
                 ],
               ),
             ),
@@ -101,15 +133,20 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
               padding: const EdgeInsets.only(top: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(2, (index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: _currentPage == index ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index ? const Color(0xFF1CB0F6) : const Color(0xFFD0D0D0),
-                    borderRadius: BorderRadius.circular(4),
+                children: List.generate(
+                  2,
+                  (index) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == index ? 24 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index
+                          ? const Color(0xFF1CB0F6)
+                          : const Color(0xFFD0D0D0),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
-                )),
+                ),
               ),
             ),
 
@@ -117,7 +154,8 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
             Expanded(
               child: PageView(
                 controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(), // Only button navigation
+                physics:
+                    const NeverScrollableScrollPhysics(), // Only button navigation
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
                 },
@@ -182,11 +220,19 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Animated3DButton(
             onPressed: () {
-              _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+              _pageController.nextPage(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
             },
             child: const Text(
               'LANJUT',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ),
@@ -232,9 +278,16 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                         decoration: BoxDecoration(
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: const Color(0xFF4B4B4B), width: 3),
+                          border: Border.all(
+                            color: const Color(0xFF4B4B4B),
+                            width: 3,
+                          ),
                           boxShadow: const [
-                            BoxShadow(color: Color(0xFFD0D0D0), offset: Offset(0, 6), blurRadius: 12),
+                            BoxShadow(
+                              color: Color(0xFFD0D0D0),
+                              offset: Offset(0, 6),
+                              blurRadius: 12,
+                            ),
                           ],
                         ),
                         child: ClipRRect(
@@ -288,14 +341,21 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Animated3DButton(
             onPressed: () async {
-              await ref.read(challengeViewModelProvider.notifier).loadChallenge(module.id);
+              await ref
+                  .read(challengeViewModelProvider.notifier)
+                  .loadChallenge(module.id);
               if (context.mounted) {
                 context.push('/mission/challenge');
               }
             },
             child: const Text(
               'MULAI CHALLENGE',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ),
@@ -316,7 +376,14 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
             Icon(icon, color: iconColor, size: 16),
             const SizedBox(width: 6),
           ],
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
     );
@@ -340,11 +407,19 @@ class _SamplePhotoPainter extends CustomPainter {
     final thirdW = size.width / 3;
     final thirdH = size.height / 3;
     for (int i = 1; i < 3; i++) {
-      canvas.drawLine(Offset(thirdW * i, 0), Offset(thirdW * i, size.height), gridPaint);
-      canvas.drawLine(Offset(0, thirdH * i), Offset(size.width, thirdH * i), gridPaint);
+      canvas.drawLine(
+        Offset(thirdW * i, 0),
+        Offset(thirdW * i, size.height),
+        gridPaint,
+      );
+      canvas.drawLine(
+        Offset(0, thirdH * i),
+        Offset(size.width, thirdH * i),
+        gridPaint,
+      );
     }
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

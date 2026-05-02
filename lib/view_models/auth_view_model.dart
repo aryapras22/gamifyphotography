@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../providers/service_providers.dart';
+
 const _unset = Object();
 
 class AuthState {
@@ -9,11 +10,7 @@ class AuthState {
   final String? errorMessage;
   final UserModel? currentUser;
 
-  AuthState({
-    this.isLoading = false,
-    this.errorMessage,
-    this.currentUser,
-  });
+  AuthState({this.isLoading = false, this.errorMessage, this.currentUser});
 
   AuthState copyWith({
     bool? isLoading,

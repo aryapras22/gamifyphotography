@@ -22,10 +22,14 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
     final challenge = state.challenge;
 
     if (challenge == null) {
-      return const Scaffold(body: Center(child: Text('No challenge available')));
+      return const Scaffold(
+        body: Center(child: Text('No challenge available')),
+      );
     }
 
-    final hasPhoto = challenge.uploadedPhotoUrl != null && challenge.uploadedPhotoUrl!.isNotEmpty;
+    final hasPhoto =
+        challenge.uploadedPhotoUrl != null &&
+        challenge.uploadedPhotoUrl!.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
@@ -39,7 +43,11 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                 children: [
                   GestureDetector(
                     onTap: () => context.pop(),
-                    child: const Icon(Icons.close_rounded, size: 32, color: AppColors.bodyText),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 32,
+                      color: AppColors.bodyText,
+                    ),
                   ),
                   Expanded(
                     child: Container(
@@ -76,23 +84,43 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: AppColors.cardBorder, width: 2),
-                        boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 6))],
+                        border: Border.all(
+                          color: AppColors.cardBorder,
+                          width: 2,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.cardBorder,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
                       ),
                       child: Column(
                         children: [
-                          const Text('MISI KAMU:', style: TextStyle(fontSize: 16, color: AppColors.brandBlue, fontWeight: FontWeight.w900, letterSpacing: 1.2)), 
+                          const Text(
+                            'MISI KAMU:',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: AppColors.brandBlue,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             challenge.instruction,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.bodyText),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.bodyText,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     if (hasPhoto)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
@@ -109,14 +137,16 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           final XFile? xfile = await Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => CustomCameraView(
-                                moduleId: challenge.moduleId, 
+                                moduleId: challenge.moduleId,
                               ),
                             ),
                           );
 
                           if (xfile != null) {
                             // Hanya upload foto — user harus tap "CEK HASIL" secara eksplisit
-                            await ref.read(challengeViewModelProvider.notifier).uploadPhoto(xfile);
+                            await ref
+                                .read(challengeViewModelProvider.notifier)
+                                .uploadPhoto(xfile);
                             // TIDAK ada completeChallenge() di sini (fix BUG-09)
                           }
                         },
@@ -126,28 +156,53 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: AppColors.cardBorder, width: 2),
-                            boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 6))],
+                            border: Border.all(
+                              color: AppColors.cardBorder,
+                              width: 2,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: AppColors.cardBorder,
+                                offset: Offset(0, 6),
+                              ),
+                            ],
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.camera_alt_rounded, size: 80, color: AppColors.brandBlue),
+                              Icon(
+                                Icons.camera_alt_rounded,
+                                size: 80,
+                                color: AppColors.brandBlue,
+                              ),
                               SizedBox(height: 16),
-                              Text('AMBIL FOTO', style: TextStyle(color: AppColors.brandBlue, fontSize: 20, fontWeight: FontWeight.w900)),
+                              Text(
+                                'AMBIL FOTO',
+                                style: TextStyle(
+                                  color: AppColors.brandBlue,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                      
+
                     const SizedBox(height: 40),
-                    
+
                     Animated3DButton(
-                      color: hasPhoto ? AppColors.forestGreen : AppColors.cardBorder,
-                      shadowColor: hasPhoto ? const Color(0xFF2D8A00) : const Color(0xFFC4C4C4),
+                      color: hasPhoto
+                          ? AppColors.forestGreen
+                          : AppColors.cardBorder,
+                      shadowColor: hasPhoto
+                          ? const Color(0xFF2D8A00)
+                          : const Color(0xFFC4C4C4),
                       onPressed: hasPhoto && !state.isUploading
                           ? () async {
-                              await ref.read(challengeViewModelProvider.notifier).completeChallenge();
+                              await ref
+                                  .read(challengeViewModelProvider.notifier)
+                                  .completeChallenge();
                               if (mounted) {
                                 context.push('/mission/feedback');
                               }
@@ -158,11 +213,13 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           : Text(
                               'CEK HASIL',
                               style: TextStyle(
-                                fontSize: 20, 
-                                fontWeight: FontWeight.w900, 
-                                color: hasPhoto ? Colors.white : AppColors.disabled, 
-                                letterSpacing: 1.2
-                              )
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                color: hasPhoto
+                                    ? Colors.white
+                                    : AppColors.disabled,
+                                letterSpacing: 1.2,
+                              ),
                             ),
                     ),
                     const SizedBox(height: 40),

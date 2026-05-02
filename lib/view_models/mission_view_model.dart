@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/module_model.dart';
 import '../services/module_service.dart';
 import '../providers/service_providers.dart';
+
 const _unset = Object();
 
 class MissionState {
@@ -36,10 +37,10 @@ class MissionState {
   }
 }
 
-
-final missionViewModelProvider = StateNotifierProvider<MissionViewModel, MissionState>(
-  (ref) => MissionViewModel(ref.read(moduleServiceProvider)),
-);
+final missionViewModelProvider =
+    StateNotifierProvider<MissionViewModel, MissionState>(
+      (ref) => MissionViewModel(ref.read(moduleServiceProvider)),
+    );
 
 class MissionViewModel extends StateNotifier<MissionState> {
   final ModuleService _moduleService;

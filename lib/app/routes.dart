@@ -20,10 +20,7 @@ GoRouter getRouter(String initialRoute) => GoRouter(
       path: '/onboarding',
       builder: (context, state) => const OnboardingView(),
     ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginView(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginView()),
     GoRoute(
       path: '/register',
       builder: (context, state) => const RegisterView(),
@@ -61,9 +58,6 @@ GoRouter getRouter(String initialRoute) => GoRouter(
       path: '/leaderboard',
       builder: (context, state) => const LeaderboardView(),
     ),
-    GoRoute(
-      path: '/profile',
-      builder: (context, state) => const ProfileView(),
-    ),
+    GoRoute(path: '/profile', builder: (context, state) => const ProfileView()),
   ],
 );
