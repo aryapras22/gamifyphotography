@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/leaderboard_model.dart';
 import '../../view_models/leaderboard_view_model.dart';
 import '../../view_models/auth_view_model.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_text_styles.dart';
 
 const String _kFallbackUserId = 'user_1';
 
@@ -37,26 +39,25 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     final currentUserId = authUser?.id ?? _kFallbackUserId;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F5),
+      backgroundColor: AppColors.backgroundGray,
       appBar: AppBar(
-        title: const Text(
-          'Peringkat',
-          style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF4B4B4B)),
+        title: Text(
+          'Papan Peringkat',
+          style: AppTextStyles.heading,
         ),
         elevation: 1,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceWhite,
         actions: [
           if (state.currentUserRank > 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Chip(
-                backgroundColor: const Color(0xFF1CB0F6).withOpacity(0.12),
+                backgroundColor: AppColors.brandBlue.withOpacity(0.12),
                 label: Text(
                   'Kamu: #${state.currentUserRank}',
-                  style: const TextStyle(
+                  style: AppTextStyles.caption.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1CB0F6),
-                    fontSize: 13,
+                    color: AppColors.brandBlue,
                   ),
                 ),
               ),
@@ -83,7 +84,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
         margin: const EdgeInsets.only(bottom: 12),
         height: 82,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceWhite,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -106,7 +107,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
       height: h,
       width: w,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: AppColors.disabled.withOpacity(0.5),
         borderRadius: BorderRadius.circular(radius),
       ),
     );
@@ -121,9 +122,9 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+          const Icon(Icons.error_outline, size: 48, color: AppColors.coralRed),
           const SizedBox(height: 12),
-          Text(message, style: const TextStyle(color: Colors.redAccent)),
+          Text(message, style: AppTextStyles.body.copyWith(color: AppColors.coralRed)),
         ],
       ),
     );
@@ -165,26 +166,39 @@ class _LeaderboardTile extends StatelessWidget {
     final Color borderColor;
 
     if (entry.rank == 1) {
-      rankColor = const Color(0xFFFFC800);
-      bgColor = isCurrentUser ? const Color(0xFFFFF7D9) : const Color(0xFFFFF7D9);
-      borderColor = const Color(0xFFFFC800);
+      rankColor = AppColors.goldMedal;
+      bgColor = rankColor.withOpacity(0.1);
+      borderColor = rankColor;
     } else if (entry.rank == 2) {
-      rankColor = const Color(0xFFAFAFAF);
-      bgColor = isCurrentUser ? const Color(0xFFF5F5F5) : const Color(0xFFF5F5F5);
-      borderColor = const Color(0xFFAFAFAF);
+      rankColor = AppColors.silverMedal;
+      bgColor = rankColor.withOpacity(0.1);
+      borderColor = rankColor;
     } else if (entry.rank == 3) {
-      rankColor = const Color(0xFFCD7F32);
-      bgColor = isCurrentUser ? const Color(0xFFFAF0E6) : const Color(0xFFFAF0E6);
-      borderColor = const Color(0xFFCD7F32);
+      rankColor = AppColors.bronzeMedal;
+      bgColor = rankColor.withOpacity(0.1);
+      borderColor = rankColor;
     } else if (isCurrentUser) {
-      rankColor = const Color(0xFF1CB0F6);
-      bgColor = const Color(0xFFE3F6FF);
-      borderColor = const Color(0xFF1CB0F6);
+      rankColor = AppColors.brandBlue;
+      bgColor = AppColors.brandBlue.withOpacity(0.1);
+      borderColor = AppColors.brandBlue;
     } else {
-      rankColor = const Color(0xFF4B4B4B);
-      bgColor = Colors.white;
-      borderColor = const Color(0xFFE5E5E5);
+      rankColor = AppColors.secondaryText;
+      bgColor = AppColors.surfaceWhite;
+      borderColor = AppColors.cardBorder;
     }
+
+    final String initials = entry.userName.isNotEmpty
+        ? entry.userName.trim().split(RegExp(' +')).take(2).map((e) => e[0].toUpperCase()).join()
+        : '?';
+
+    final List<Color> avatarColors = [
+      AppColors.brandBlue,
+      AppColors.forestGreen,
+      AppColors.coralRed,
+      AppColors.lensGold,
+      AppColors.streakFire,
+    ];
+    final Color avatarBgColor = avatarColors[entry.rank % avatarColors.length];
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -197,12 +211,12 @@ class _LeaderboardTile extends StatelessWidget {
         boxShadow: isCurrentUser
             ? [
                 BoxShadow(
-                  color: const Color(0xFF1CB0F6).withOpacity(0.2),
+                  color: AppColors.brandBlue.withOpacity(0.2),
                   offset: const Offset(0, 4),
                   blurRadius: 8,
                 )
               ]
-            : const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4))],
+            : const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
       ),
       child: Row(
         children: [
@@ -217,11 +231,7 @@ class _LeaderboardTile extends StatelessWidget {
                   )
                 : Text(
                     '${entry.rank}',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: rankColor,
-                    ),
+                    style: AppTextStyles.title.copyWith(color: rankColor),
                     textAlign: TextAlign.center,
                   ),
           ),
@@ -231,13 +241,15 @@ class _LeaderboardTile extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(color: rankColor, width: 2),
             ),
-            child: Icon(
-              isCurrentUser ? Icons.person_pin_rounded : Icons.person,
-              color: rankColor,
+            child: CircleAvatar(
+              backgroundColor: avatarBgColor,
+              child: Text(
+                initials,
+                style: AppTextStyles.title.copyWith(color: Colors.white, fontSize: 16),
+              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -247,21 +259,44 @@ class _LeaderboardTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  entry.userName,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: isCurrentUser ? const Color(0xFF1CB0F6) : const Color(0xFF4B4B4B),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        entry.userName,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: isCurrentUser ? AppColors.brandBlue : AppColors.bodyText,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Delta Rank indicator (mock)
+                    if (entry.rank % 3 == 0)
+                      Text(
+                        '+2 ↑',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.forestGreen,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    else if (entry.rank % 4 == 0)
+                      Text(
+                        '-1 ↓',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.coralRed,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
                 ),
                 if (isCurrentUser)
-                  const Text(
+                  Text(
                     'Kamu',
-                    style: TextStyle(
-                      fontSize: 11,
+                    style: AppTextStyles.caption.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1CB0F6),
+                      color: AppColors.brandBlue,
                     ),
                   ),
               ],
@@ -280,9 +315,9 @@ class _LeaderboardTile extends StatelessWidget {
                   color: rankColor,
                 ),
               ),
-              const Text(
+              Text(
                 'XP',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
+                style: AppTextStyles.caption.copyWith(color: rankColor),
               ),
             ],
           ),

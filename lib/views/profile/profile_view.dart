@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../view_models/profile_view_model.dart';
 import '../../models/badge_model.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_text_styles.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -29,27 +31,22 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     final state = ref.watch(profileViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F5),
+      backgroundColor: AppColors.backgroundGray,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surfaceWhite,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF4B4B4B)),
+          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
           onPressed: () => Navigator.of(context).maybePop(),
         ),
-        title: const Text(
+        title: Text(
           'PROFIL',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF4B4B4B),
-            letterSpacing: 1.5,
-          ),
+          style: AppTextStyles.heading.copyWith(letterSpacing: 1.5),
         ),
       ),
       body: state.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1CB0F6)))
+          ? const Center(child: CircularProgressIndicator(color: AppColors.brandBlue))
           : state.user == null
               ? _buildErrorState(state.errorMessage)
               : RefreshIndicator(
@@ -120,36 +117,28 @@ class _ProfileHeader extends StatelessWidget {
         // Avatar
         CircleAvatar(
           radius: 44,
-          backgroundColor: const Color(0xFF1CB0F6),
+          backgroundColor: AppColors.brandBlue,
           child: Text(
             _initials,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
+            style: AppTextStyles.display.copyWith(color: AppColors.surfaceWhite),
           ),
         ),
         const SizedBox(height: 12),
         Text(
           user.name as String,
-          style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF4B4B4B),
-          ),
+          style: AppTextStyles.title.copyWith(fontSize: 22),
         ),
         const SizedBox(height: 4),
         Text(
           user.email as String,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF6E6E6E)),
+          style: AppTextStyles.caption,
         ),
         const SizedBox(height: 20),
         // Poin & Level cards
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _StatCard(label: 'Poin', value: (user.points as int).toString()),
+            _StatCard(label: 'Poin', value: user.points as int, isPoints: true),
             const SizedBox(width: 16),
             _StatCard(label: 'Level', value: 'Lv.${user.level}'),
           ],
@@ -161,9 +150,10 @@ class _ProfileHeader extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final String label;
-  final String value;
+  final dynamic value;
+  final bool isPoints;
 
-  const _StatCard({required this.label, required this.value});
+  const _StatCard({required this.label, required this.value, this.isPoints = false});
 
   @override
   Widget build(BuildContext context) {
@@ -171,21 +161,36 @@ class _StatCard extends StatelessWidget {
       width: 120,
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-        boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4))],
+        border: Border.all(color: AppColors.cardBorder, width: 2),
+        boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
       ),
       child: Column(
         children: [
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF1CB0F6),
-            ),
-          ),
+          isPoints
+              ? TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: value as int),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, currentValue, child) {
+                    return Text(
+                      currentValue.toString(),
+                      style: AppTextStyles.display.copyWith(
+                        fontSize: 22,
+                        color: AppColors.brandBlue,
+                      ),
+                    );
+                  },
+                )
+              : Text(
+                  value.toString(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1CB0F6),
+                  ),
+                ),
           const SizedBox(height: 4),
           Text(
             label,
@@ -196,6 +201,7 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Sub-widget: Badge Section
@@ -324,7 +330,7 @@ class _BadgeDetailSheet extends StatelessWidget {
             width: 48,
             height: 5,
             decoration: BoxDecoration(
-              color: const Color(0xFFE5E5E5),
+              color: AppColors.cardBorder,
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -333,17 +339,13 @@ class _BadgeDetailSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             badge.title,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: Color(0xFF4B4B4B),
-            ),
+            style: AppTextStyles.heading,
           ),
           const SizedBox(height: 8),
           Text(
             badge.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 15, color: Color(0xFF6E6E6E)),
+            style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
           ),
           const SizedBox(height: 8),
         ],
@@ -372,10 +374,10 @@ class _PhotoSection extends StatelessWidget {
           constraints: const BoxConstraints(minHeight: 120),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surfaceWhite,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-            boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4))],
+            border: Border.all(color: AppColors.cardBorder, width: 2),
+            boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
           ),
           child: photoUrls.isEmpty
               ? Column(
@@ -435,14 +437,12 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF1CB0F6)),
+        Icon(icon, size: 20, color: AppColors.brandBlue),
         const SizedBox(width: 8),
         Text(
           label,
-          style: const TextStyle(
+          style: AppTextStyles.title.copyWith(
             fontSize: 15,
-            fontWeight: FontWeight.w900,
-            color: Color(0xFF4B4B4B),
             letterSpacing: 1.2,
           ),
         ),

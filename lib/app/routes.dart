@@ -1,9 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../views/onboarding/onboarding_view.dart';
 import '../views/auth/login_view.dart';
 import '../views/auth/register_view.dart';
 import '../views/home/main_layout_view.dart';
-import '../views/mission/module_list_view.dart';
 import '../views/mission/module_detail_view.dart';
 import '../views/mission/challenge_view.dart';
 import '../views/mission/challenge_brief_view.dart';
@@ -30,11 +30,12 @@ GoRouter getRouter(String initialRoute) => GoRouter(
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => const MainLayoutView(),
-    ),
-    GoRoute(
-      path: '/mission',
-      builder: (context, state) => const ModuleListView(),
+      pageBuilder: (context, state) => CustomTransitionPage(
+        child: const MainLayoutView(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
     ),
     GoRoute(
       path: '/mission/detail',
