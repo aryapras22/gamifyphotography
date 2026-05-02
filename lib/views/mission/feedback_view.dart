@@ -1,9 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
+import '../../core/app_colors.dart';
+import '../../core/app_text_styles.dart';
 import '../../view_models/challenge_view_model.dart';
+import '../../view_models/badge_view_model.dart';
 import '../widgets/animated_3d_button.dart';
+import '../widgets/badge_unlock_sheet.dart';
 
 class FeedbackView extends ConsumerStatefulWidget {
   const FeedbackView({Key? key}) : super(key: key);
@@ -12,44 +17,32 @@ class FeedbackView extends ConsumerStatefulWidget {
   ConsumerState<FeedbackView> createState() => _FeedbackViewState();
 }
 
-class _FeedbackViewState extends ConsumerState<FeedbackView> with SingleTickerProviderStateMixin {
-  late AnimationController _pointsController;
-  Animation<int>? _pointsAnimation;
-  
+class _FeedbackViewState extends ConsumerState<FeedbackView> {
   @override
   void initState() {
     super.initState();
-    _pointsController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
-  }
-  
-  @override
-  void dispose() {
-    _pointsController.dispose();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final newBadges = ref.read(badgeViewModelProvider).newlyUnlocked;
+      if (newBadges.isNotEmpty && mounted) {
+        showBadgeUnlockSheet(context, newBadges.first);
+        ref.read(badgeViewModelProvider.notifier).clearNewlyUnlocked();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(challengeViewModelProvider);
-    
-    // Initialize animation once points are available
-    if (state.pointsEarned > 0 && _pointsAnimation == null) {
-      _pointsAnimation = IntTween(begin: 0, end: state.pointsEarned).animate(
-        CurvedAnimation(parent: _pointsController, curve: Curves.easeOutQuad),
-      );
-      _pointsController.forward();
-    }
+    final photoUrl = state.challenge?.uploadedPhotoUrl;
+    final challengeTitle = state.challenge?.instruction ?? 'Misi Selesai';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surfaceWhite,
       body: SafeArea(
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Confetti Lottie Background
+            // Confetti background
             Lottie.network(
               'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json',
               repeat: false,
@@ -57,59 +50,146 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> with SingleTickerPr
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height,
             ),
-            
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.star_rounded, color: Color(0xFFFFC800), size: 120),
-                const SizedBox(height: 20),
-                const Text('LUAR BIASA!', style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF4B4B4B), letterSpacing: 1.5)),
-                const SizedBox(height: 10),
-                const Text('Misi Berhasil Diselesaikan', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                const SizedBox(height: 40),
-                
-                // Animated Points Counter
-                if (state.pointsEarned > 0 && _pointsAnimation != null)
-                  AnimatedBuilder(
-                    animation: _pointsAnimation!,
-                    builder: (context, child) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+
+            // Content column
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                children: [
+                  // ── Heading ───────────────────────────────────
+                  Text(
+                    'MISI SELESAI! 🎉',
+                    style: AppTextStyles.heading.copyWith(
+                      color: AppColors.bodyText,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Photo Preview ──────────────────────────────
+                  _PhotoPreview(photoUrl: photoUrl),
+                  const SizedBox(height: 28),
+
+                  // ── Rolling Points Counter ─────────────────────
+                  if (state.pointsEarned > 0)
+                    TweenAnimationBuilder<int>(
+                      tween: IntTween(begin: 0, end: state.pointsEarned),
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeInOut,
+                      builder: (context, value, _) => Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1CB0F6).withOpacity(0.1),
+                          color: AppColors.forestGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: const Color(0xFF1CB0F6), width: 2),
+                          border: Border.all(
+                              color: AppColors.forestGreen, width: 2),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.diamond_rounded, color: Color(0xFF1CB0F6), size: 36),
-                            const SizedBox(width: 12),
-                            Text('+${_pointsAnimation!.value}', style: const TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Color(0xFF1CB0F6))),
+                            const Icon(Icons.diamond_rounded,
+                                color: AppColors.forestGreen, size: 32),
+                            const SizedBox(width: 10),
+                            Text(
+                              '+$value poin',
+                              style: AppTextStyles.display.copyWith(
+                                  color: AppColors.forestGreen),
+                            ),
                           ],
                         ),
-                      );
-                    },
-                  )
-                else
-                  const CircularProgressIndicator(),
-                  
-              ],
-            ),
-            
-            // Bottom Button
-            Positioned(
-              bottom: 40,
-              left: 24,
-              right: 24,
-              child: Animated3DButton(
-                onPressed: () => context.go('/home'),
-                child: const Text('LANJUTKAN', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2)),
+                      ),
+                    )
+                  else
+                    const CircularProgressIndicator(),
+
+                  const SizedBox(height: 20),
+
+                  // ── Technique label ────────────────────────────
+                  if (challengeTitle.isNotEmpty)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.check_circle_rounded,
+                            color: AppColors.forestGreen, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Teknik: $challengeTitle',
+                          style: AppTextStyles.body.copyWith(
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 40),
+
+                  // ── Buttons ────────────────────────────────────
+                  Animated3DButton(
+                    onPressed: () => context.go('/home'),
+                    color: AppColors.brandBlue,
+                    shadowColor: const Color(0xFF1590C8),
+                    child: Text('MISI BERIKUTNYA →', style: AppTextStyles.button),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => context.go('/home'),
+                    child: Text(
+                      'Kembali ke Beranda',
+                      style: AppTextStyles.body.copyWith(
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sub-widget: Photo Preview
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _PhotoPreview extends StatelessWidget {
+  final String? photoUrl;
+
+  const _PhotoPreview({this.photoUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasPhoto =
+        photoUrl != null && photoUrl!.isNotEmpty && File(photoUrl!).existsSync();
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: hasPhoto
+          ? Image.file(
+              File(photoUrl!),
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            )
+          : Container(
+              height: 220,
+              width: double.infinity,
+              color: AppColors.backgroundGray,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.camera_alt_outlined,
+                      size: 56, color: AppColors.disabled),
+                  const SizedBox(height: 8),
+                  Text('Tidak ada foto',
+                      style: AppTextStyles.caption),
+                ],
+              ),
+            ),
     );
   }
 }
