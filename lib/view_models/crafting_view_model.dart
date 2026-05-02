@@ -8,6 +8,7 @@ class CraftingState {
   final int requiredPoints;
   final int bridgeProgress;
   final int maxBridgeSegments;
+  final bool isLoading;
 
   CraftingState({
     this.craftingDone = false,
@@ -15,6 +16,7 @@ class CraftingState {
     this.requiredPoints = 1000, // as per user's image, 1000 point for crafting
     this.bridgeProgress = 0,
     this.maxBridgeSegments = 5,
+    this.isLoading = false,
   });
 
   CraftingState copyWith({
@@ -23,6 +25,7 @@ class CraftingState {
     int? requiredPoints,
     int? bridgeProgress,
     int? maxBridgeSegments,
+    bool? isLoading,
   }) {
     return CraftingState(
       craftingDone: craftingDone ?? this.craftingDone,
@@ -30,6 +33,7 @@ class CraftingState {
       requiredPoints: requiredPoints ?? this.requiredPoints,
       bridgeProgress: bridgeProgress ?? this.bridgeProgress,
       maxBridgeSegments: maxBridgeSegments ?? this.maxBridgeSegments,
+      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
@@ -51,6 +55,11 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
         currentPoints: user.points,
         bridgeProgress: user.bridgeProgress,
       );
+    } else {
+      state = state.copyWith(
+        currentPoints: 0,
+        bridgeProgress: 0,
+      );
     }
   }
 
@@ -60,23 +69,28 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
     // Only craft if we have enough points AND bridge is not finished
     if (!hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments) return;
 
-    final success = await _userService.doCrafting(pointCost);
-    if (success) {
-      final user = _ref.read(authViewModelProvider).currentUser;
-      if (user != null) {
-        final updatedUser = user.copyWith(
-          points: user.points - pointCost,
-          bridgeProgress: user.bridgeProgress + 1,
+    state = state.copyWith(isLoading: true);
+    try {
+      final success = await _userService.doCrafting(pointCost);
+      if (success) {
+        final user = _ref.read(authViewModelProvider).currentUser;
+        if (user != null) {
+          final updatedUser = user.copyWith(
+            points: user.points - pointCost,
+            bridgeProgress: user.bridgeProgress + 1,
+          );
+          _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
+        }
+        
+        final newProgress = state.bridgeProgress + 1;
+        state = state.copyWith(
+          craftingDone: newProgress >= state.maxBridgeSegments,
+          currentPoints: state.currentPoints - pointCost,
+          bridgeProgress: newProgress,
         );
-        _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
       }
-      
-      final newProgress = state.bridgeProgress + 1;
-      state = state.copyWith(
-        craftingDone: newProgress >= state.maxBridgeSegments,
-        currentPoints: state.currentPoints - pointCost,
-        bridgeProgress: newProgress,
-      );
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
   }
 }
