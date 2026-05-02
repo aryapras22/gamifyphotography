@@ -16,12 +16,21 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasAutoScrolled = false;
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(missionViewModelProvider.notifier).fetchModules();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String _greeting() {
@@ -42,6 +51,24 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(missionViewModelProvider, (prev, next) {
+      if (!_hasAutoScrolled && next.modules.isNotEmpty) {
+        _hasAutoScrolled = true;
+        final firstUncompletedIndex = next.modules.indexWhere((m) => !m.isCompleted);
+        if (firstUncompletedIndex != -1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                200.0 + (firstUncompletedIndex * 120.0),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        }
+      }
+    });
+
     final authState = ref.watch(authViewModelProvider);
     final user = authState.currentUser;
     final streak = ref.watch(dailyLoginViewModelProvider).currentStreak;
@@ -57,6 +84,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       backgroundColor: AppColors.backgroundGray,
       body: SafeArea(
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             // ── Dashboard Header ────────────────────────────────
             SliverPadding(
