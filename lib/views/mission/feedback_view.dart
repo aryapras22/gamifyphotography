@@ -43,8 +43,8 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
           alignment: Alignment.center,
           children: [
             // Confetti background
-            Lottie.network(
-              'https://assets2.lottiefiles.com/packages/lf20_u4yrau.json',
+            Lottie.asset(
+              'assets/lottie/confetti.json',
               repeat: false,
               fit: BoxFit.cover,
               width: MediaQuery.of(context).size.width,
@@ -78,30 +78,43 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
                       curve: Curves.easeInOut,
                       builder: (context, value, _) => Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.forestGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                              color: AppColors.forestGreen, width: 2),
+                            color: AppColors.forestGreen,
+                            width: 2,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.diamond_rounded,
-                                color: AppColors.forestGreen, size: 32),
+                            const Icon(
+                              Icons.diamond_rounded,
+                              color: AppColors.forestGreen,
+                              size: 32,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               '+$value poin',
                               style: AppTextStyles.display.copyWith(
-                                  color: AppColors.forestGreen),
+                                color: AppColors.forestGreen,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     )
                   else
-                    const CircularProgressIndicator(),
+                    Text(
+                      'Misi Selesai!',
+                      style: AppTextStyles.heading.copyWith(
+                        color: AppColors.forestGreen,
+                      ),
+                    ),
 
                   const SizedBox(height: 20),
 
@@ -110,8 +123,11 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.check_circle_rounded,
-                            color: AppColors.forestGreen, size: 20),
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.forestGreen,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Teknik: $challengeTitle',
@@ -126,10 +142,15 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
 
                   // ── Buttons ────────────────────────────────────
                   Animated3DButton(
-                    onPressed: () => context.go('/home'),
+                    onPressed: () {
+                      context.go('/home');
+                    },
                     color: AppColors.brandBlue,
                     shadowColor: const Color(0xFF1590C8),
-                    child: Text('MISI BERIKUTNYA →', style: AppTextStyles.button),
+                    child: Text(
+                      'MISI BERIKUTNYA →',
+                      style: AppTextStyles.button,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   TextButton(
@@ -164,7 +185,9 @@ class _PhotoPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPhoto =
-        photoUrl != null && photoUrl!.isNotEmpty && File(photoUrl!).existsSync();
+        photoUrl != null &&
+        photoUrl!.isNotEmpty &&
+        File(photoUrl!).existsSync();
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
@@ -182,11 +205,13 @@ class _PhotoPreview extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.camera_alt_outlined,
-                      size: 56, color: AppColors.disabled),
+                  const Icon(
+                    Icons.camera_alt_outlined,
+                    size: 56,
+                    color: AppColors.disabled,
+                  ),
                   const SizedBox(height: 8),
-                  Text('Tidak ada foto',
-                      style: AppTextStyles.caption),
+                  Text('Tidak ada foto', style: AppTextStyles.caption),
                 ],
               ),
             ),

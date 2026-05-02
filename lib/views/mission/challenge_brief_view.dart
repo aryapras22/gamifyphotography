@@ -1,3 +1,7 @@
+// NOTE: Screen ini tidak digunakan dalam flow aktif (2026-05-02).
+// Dipertahankan sebagai referensi layout alternatif.
+// Route /mission/brief dihapus dari routes.dart.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +39,11 @@ class ChallengeBriefView extends ConsumerWidget {
               alignment: Alignment.centerLeft,
               child: GestureDetector(
                 onTap: () => context.pop(),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF4B4B4B), size: 28),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF4B4B4B),
+                  size: 28,
+                ),
               ),
             ),
 
@@ -102,9 +110,16 @@ class ChallengeBriefView extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: const Color(0xFF4B4B4B), width: 3),
+                              border: Border.all(
+                                color: const Color(0xFF4B4B4B),
+                                width: 3,
+                              ),
                               boxShadow: const [
-                                BoxShadow(color: Color(0xFFD0D0D0), offset: Offset(0, 6), blurRadius: 12),
+                                BoxShadow(
+                                  color: Color(0xFFD0D0D0),
+                                  offset: Offset(0, 6),
+                                  blurRadius: 12,
+                                ),
                               ],
                             ),
                             child: ClipRRect(
@@ -149,14 +164,21 @@ class ChallengeBriefView extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: Animated3DButton(
                 onPressed: () async {
-                  await ref.read(challengeViewModelProvider.notifier).loadChallenge(module.id);
+                  await ref
+                      .read(challengeViewModelProvider.notifier)
+                      .loadChallenge(module.id);
                   if (context.mounted) {
                     context.push('/mission/challenge');
                   }
                 },
                 child: const Text(
                   'MULAI',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
@@ -184,8 +206,16 @@ class _RuleOfThirdsGuide extends CustomPainter {
     final thirdW = size.width / 3;
     final thirdH = size.height / 3;
     for (int i = 1; i < 3; i++) {
-      canvas.drawLine(Offset(thirdW * i, 0), Offset(thirdW * i, size.height), linePaint);
-      canvas.drawLine(Offset(0, thirdH * i), Offset(size.width, thirdH * i), linePaint);
+      canvas.drawLine(
+        Offset(thirdW * i, 0),
+        Offset(thirdW * i, size.height),
+        linePaint,
+      );
+      canvas.drawLine(
+        Offset(0, thirdH * i),
+        Offset(size.width, thirdH * i),
+        linePaint,
+      );
     }
 
     // Red cross + circle at each intersection

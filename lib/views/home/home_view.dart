@@ -318,5 +318,8 @@ class PathPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant PathPainter oldDelegate) {
+    return oldDelegate.isCompleted != isCompleted ||
+           oldDelegate.currentOffset != currentOffset;
+  }
 }

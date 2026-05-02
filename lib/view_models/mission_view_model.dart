@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/module_model.dart';
 import '../services/module_service.dart';
 import '../providers/service_providers.dart';
+
+const _unset = Object();
+
 class MissionState {
   final List<ModuleModel> modules;
   final ModuleModel? activeModule;
@@ -17,23 +20,27 @@ class MissionState {
 
   MissionState copyWith({
     List<ModuleModel>? modules,
-    ModuleModel? activeModule,
+    Object? activeModule = _unset,
     bool? isLoading,
-    String? errorMessage,
+    Object? errorMessage = _unset,
   }) {
     return MissionState(
       modules: modules ?? this.modules,
-      activeModule: activeModule ?? this.activeModule,
+      activeModule: activeModule == _unset
+          ? this.activeModule
+          : activeModule as ModuleModel?,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: errorMessage == _unset
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }
 
-
-final missionViewModelProvider = StateNotifierProvider<MissionViewModel, MissionState>(
-  (ref) => MissionViewModel(ref.read(moduleServiceProvider)),
-);
+final missionViewModelProvider =
+    StateNotifierProvider<MissionViewModel, MissionState>(
+      (ref) => MissionViewModel(ref.read(moduleServiceProvider)),
+    );
 
 class MissionViewModel extends StateNotifier<MissionState> {
   final ModuleService _moduleService;
@@ -53,5 +60,13 @@ class MissionViewModel extends StateNotifier<MissionState> {
   void selectModule(String moduleId) {
     final module = state.modules.firstWhere((m) => m.id == moduleId);
     state = state.copyWith(activeModule: module);
+  }
+
+  void markModuleCompleted(String moduleId) {
+    final updatedModules = state.modules.map((m) {
+      if (m.id == moduleId) return m.copyWith(isCompleted: true);
+      return m;
+    }).toList();
+    state = state.copyWith(modules: updatedModules);
   }
 }

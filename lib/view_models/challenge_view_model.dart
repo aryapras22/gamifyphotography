@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import '../models/challenge_model.dart';
 import '../services/challenge_service.dart';
 import 'auth_view_model.dart';
+import 'mission_view_model.dart';
 import '../providers/service_providers.dart';
 
 class ChallengeState {
@@ -29,17 +30,20 @@ class ChallengeState {
   }
 }
 
-final challengeViewModelProvider = StateNotifierProvider<ChallengeViewModel, ChallengeState>(
-  (ref) => ChallengeViewModel(ref, ref.read(challengeServiceProvider)),
-);
+final challengeViewModelProvider =
+    StateNotifierProvider<ChallengeViewModel, ChallengeState>(
+      (ref) => ChallengeViewModel(ref, ref.read(challengeServiceProvider)),
+    );
 
 class ChallengeViewModel extends StateNotifier<ChallengeState> {
   final Ref _ref;
   final ChallengeService _challengeService;
 
-  ChallengeViewModel(this._ref, this._challengeService) : super(ChallengeState());
+  ChallengeViewModel(this._ref, this._challengeService)
+    : super(ChallengeState());
 
   Future<void> loadChallenge(String moduleId) async {
+    state = ChallengeState();
     final challenge = await _challengeService.getChallenge(moduleId);
     state = state.copyWith(challenge: challenge);
   }
@@ -58,12 +62,12 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
   Future<void> completeChallenge() async {
     if (state.challenge == null) return;
     if (state.challenge!.isCompleted) return; // Guard idempotent (fix BUG-09)
-    
+
     await _challengeService.completeChallenge(state.challenge!.id);
     final updatedChallenge = state.challenge!.copyWith(isCompleted: true);
-    
+
     final points = updatedChallenge.pointReward;
-    
+
     // Update user points
     final authState = _ref.read(authViewModelProvider);
     if (authState.currentUser != null) {
@@ -92,7 +96,9 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
       _ref.read(authViewModelProvider.notifier).updateUser(user);
     }
 
+    final moduleId = state.challenge!.moduleId;
+    _ref.read(missionViewModelProvider.notifier).markModuleCompleted(moduleId);
+
     state = state.copyWith(challenge: updatedChallenge, pointsEarned: points);
   }
 }
-
