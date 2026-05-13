@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../view_models/crafting_view_model.dart';
+import '../../view_models/auth_view_model.dart';
 import '../widgets/animated_3d_button.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -22,6 +23,12 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(craftingViewModelProvider);
+
+    ref.listen<AuthState>(authViewModelProvider, (prev, next) {
+      if (prev?.currentUser?.points != next.currentUser?.points) {
+        ref.read(craftingViewModelProvider.notifier).loadCraftingStatus();
+      }
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -158,36 +165,44 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
 
                 // Crafting Button
                 Animated3DButton(
-                  color: (!state.craftingDone && state.currentPoints >= state.requiredPoints)
+                  color: (!state.isLoading && !state.craftingDone && state.currentPoints >= state.requiredPoints)
                       ? const Color(0xFFF59E0B) // Active Orange
                       : const Color(0xFF9E9E9E), // Inactive Grey
-                  shadowColor: (!state.craftingDone && state.currentPoints >= state.requiredPoints)
+                  shadowColor: (!state.isLoading && !state.craftingDone && state.currentPoints >= state.requiredPoints)
                       ? const Color(0xFFD97706)
                       : const Color(0xFF616161),
-                  onPressed: (!state.craftingDone && state.currentPoints >= state.requiredPoints)
-                      ? () => ref.read(craftingViewModelProvider.notifier).doCrafting(state.requiredPoints)
-                      : () {
-                          if (state.craftingDone) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Jembatan sudah selesai!')),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('XP kurang! Butuh ${state.requiredPoints} XP.')),
-                            );
-                          }
-                        },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                    child: Text(
-                      'Crafting',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
+                  onPressed: state.isLoading
+                      ? () {}
+                      : (!state.craftingDone && state.currentPoints >= state.requiredPoints)
+                          ? () => ref.read(craftingViewModelProvider.notifier).doCrafting(state.requiredPoints)
+                          : () {
+                              if (state.craftingDone) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Jembatan sudah selesai!')),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('XP kurang! Butuh ${state.requiredPoints} XP.')),
+                                );
+                              }
+                            },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                    child: state.isLoading 
+                      ? const SizedBox(
+                          width: 24, 
+                          height: 24, 
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                        )
+                      : const Text(
+                          'Crafting',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
                   ),
                 ),
               ],

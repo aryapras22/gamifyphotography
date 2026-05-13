@@ -3,6 +3,7 @@ import 'package:camera/camera.dart';
 import '../models/challenge_model.dart';
 import '../services/challenge_service.dart';
 import 'auth_view_model.dart';
+import 'daily_login_view_model.dart';
 import 'mission_view_model.dart';
 import '../providers/service_providers.dart';
 
@@ -80,9 +81,10 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
 
       // Cek badge baru via BadgeService (konsisten dengan BadgeViewModel)
       final badgeService = _ref.read(badgeServiceProvider);
+      final streak = _ref.read(dailyLoginViewModelProvider).currentStreak;
       final newBadges = await badgeService.checkNewBadges(
         level: user.level,
-        streak: 0, // streak dari dailyLoginService — gunakan 0 untuk sekarang
+        streak: streak,
         earnedBadgeIds: user.earnedBadgeIds,
         completedFirstMission: user.level >= 1,
       );
