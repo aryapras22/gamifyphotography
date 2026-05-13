@@ -10,8 +10,10 @@ class AppColors {
   static const coralRed = Color(0xFFEA4335);
 
   // Semantic aliases (clarity over duplication)
-  static const Color success    = Color(0xFF34A853); // = forestGreen, button/state success
-  static const Color error      = Color(0xFFEA4335); // = coralRed, error text/states
+  static const Color success = Color(
+    0xFF34A853,
+  ); // = forestGreen, button/state success
+  static const Color error = Color(0xFFEA4335); // = coralRed, error text/states
 
   // Neutral
   static const surfaceWhite = Color(0xFFFFFFFF);
@@ -28,9 +30,13 @@ class AppColors {
   static const goldMedal = Color(0xFFFFD700);
   static const silverMedal = Color(0xFFC0C0C0);
   static const bronzeMedal = Color(0xFFCD7F32);
-  
+
   // Gamification extended
-  static const Color xpAmber    = Color(0xFFF59E0B); // XP progress bar (distinct from lensGold badge)
-  static const Color streakBg   = Color(0xFFFFF3DC); // streak background warm tint
+  static const Color xpAmber = Color(
+    0xFFF59E0B,
+  ); // XP progress bar (distinct from lensGold badge)
+  static const Color streakBg = Color(
+    0xFFFFF3DC,
+  ); // streak background warm tint
   static const Color streakBorder = Color(0xFFFFCA28); // streak day border
 }
