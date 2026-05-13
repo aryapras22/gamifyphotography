@@ -3,6 +3,7 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../view_models/profile_view_model.dart';
@@ -36,10 +37,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         backgroundColor: AppColors.surfaceWhite,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: AppColors.bodyText),
+                onPressed: () => context.pop(),
+              )
+            : null,
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
         title: Text(
           'PROFIL',
           style: AppTextStyles.heading.copyWith(letterSpacing: 1.5),
