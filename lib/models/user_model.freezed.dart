@@ -24,11 +24,13 @@ mixin _$UserModel {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
+  String get role => throw _privateConstructorUsedError;
   int get points => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
   List<String> get earnedBadgeIds => throw _privateConstructorUsedError;
   List<String> get completedPhotoUrls => throw _privateConstructorUsedError;
   int get bridgeProgress => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,11 +51,13 @@ abstract class $UserModelCopyWith<$Res> {
     String id,
     String name,
     String email,
+    String role,
     int points,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
     int bridgeProgress,
+    DateTime? createdAt,
   });
 }
 
@@ -75,11 +79,13 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? id = null,
     Object? name = null,
     Object? email = null,
+    Object? role = null,
     Object? points = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
+    Object? createdAt = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -94,6 +100,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
             email: null == email
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
+                      as String,
+            role: null == role
+                ? _value.role
+                : role // ignore: cast_nullable_to_non_nullable
                       as String,
             points: null == points
                 ? _value.points
@@ -115,6 +125,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.bridgeProgress
                 : bridgeProgress // ignore: cast_nullable_to_non_nullable
                       as int,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
           )
           as $Val,
     );
@@ -134,11 +148,13 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String id,
     String name,
     String email,
+    String role,
     int points,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
     int bridgeProgress,
+    DateTime? createdAt,
   });
 }
 
@@ -159,11 +175,13 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? id = null,
     Object? name = null,
     Object? email = null,
+    Object? role = null,
     Object? points = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
+    Object? createdAt = freezed,
   }) {
     return _then(
       _$UserModelImpl(
@@ -178,6 +196,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
         email: null == email
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
+                  as String,
+        role: null == role
+            ? _value.role
+            : role // ignore: cast_nullable_to_non_nullable
                   as String,
         points: null == points
             ? _value.points
@@ -199,6 +221,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.bridgeProgress
             : bridgeProgress // ignore: cast_nullable_to_non_nullable
                   as int,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
@@ -211,11 +237,13 @@ class _$UserModelImpl implements _UserModel {
     required this.id,
     required this.name,
     required this.email,
+    this.role = 'user',
     this.points = 0,
     this.level = 1,
     final List<String> earnedBadgeIds = const [],
     final List<String> completedPhotoUrls = const [],
     this.bridgeProgress = 0,
+    this.createdAt,
   }) : _earnedBadgeIds = earnedBadgeIds,
        _completedPhotoUrls = completedPhotoUrls;
 
@@ -228,6 +256,9 @@ class _$UserModelImpl implements _UserModel {
   final String name;
   @override
   final String email;
+  @override
+  @JsonKey()
+  final String role;
   @override
   @JsonKey()
   final int points;
@@ -256,10 +287,12 @@ class _$UserModelImpl implements _UserModel {
   @override
   @JsonKey()
   final int bridgeProgress;
+  @override
+  final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress)';
+    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, createdAt: $createdAt)';
   }
 
   @override
@@ -270,6 +303,7 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.role, role) || other.role == role) &&
             (identical(other.points, points) || other.points == points) &&
             (identical(other.level, level) || other.level == level) &&
             const DeepCollectionEquality().equals(
@@ -281,7 +315,9 @@ class _$UserModelImpl implements _UserModel {
               _completedPhotoUrls,
             ) &&
             (identical(other.bridgeProgress, bridgeProgress) ||
-                other.bridgeProgress == bridgeProgress));
+                other.bridgeProgress == bridgeProgress) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,11 +327,13 @@ class _$UserModelImpl implements _UserModel {
     id,
     name,
     email,
+    role,
     points,
     level,
     const DeepCollectionEquality().hash(_earnedBadgeIds),
     const DeepCollectionEquality().hash(_completedPhotoUrls),
     bridgeProgress,
+    createdAt,
   );
 
   /// Create a copy of UserModel
@@ -317,11 +355,13 @@ abstract class _UserModel implements UserModel {
     required final String id,
     required final String name,
     required final String email,
+    final String role,
     final int points,
     final int level,
     final List<String> earnedBadgeIds,
     final List<String> completedPhotoUrls,
     final int bridgeProgress,
+    final DateTime? createdAt,
   }) = _$UserModelImpl;
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -334,6 +374,8 @@ abstract class _UserModel implements UserModel {
   @override
   String get email;
   @override
+  String get role;
+  @override
   int get points;
   @override
   int get level;
@@ -343,6 +385,8 @@ abstract class _UserModel implements UserModel {
   List<String> get completedPhotoUrls;
   @override
   int get bridgeProgress;
+  @override
+  DateTime? get createdAt;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

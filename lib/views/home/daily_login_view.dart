@@ -14,7 +14,6 @@ import '../../services/daily_login_service.dart';
 const _kSheetRadius = Radius.circular(28.0);
 const _kDayBoxSize = 44.0;
 
-
 /// Tampilkan Daily Login Bottom Sheet.
 /// Hanya muncul jika user belum claim hari ini.
 Future<void> showDailyLoginSheet(
@@ -81,7 +80,11 @@ class _DailyLoginSheet extends ConsumerWidget {
                   color: AppColors.brandBlue.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.calendar_today_rounded, color: AppColors.brandBlue, size: 24),
+                child: Icon(
+                  Icons.calendar_today_rounded,
+                  color: AppColors.brandBlue,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -109,8 +112,14 @@ class _DailyLoginSheet extends ConsumerWidget {
 
           // 7 Day Indicators
           state.isLoading
-              ? const SizedBox(height: 60, child: Center(child: CircularProgressIndicator()))
-              : _DayIndicatorRow(weekHistory: state.weekHistory, currentStreak: state.currentStreak),
+              ? const SizedBox(
+                  height: 60,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : _DayIndicatorRow(
+                  weekHistory: state.weekHistory,
+                  currentStreak: state.currentStreak,
+                ),
 
           const SizedBox(height: 20),
 
@@ -156,7 +165,10 @@ class _DayIndicatorRow extends StatelessWidget {
   final List<bool> weekHistory;
   final int currentStreak;
 
-  const _DayIndicatorRow({required this.weekHistory, required this.currentStreak});
+  const _DayIndicatorRow({
+    required this.weekHistory,
+    required this.currentStreak,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,21 +188,21 @@ class _DayIndicatorRow extends StatelessWidget {
                 color: isClaimed
                     ? AppColors.brandBlue
                     : isNext
-                        ? AppColors.brandBlue.withOpacity(0.15)
-                        : Colors.grey.shade100,
+                    ? AppColors.brandBlue.withOpacity(0.15)
+                    : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isClaimed
                       ? AppColors.brandBlue
                       : isNext
-                          ? AppColors.brandBlue.withOpacity(0.5)
-                          : Colors.grey.shade200,
+                      ? AppColors.brandBlue.withOpacity(0.5)
+                      : Colors.grey.shade200,
                   width: 2,
                 ),
               ),
               child: Center(
                 child: Text(
-                  isClaimed ? 'âœ…' : 'ðŸ”’',
+                  isClaimed ? '✅' : '🔒',
                   style: const TextStyle(fontSize: 18),
                 ),
               ),
@@ -225,7 +237,10 @@ class _StreakInfo extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.streakBg, AppColors.streakBorder.withValues(alpha:0.5)],
+          colors: [
+            AppColors.streakBg,
+            AppColors.streakBorder.withValues(alpha: 0.5),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.streakBorder.withOpacity(0.5)),
@@ -233,10 +248,12 @@ class _StreakInfo extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('ðŸ”¥', style: TextStyle(fontSize: 24)),
+          const Text('🔥', style: TextStyle(fontSize: 24)),
           const SizedBox(width: 10),
           Text(
-            streak > 0 ? 'Streak kamu: $streak hari!' : 'Belum ada streak. Mulai sekarang!',
+            streak > 0
+                ? 'Streak kamu: $streak hari!'
+                : 'Belum ada streak. Mulai sekarang!',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -276,26 +293,35 @@ class _ClaimButton extends ConsumerWidget {
         child: ElevatedButton(
           onPressed: (hasClaimed || isLoading)
               ? null
-              : () => ref.read(dailyLoginViewModelProvider.notifier).claimToday(userId),
+              : () => ref
+                    .read(dailyLoginViewModelProvider.notifier)
+                    .claimToday(userId),
           style: ElevatedButton.styleFrom(
-            backgroundColor: showSuccess ? AppColors.forestGreen : AppColors.brandBlue,
+            backgroundColor: showSuccess
+                ? AppColors.forestGreen
+                : AppColors.brandBlue,
             disabledBackgroundColor: Colors.grey.shade300,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             elevation: showSuccess ? 4 : 2,
           ),
           child: isLoading
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surfaceWhite),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.surfaceWhite,
+                  ),
                 )
               : Text(
                   showSuccess
-                      ? 'ðŸŽ‰ +$kDailyLoginPoints Poin Berhasil!'
+                      ? '🎉 +$kDailyLoginPoints Poin Berhasil!'
                       : hasClaimed
-                          ? 'âœ“ Sudah Claim Hari Ini'
-                          : 'CLAIM $kDailyLoginPoints POIN',
+                      ? '✓ Sudah Claim Hari Ini'
+                      : 'CLAIM $kDailyLoginPoints POIN',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
