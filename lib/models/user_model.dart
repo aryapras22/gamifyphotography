@@ -12,6 +12,7 @@ class UserModel with _$UserModel {
     @Default(0) int points,
     @Default(1) int level,
     @Default([]) List<String> earnedBadgeIds,
+    @Default([]) List<String> completedPhotoUrls,
     @Default(0) int bridgeProgress, // Tracker untuk jembatan
   }) = _UserModel;
 

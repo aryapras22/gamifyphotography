@@ -94,7 +94,7 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
         earnedBadgeIds: List.of(user.earnedBadgeIds),
         // Foto dari challenge disimpan di ChallengeState.uploadedPhotoUrl
         // Mock: list kosong — diisi dari state challenge via view jika tersedia
-        completedChallengePhotoUrls: const [],
+        completedChallengePhotoUrls: List<String>.from(user.completedPhotoUrls),
       );
     } catch (e) {
       state = state.copyWith(

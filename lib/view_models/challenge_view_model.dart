@@ -95,6 +95,12 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
         );
       }
 
+      final photoUrl = state.challenge!.uploadedPhotoUrl;
+      if (photoUrl != null && photoUrl.isNotEmpty) {
+        user = user.copyWith(
+          completedPhotoUrls: [...user.completedPhotoUrls, photoUrl],
+        );
+      }
       _ref.read(authViewModelProvider.notifier).updateUser(user);
     }
 
