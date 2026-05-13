@@ -43,7 +43,20 @@ class AuthService {
   Future<UserModel> fetchUser(String uid) async {
     final doc = await _db.collection('users').doc(uid).get();
     if (!doc.exists) throw Exception('User data not found.');
-    return UserModel.fromJson({...doc.data()!, 'id': uid});
+    final data = Map<String, dynamic>.from(doc.data()!);
+    data['id'] = uid;
+
+    // Firestore stores FieldValue.serverTimestamp() as a Timestamp object,
+    // but the generated fromJson expects an ISO 8601 String.
+    // Convert Timestamp → String, or remove if null (not yet resolved).
+    if (data['createdAt'] is Timestamp) {
+      data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+    } else if (data['createdAt'] != null && data['createdAt'] is! String) {
+      // Unknown type — drop to avoid crash
+      data.remove('createdAt');
+    }
+
+    return UserModel.fromJson(data);
   }
 
   Future<void> logout() async => _auth.signOut();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
@@ -45,12 +46,16 @@ class AuthViewModel extends StateNotifier<AuthState> {
   AuthViewModel(this._authService) : super(AuthState(isCheckingSession: true)) {
     _sub = _authService.authStateChanges.listen((firebaseUser) async {
       if (firebaseUser == null) {
+        debugPrint('[Auth] No Firebase user → logged out');
         state = AuthState(isCheckingSession: false);
       } else {
         try {
+          debugPrint('[Auth] Firebase user found: ${firebaseUser.uid}, fetching profile…');
           final user = await _authService.fetchUser(firebaseUser.uid);
+          debugPrint('[Auth] Profile loaded: ${user.name}');
           state = AuthState(isCheckingSession: false, currentUser: user);
-        } catch (_) {
+        } catch (e, st) {
+          debugPrint('[Auth] fetchUser failed: $e\n$st');
           state = AuthState(isCheckingSession: false);
         }
       }

@@ -16,15 +16,34 @@ import '../views/progress/progress_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
 import '../views/profile/profile_view.dart';
 
+/// Bridges Riverpod state changes into a [ChangeNotifier] that GoRouter
+/// can use as [refreshListenable]. This avoids calling router.refresh()
+/// manually inside ref.listen, which can trigger infinite rebuild loops.
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier(Ref ref) {
+    ref.listen<AuthState>(authViewModelProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final router = GoRouter(
+  final authNotifier = _AuthNotifier(ref);
+
+  return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authNotifier,
     redirect: (context, state) {
       final auth = ref.read(authViewModelProvider);
       final loc = state.matchedLocation;
+
+      debugPrint('[Router] redirect → loc=$loc, '
+          'isCheckingSession=${auth.isCheckingSession}, '
+          'isLoggedIn=${auth.isLoggedIn}');
+
       if (auth.isCheckingSession) return loc == '/splash' ? null : '/splash';
 
-      const open = ['/splash', '/login', '/register', '/onboarding'];
+      const open = ['/login', '/register', '/onboarding'];
       final isOpen = open.contains(loc);
 
       if (!auth.isLoggedIn && !isOpen) return '/login';
@@ -81,10 +100,4 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-
-  ref.listen(authViewModelProvider, (previous, next) {
-    router.refresh();
-  });
-
-  return router;
 });
