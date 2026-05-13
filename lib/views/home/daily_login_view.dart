@@ -1,8 +1,9 @@
-// lib/views/home/daily_login_view.dart
-// TASK-04 — Daily Login Bottom Sheet
+﻿// lib/views/home/daily_login_view.dart
+// TASK-04 â€” Daily Login Bottom Sheet
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/app_colors.dart';
 import '../../view_models/daily_login_view_model.dart';
 import '../../services/daily_login_service.dart';
 
@@ -12,7 +13,7 @@ import '../../services/daily_login_service.dart';
 
 const _kSheetRadius = Radius.circular(28.0);
 const _kDayBoxSize = 44.0;
-const _kHeaderColor = Color(0xFF1CB0F6);
+
 
 /// Tampilkan Daily Login Bottom Sheet.
 /// Hanya muncul jika user belum claim hari ini.
@@ -24,7 +25,7 @@ Future<void> showDailyLoginSheet(
   await ref.read(dailyLoginViewModelProvider.notifier).initialize(userId);
 
   final hasClaimed = ref.read(dailyLoginViewModelProvider).hasClaimed;
-  if (hasClaimed) return; // Sudah claim → tidak tampilkan
+  if (hasClaimed) return; // Sudah claim â†’ tidak tampilkan
 
   if (!context.mounted) return;
 
@@ -50,7 +51,7 @@ class _DailyLoginSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surfaceWhite,
         borderRadius: BorderRadius.only(
           topLeft: _kSheetRadius,
           topRight: _kSheetRadius,
@@ -77,10 +78,10 @@ class _DailyLoginSheet extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _kHeaderColor.withOpacity(0.12),
+                  color: AppColors.brandBlue.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.calendar_today_rounded, color: _kHeaderColor, size: 24),
+                child: Icon(Icons.calendar_today_rounded, color: AppColors.brandBlue, size: 24),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -92,7 +93,7 @@ class _DailyLoginSheet extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w900,
-                        color: Color(0xFF2D3142),
+                        color: AppColors.bodyText,
                       ),
                     ),
                     Text(
@@ -173,23 +174,23 @@ class _DayIndicatorRow extends StatelessWidget {
               height: _kDayBoxSize,
               decoration: BoxDecoration(
                 color: isClaimed
-                    ? _kHeaderColor
+                    ? AppColors.brandBlue
                     : isNext
-                        ? _kHeaderColor.withOpacity(0.15)
+                        ? AppColors.brandBlue.withOpacity(0.15)
                         : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isClaimed
-                      ? _kHeaderColor
+                      ? AppColors.brandBlue
                       : isNext
-                          ? _kHeaderColor.withOpacity(0.5)
+                          ? AppColors.brandBlue.withOpacity(0.5)
                           : Colors.grey.shade200,
                   width: 2,
                 ),
               ),
               child: Center(
                 child: Text(
-                  isClaimed ? '✅' : '🔒',
+                  isClaimed ? 'âœ…' : 'ðŸ”’',
                   style: const TextStyle(fontSize: 18),
                 ),
               ),
@@ -200,7 +201,7 @@ class _DayIndicatorRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isClaimed ? FontWeight.bold : FontWeight.normal,
-                color: isClaimed ? _kHeaderColor : Colors.grey,
+                color: isClaimed ? AppColors.brandBlue : Colors.grey,
               ),
             ),
           ],
@@ -223,23 +224,23 @@ class _StreakInfo extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFFF3DC), Color(0xFFFFE4A0)],
+        gradient: LinearGradient(
+          colors: [AppColors.streakBg, AppColors.streakBorder.withValues(alpha:0.5)],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFFCA28).withOpacity(0.5)),
+        border: Border.all(color: AppColors.streakBorder.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text('🔥', style: TextStyle(fontSize: 24)),
+          const Text('ðŸ”¥', style: TextStyle(fontSize: 24)),
           const SizedBox(width: 10),
           Text(
             streak > 0 ? 'Streak kamu: $streak hari!' : 'Belum ada streak. Mulai sekarang!',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w800,
-              color: Color(0xFF7A5800),
+              color: AppColors.lensGold,
             ),
           ),
         ],
@@ -277,7 +278,7 @@ class _ClaimButton extends ConsumerWidget {
               ? null
               : () => ref.read(dailyLoginViewModelProvider.notifier).claimToday(userId),
           style: ElevatedButton.styleFrom(
-            backgroundColor: showSuccess ? const Color(0xFF4CAF50) : _kHeaderColor,
+            backgroundColor: showSuccess ? AppColors.forestGreen : AppColors.brandBlue,
             disabledBackgroundColor: Colors.grey.shade300,
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -287,18 +288,18 @@ class _ClaimButton extends ConsumerWidget {
               ? const SizedBox(
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.surfaceWhite),
                 )
               : Text(
                   showSuccess
-                      ? '🎉 +$kDailyLoginPoints Poin Berhasil!'
+                      ? 'ðŸŽ‰ +$kDailyLoginPoints Poin Berhasil!'
                       : hasClaimed
-                          ? '✓ Sudah Claim Hari Ini'
+                          ? 'âœ“ Sudah Claim Hari Ini'
                           : 'CLAIM $kDailyLoginPoints POIN',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                    color: AppColors.surfaceWhite,
                     letterSpacing: 0.5,
                   ),
                 ),

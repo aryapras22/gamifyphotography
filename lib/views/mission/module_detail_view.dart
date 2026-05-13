@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../core/app_colors.dart';
 import '../../view_models/mission_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../view_models/challenge_view_model.dart';
@@ -84,14 +85,14 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F5),
+      backgroundColor: AppColors.backgroundGray,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ── Top Bar ────────────────────────────────────────────────
             Container(
-              color: Colors.white,
+              color: AppColors.surfaceWhite,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,7 +112,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                         },
                         child: const Icon(
                           Icons.arrow_back_ios_new_rounded,
-                          color: Color(0xFF4B4B4B),
+                          color: AppColors.bodyText,
                           size: 24,
                         ),
                       ),
@@ -122,7 +123,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                   _badge(
                     'Poin $points',
                     icon: Icons.star_rounded,
-                    iconColor: const Color(0xFFFFC800),
+                    iconColor: AppColors.lensGold,
                   ),
                 ],
               ),
@@ -141,8 +142,8 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                     height: 8,
                     decoration: BoxDecoration(
                       color: _currentPage == index
-                          ? const Color(0xFF1CB0F6)
-                          : const Color(0xFFD0D0D0),
+                          ? AppColors.brandBlue
+                          : AppColors.disabled,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -187,7 +188,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF4B4B4B),
+                    color: AppColors.bodyText,
                     height: 1.2,
                   ),
                 ),
@@ -199,7 +200,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                     style: const TextStyle(
                       fontSize: 16,
                       height: 1.6,
-                      color: Color(0xFF4B4B4B),
+                      color: AppColors.bodyText,
                     ),
                   ),
                 ),
@@ -230,7 +231,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: AppColors.surfaceWhite,
                 letterSpacing: 1.2,
               ),
             ),
@@ -254,7 +255,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                   'Cara Menggunakan:',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Color(0xFF4B4B4B),
+                    color: AppColors.bodyText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -264,7 +265,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF4B4B4B),
+                    color: AppColors.bodyText,
                     height: 1.2,
                   ),
                 ),
@@ -279,12 +280,12 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                           color: Colors.black,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: const Color(0xFF4B4B4B),
+                            color: AppColors.bodyText,
                             width: 3,
                           ),
                           boxShadow: const [
                             BoxShadow(
-                              color: Color(0xFFD0D0D0),
+                              color: AppColors.disabled,
                               offset: Offset(0, 6),
                               blurRadius: 12,
                             ),
@@ -311,7 +312,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                                   width: 36,
                                   height: 12,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF4B4B4B),
+                                    color: AppColors.bodyText,
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                 ),
@@ -325,7 +326,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                         'Visual Guide ${module.title}',
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF1CB0F6),
+                          color: AppColors.brandBlue,
                           fontWeight: FontWeight.w700,
                         ),
                         textAlign: TextAlign.center,
@@ -353,7 +354,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: AppColors.surfaceWhite,
                 letterSpacing: 1.2,
               ),
             ),
@@ -367,7 +368,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF4B4B4B),
+        color: AppColors.bodyText,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -379,7 +380,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
           Text(
             label,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.surfaceWhite,
               fontSize: 15,
               fontWeight: FontWeight.w800,
             ),

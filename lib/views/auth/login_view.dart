@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../view_models/auth_view_model.dart';
+import '../../core/app_colors.dart';
 
 class LoginView extends ConsumerWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -22,7 +23,7 @@ class LoginView extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (authState.errorMessage != null)
-              Text(authState.errorMessage!, style: const TextStyle(color: Colors.red)),
+              Text(authState.errorMessage!, style: const TextStyle(color: AppColors.error)),
             TextField(
               controller: emailController,
               decoration: const InputDecoration(labelText: 'Email'),

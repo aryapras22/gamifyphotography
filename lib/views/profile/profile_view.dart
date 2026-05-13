@@ -1,15 +1,16 @@
-// lib/views/profile/profile_view.dart
-// TASK-06 — ProfileView
+﻿// lib/views/profile/profile_view.dart
+// TASK-06 â€” ProfileView
 
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/app_text_styles.dart';
+import '../../core/app_colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../view_models/profile_view_model.dart';
 import '../../models/badge_model.dart';
-import '../../core/app_colors.dart';
-import '../../core/app_text_styles.dart';
+
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -54,7 +55,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
           : state.user == null
               ? _buildErrorState(state.errorMessage)
               : RefreshIndicator(
-                  color: const Color(0xFF1CB0F6),
+                  color: AppColors.brandBlue,
                   onRefresh: () =>
                       ref.read(profileViewModelProvider.notifier).refreshProfile(),
                   child: ListView(
@@ -82,12 +83,12 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.person_off_rounded, size: 64, color: Color(0xFFAFAFAF)),
+          const Icon(Icons.person_off_rounded, size: 64, color: AppColors.disabled),
           const SizedBox(height: 16),
           Text(
             message ?? 'Terjadi kesalahan.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFFAFAFAF), fontSize: 16),
+            style: const TextStyle(color: AppColors.disabled, fontSize: 16),
           ),
         ],
       ),
@@ -192,7 +193,7 @@ class _StatCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF1CB0F6),
+                    color: AppColors.brandBlue,
                   ),
                 ),
           const SizedBox(height: 4),
@@ -230,16 +231,16 @@ class _BadgeSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surfaceWhite,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
-            boxShadow: const [BoxShadow(color: Color(0xFFE5E5E5), offset: Offset(0, 4))],
+            border: Border.all(color: AppColors.cardBorder, width: 2),
+            boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4))],
           ),
           child: allBadges.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text('Memuat badge...', style: TextStyle(color: Color(0xFFAFAFAF))),
+                    child: Text('Memuat badge...', style: TextStyle(color: AppColors.disabled)),
                   ),
                 )
               : GridView.builder(
@@ -306,10 +307,10 @@ class _BadgeItem extends StatelessWidget {
                   ]),
           ),
           if (!isEarned)
-            const Positioned.fill(
+            Positioned.fill(
               child: Align(
                 alignment: Alignment.center,
-                child: Icon(Icons.lock_rounded, color: Colors.white70, size: 18),
+                child: Icon(Icons.lock_rounded, color: AppColors.surfaceWhite.withValues(alpha: 0.7), size: 18),
               ),
             ),
         ],
@@ -387,12 +388,12 @@ class _PhotoSection extends StatelessWidget {
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.camera_alt_outlined, size: 48, color: Color(0xFFAFAFAF)),
+                    Icon(Icons.camera_alt_outlined, size: 48, color: AppColors.disabled),
                     SizedBox(height: 12),
                     Text(
                       'Belum ada foto. Mulai misi!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFFAFAFAF), fontSize: 14),
+                      style: TextStyle(color: AppColors.disabled, fontSize: 14),
                     ),
                   ],
                 )
@@ -413,9 +414,9 @@ class _PhotoSection extends StatelessWidget {
                         File(photoUrls[index]),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          color: const Color(0xFFF0F4F5),
+                          color: AppColors.backgroundGray,
                           child: const Icon(Icons.broken_image_rounded,
-                              color: Color(0xFFAFAFAF)),
+                              color: AppColors.disabled),
                         ),
                       ),
                     );
