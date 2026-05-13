@@ -171,9 +171,21 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                   shadowColor: (!state.isLoading && !state.craftingDone && state.currentPoints >= state.requiredPoints)
                       ? const Color(0xFFD97706)
                       : const Color(0xFF616161),
-                  onPressed: (state.isLoading || state.craftingDone || state.currentPoints < state.requiredPoints)
-                      ? null
-                      : () => ref.read(craftingViewModelProvider.notifier).doCrafting(state.requiredPoints),
+                  onPressed: state.isLoading
+                      ? () {}
+                      : (!state.craftingDone && state.currentPoints >= state.requiredPoints)
+                          ? () => ref.read(craftingViewModelProvider.notifier).doCrafting(state.requiredPoints)
+                          : () {
+                              if (state.craftingDone) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Jembatan sudah selesai!')),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('XP kurang! Butuh ${state.requiredPoints} XP.')),
+                                );
+                              }
+                            },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                     child: state.isLoading 
