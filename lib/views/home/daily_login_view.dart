@@ -1,4 +1,4 @@
-﻿// lib/views/home/daily_login_view.dart
+// lib/views/home/daily_login_view.dart
 // TASK-04 â€” Daily Login Bottom Sheet
 
 import 'package:flutter/material.dart';
@@ -21,7 +21,7 @@ Future<void> showDailyLoginSheet(
   WidgetRef ref,
   String userId,
 ) async {
-  await ref.read(dailyLoginViewModelProvider.notifier).initialize(userId);
+  await ref.read(dailyLoginViewModelProvider.notifier).initialize();
 
   final hasClaimed = ref.read(dailyLoginViewModelProvider).hasClaimed;
   if (hasClaimed) return; // Sudah claim â†’ tidak tampilkan
@@ -295,7 +295,7 @@ class _ClaimButton extends ConsumerWidget {
               ? null
               : () => ref
                     .read(dailyLoginViewModelProvider.notifier)
-                    .claimToday(userId),
+                    .claimToday(),
           style: ElevatedButton.styleFrom(
             backgroundColor: showSuccess
                 ? AppColors.forestGreen

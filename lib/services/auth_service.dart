@@ -43,20 +43,51 @@ class AuthService {
   Future<UserModel> fetchUser(String uid) async {
     final doc = await _db.collection('users').doc(uid).get();
     if (!doc.exists) throw Exception('User data not found.');
-    final data = Map<String, dynamic>.from(doc.data()!);
-    data['id'] = uid;
+    final data = doc.data()!;
 
-    // Firestore stores FieldValue.serverTimestamp() as a Timestamp object,
-    // but the generated fromJson expects an ISO 8601 String.
-    // Convert Timestamp → String, or remove if null (not yet resolved).
-    if (data['createdAt'] is Timestamp) {
-      data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
-    } else if (data['createdAt'] != null && data['createdAt'] is! String) {
-      // Unknown type — drop to avoid crash
-      data.remove('createdAt');
+    DateTime? lastLoginDate;
+    if (data['lastLoginDate'] is Timestamp) {
+      lastLoginDate = (data['lastLoginDate'] as Timestamp).toDate();
     }
 
-    return UserModel.fromJson(data);
+    return UserModel(
+      id: uid,
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      role: data['role'] ?? 'user',
+      points: data['points'] ?? 0,
+      level: data['level'] ?? 1,
+      bridgeProgress: data['bridgeProgress'] ?? 0,
+      earnedBadgeIds: List<String>.from(data['earnedBadgeIds'] ?? []),
+      completedPhotoUrls: List<String>.from(data['completedPhotoUrls'] ?? []),
+      completedModuleIds: List<String>.from(data['completedModuleIds'] ?? []),
+      streakCount: data['streakCount'] ?? 0,
+      lastLoginDate: lastLoginDate,
+      weekHistory: data['weekHistory'] != null
+          ? List<bool>.from(data['weekHistory'])
+          : List.filled(7, false),
+      createdAt: data['createdAt'] is Timestamp
+          ? (data['createdAt'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
+  /// Persists mutable game progress fields to Firestore.
+  /// Only updates the listed fields — never overwrites role, name, or email.
+  Future<void> updateUserProgress(UserModel user) async {
+    await _db.collection('users').doc(user.id).update({
+      'points': user.points,
+      'level': user.level,
+      'bridgeProgress': user.bridgeProgress,
+      'earnedBadgeIds': user.earnedBadgeIds,
+      'completedPhotoUrls': user.completedPhotoUrls,
+      'completedModuleIds': user.completedModuleIds,
+      'streakCount': user.streakCount,
+      'lastLoginDate': user.lastLoginDate != null
+          ? Timestamp.fromDate(user.lastLoginDate!)
+          : null,
+      'weekHistory': user.weekHistory,
+    });
   }
 
   Future<void> logout() async => _auth.signOut();

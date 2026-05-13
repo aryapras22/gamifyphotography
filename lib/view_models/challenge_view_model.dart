@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:camera/camera.dart';
 import '../models/challenge_model.dart';
 import '../services/challenge_service.dart';
+import '../services/photo_submission_service.dart';
 import 'auth_view_model.dart';
 import 'daily_login_view_model.dart';
 import 'mission_view_model.dart';
@@ -11,37 +12,46 @@ class ChallengeState {
   final ChallengeModel? challenge;
   final bool isUploading;
   final int pointsEarned;
+  final String? errorMessage;
 
   ChallengeState({
     this.challenge,
     this.isUploading = false,
     this.pointsEarned = 0,
+    this.errorMessage,
   });
 
   ChallengeState copyWith({
     ChallengeModel? challenge,
     bool? isUploading,
     int? pointsEarned,
+    String? errorMessage,
   }) {
     return ChallengeState(
       challenge: challenge ?? this.challenge,
       isUploading: isUploading ?? this.isUploading,
       pointsEarned: pointsEarned ?? this.pointsEarned,
+      errorMessage: errorMessage,
     );
   }
 }
 
 final challengeViewModelProvider =
     StateNotifierProvider<ChallengeViewModel, ChallengeState>(
-      (ref) => ChallengeViewModel(ref, ref.read(challengeServiceProvider)),
+      (ref) => ChallengeViewModel(
+        ref,
+        ref.read(challengeServiceProvider),
+        ref.read(photoSubmissionServiceProvider),
+      ),
     );
 
 class ChallengeViewModel extends StateNotifier<ChallengeState> {
   final Ref _ref;
   final ChallengeService _challengeService;
+  final PhotoSubmissionService _submissionService;
 
-  ChallengeViewModel(this._ref, this._challengeService)
-    : super(ChallengeState());
+  ChallengeViewModel(this._ref, this._challengeService, this._submissionService)
+      : super(ChallengeState());
 
   Future<void> loadChallenge(String moduleId) async {
     state = ChallengeState();
@@ -49,63 +59,82 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
     state = state.copyWith(challenge: challenge);
   }
 
-  Future<void> uploadPhoto(XFile file) async {
-    state = state.copyWith(isUploading: true);
+  Future<void> uploadPhoto(XFile file, {required String moduleTitle}) async {
+    state = state.copyWith(isUploading: true, errorMessage: null);
     try {
       final url = await _challengeService.uploadPhoto(file);
       final updatedChallenge = state.challenge!.copyWith(uploadedPhotoUrl: url);
+
+      final user = _ref.read(authViewModelProvider).currentUser;
+      if (user != null && state.challenge != null) {
+        await _submissionService.submitPhoto(
+          userId: user.id,
+          userName: user.name,
+          moduleId: state.challenge!.moduleId,
+          moduleTitle: moduleTitle,
+          photoUrl: url,
+        );
+      }
+
       state = state.copyWith(challenge: updatedChallenge, isUploading: false);
     } catch (e) {
-      state = state.copyWith(isUploading: false);
+      state = state.copyWith(
+        isUploading: false,
+        errorMessage: 'Upload failed. Please try again.',
+      );
     }
   }
 
   Future<void> completeChallenge() async {
     if (state.challenge == null) return;
-    if (state.challenge!.isCompleted) return; // Guard idempotent (fix BUG-09)
+
+    final user = _ref.read(authViewModelProvider).currentUser;
+    if (user == null) return;
+
+    // Idempotent guard using Firestore data
+    if (user.completedModuleIds.contains(state.challenge!.moduleId)) return;
+    if (state.challenge!.isCompleted) return;
 
     await _challengeService.completeChallenge(state.challenge!.id);
     final updatedChallenge = state.challenge!.copyWith(isCompleted: true);
-
     final points = updatedChallenge.pointReward;
 
-    // Update user points
-    final authState = _ref.read(authViewModelProvider);
-    if (authState.currentUser != null) {
-      var user = authState.currentUser!.copyWith(
-        points: authState.currentUser!.points + points,
+    var updatedUser = user.copyWith(
+      points: user.points + points,
+      completedModuleIds: [...user.completedModuleIds, state.challenge!.moduleId],
+      level: ((user.points + points) ~/ 100) + 1,
+    );
+
+    final photoUrl = state.challenge!.uploadedPhotoUrl;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      updatedUser = updatedUser.copyWith(
+        completedPhotoUrls: [...updatedUser.completedPhotoUrls, photoUrl],
       );
-
-      // Level up setiap 100 poin
-      user = user.copyWith(level: (user.points ~/ 100) + 1);
-
-      // Cek badge baru via BadgeService (konsisten dengan BadgeViewModel)
-      final badgeService = _ref.read(badgeServiceProvider);
-      final streak = _ref.read(dailyLoginViewModelProvider).currentStreak;
-      final newBadges = await badgeService.checkNewBadges(
-        level: user.level,
-        streak: streak,
-        earnedBadgeIds: user.earnedBadgeIds,
-        completedFirstMission: user.level >= 1,
-      );
-      if (newBadges.isNotEmpty) {
-        final newIds = newBadges.map((b) => b.id).toList();
-        user = user.copyWith(
-          earnedBadgeIds: [...user.earnedBadgeIds, ...newIds],
-        );
-      }
-
-      final photoUrl = state.challenge!.uploadedPhotoUrl;
-      if (photoUrl != null && photoUrl.isNotEmpty) {
-        user = user.copyWith(
-          completedPhotoUrls: [...user.completedPhotoUrls, photoUrl],
-        );
-      }
-      _ref.read(authViewModelProvider.notifier).updateUser(user);
     }
 
-    final moduleId = state.challenge!.moduleId;
-    _ref.read(missionViewModelProvider.notifier).markModuleCompleted(moduleId);
+    // Check badges
+    final badgeService = _ref.read(badgeServiceProvider);
+    final streak = _ref.read(dailyLoginViewModelProvider).currentStreak;
+    final newBadges = await badgeService.checkNewBadges(
+      level: updatedUser.level,
+      streak: streak,
+      earnedBadgeIds: updatedUser.earnedBadgeIds,
+      completedFirstMission: updatedUser.completedModuleIds.isNotEmpty,
+    );
+    if (newBadges.isNotEmpty) {
+      updatedUser = updatedUser.copyWith(
+        earnedBadgeIds: [
+          ...updatedUser.earnedBadgeIds,
+          ...newBadges.map((b) => b.id),
+        ],
+      );
+    }
+
+    // CRITICAL: Persist to Firestore before updating in-memory state
+    await _ref.read(authServiceProvider).updateUserProgress(updatedUser);
+
+    _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
+    _ref.read(missionViewModelProvider.notifier).markModuleCompleted(state.challenge!.moduleId);
 
     state = state.copyWith(challenge: updatedChallenge, pointsEarned: points);
   }

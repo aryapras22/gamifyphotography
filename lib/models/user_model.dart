@@ -15,6 +15,10 @@ class UserModel with _$UserModel {
     @Default([]) List<String> earnedBadgeIds,
     @Default([]) List<String> completedPhotoUrls,
     @Default(0) int bridgeProgress,
+    @Default([]) List<String> completedModuleIds,
+    @Default(0) int streakCount,
+    DateTime? lastLoginDate,
+    @Default([false, false, false, false, false, false, false]) List<bool> weekHistory,
     DateTime? createdAt,
   }) = _UserModel;
 

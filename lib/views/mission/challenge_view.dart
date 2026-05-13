@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import '../../view_models/challenge_view_model.dart';
+import '../../view_models/mission_view_model.dart';
 import '../widgets/animated_3d_button.dart';
 import 'custom_camera_view.dart';
 import 'dart:io';
@@ -143,10 +144,11 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           );
 
                           if (xfile != null) {
+                            final moduleTitle = ref.read(missionViewModelProvider).activeModule?.title ?? challenge.moduleId;
                             // Hanya upload foto — user harus tap "CEK HASIL" secara eksplisit
                             await ref
                                 .read(challengeViewModelProvider.notifier)
-                                .uploadPhoto(xfile);
+                                .uploadPhoto(xfile, moduleTitle: moduleTitle);
                             // TIDAK ada completeChallenge() di sini (fix BUG-09)
                           }
                         },

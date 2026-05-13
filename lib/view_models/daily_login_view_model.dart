@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/daily_login_service.dart';
 import '../providers/service_providers.dart';
+import 'auth_view_model.dart';
 
 // ---------------------------------------------------------------------------
 // State
@@ -52,7 +53,7 @@ class DailyLoginState {
 
 final dailyLoginViewModelProvider =
     StateNotifierProvider<DailyLoginViewModel, DailyLoginState>((ref) {
-  return DailyLoginViewModel(ref.read(dailyLoginServiceProvider));
+  return DailyLoginViewModel(ref, ref.read(dailyLoginServiceProvider));
 });
 
 // ---------------------------------------------------------------------------
@@ -60,10 +61,11 @@ final dailyLoginViewModelProvider =
 // ---------------------------------------------------------------------------
 
 class DailyLoginViewModel extends StateNotifier<DailyLoginState> {
+  final Ref _ref;
   final DailyLoginService _service;
   Timer? _successTimer;
 
-  DailyLoginViewModel(this._service) : super(const DailyLoginState());
+  DailyLoginViewModel(this._ref, this._service) : super(const DailyLoginState());
 
   @override
   void dispose() {
@@ -72,7 +74,10 @@ class DailyLoginViewModel extends StateNotifier<DailyLoginState> {
   }
 
   /// Dipanggil saat view pertama kali tampil — load state awal user.
-  Future<void> initialize(String userId) async {
+  Future<void> initialize() async {
+    final userId = _ref.read(authViewModelProvider).currentUser?.id ?? '';
+    if (userId.isEmpty) return;
+
     state = state.copyWith(isLoading: true);
     try {
       final hasClaimed = await _service.hasClaimedToday(userId);
@@ -94,19 +99,35 @@ class DailyLoginViewModel extends StateNotifier<DailyLoginState> {
   }
 
   /// Lakukan claim — update state + trigger success animation selama 2 detik.
-  Future<void> claimToday(String userId) async {
+  Future<void> claimToday() async {
+    final userId = _ref.read(authViewModelProvider).currentUser?.id ?? '';
+    if (userId.isEmpty) return;
+
     if (state.hasClaimed || state.isLoading) return;
 
     state = state.copyWith(isLoading: true);
     try {
       await _service.claimDailyLogin(userId);
-      final streak = await _service.getCurrentStreak(userId);
+      final newStreak = await _service.getCurrentStreak(userId);
       final history = await _service.getWeekHistory(userId);
+
+      // Persist points
+      final user = _ref.read(authViewModelProvider).currentUser;
+      if (user != null) {
+        final updatedUser = user.copyWith(
+          points: user.points + kDailyLoginPoints,
+          level: ((user.points + kDailyLoginPoints) ~/ 100) + 1,
+          streakCount: newStreak,
+          lastLoginDate: DateTime.now(),
+        );
+        await _ref.read(authServiceProvider).updateUserProgress(updatedUser);
+        _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
+      }
 
       state = state.copyWith(
         isLoading: false,
         hasClaimed: true,
-        currentStreak: streak,
+        currentStreak: newStreak,
         weekHistory: history,
         showClaimSuccess: true,
       );

@@ -1,5 +1,8 @@
 import '../models/challenge_model.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:io';
 
 class ChallengeService {
   Future<ChallengeModel> getChallenge(String moduleId) async {
@@ -40,9 +43,22 @@ class ChallengeService {
   }
 
   Future<String> uploadPhoto(XFile file) async {
-    await Future.delayed(const Duration(seconds: 1)); // simulasi upload
-    // Mock: kembalikan path lokal asli agar foto bisa ditampilkan di FeedbackView
-    return file.path;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) throw Exception('User not authenticated.');
+
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('challenge_photos')
+        .child(uid)
+        .child(fileName);
+
+    final uploadTask = await ref.putFile(
+      File(file.path),
+      SettableMetadata(contentType: 'image/jpeg'),
+    );
+
+    return await uploadTask.ref.getDownloadURL();
   }
 
   Future<void> completeChallenge(String challengeId) async {

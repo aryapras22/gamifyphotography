@@ -25,6 +25,20 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
               .toList() ??
           const [],
       bridgeProgress: (json['bridgeProgress'] as num?)?.toInt() ?? 0,
+      completedModuleIds:
+          (json['completedModuleIds'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      streakCount: (json['streakCount'] as num?)?.toInt() ?? 0,
+      lastLoginDate: json['lastLoginDate'] == null
+          ? null
+          : DateTime.parse(json['lastLoginDate'] as String),
+      weekHistory:
+          (json['weekHistory'] as List<dynamic>?)
+              ?.map((e) => e as bool)
+              .toList() ??
+          const [false, false, false, false, false, false, false],
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
@@ -41,5 +55,9 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'earnedBadgeIds': instance.earnedBadgeIds,
       'completedPhotoUrls': instance.completedPhotoUrls,
       'bridgeProgress': instance.bridgeProgress,
+      'completedModuleIds': instance.completedModuleIds,
+      'streakCount': instance.streakCount,
+      'lastLoginDate': instance.lastLoginDate?.toIso8601String(),
+      'weekHistory': instance.weekHistory,
       'createdAt': instance.createdAt?.toIso8601String(),
     };

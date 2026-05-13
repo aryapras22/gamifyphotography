@@ -2,12 +2,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    function isOwner(uid) {
-      return request.auth.uid == uid;
-    }
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(uid) { return request.auth.uid == uid; }
     function isAdmin() {
       return isAuthenticated() &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
@@ -19,7 +15,7 @@ service cloud.firestore {
         && request.resource.data.role == 'user';
       allow update: if isOwner(uid)
         && !request.resource.data.diff(resource.data)
-            .affectedKeys().hasAny(['role']);
+            .affectedKeys().hasAny(['role', 'email']);
       allow delete: if false;
     }
 

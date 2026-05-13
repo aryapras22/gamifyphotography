@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/module_model.dart';
 import '../services/module_service.dart';
 import '../providers/service_providers.dart';
+import 'auth_view_model.dart';
 
 const _unset = Object();
 
@@ -39,19 +40,30 @@ class MissionState {
 
 final missionViewModelProvider =
     StateNotifierProvider<MissionViewModel, MissionState>(
-      (ref) => MissionViewModel(ref.read(moduleServiceProvider)),
+      (ref) => MissionViewModel(ref, ref.read(moduleServiceProvider)),
     );
 
 class MissionViewModel extends StateNotifier<MissionState> {
+  final Ref _ref;
   final ModuleService _moduleService;
 
-  MissionViewModel(this._moduleService) : super(MissionState());
+  MissionViewModel(this._ref, this._moduleService) : super(MissionState());
 
   Future<void> fetchModules() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
       final modules = await _moduleService.getModules();
-      state = state.copyWith(isLoading: false, modules: modules);
+
+      // Restore completion state from persistent Firestore user data
+      final user = _ref.read(authViewModelProvider).currentUser;
+      final completedIds = user?.completedModuleIds ?? [];
+
+      final restoredModules = modules.map((m) {
+        if (completedIds.contains(m.id)) return m.copyWith(isCompleted: true);
+        return m;
+      }).toList();
+
+      state = state.copyWith(isLoading: false, modules: restoredModules);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }

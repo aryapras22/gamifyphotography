@@ -30,6 +30,10 @@ mixin _$UserModel {
   List<String> get earnedBadgeIds => throw _privateConstructorUsedError;
   List<String> get completedPhotoUrls => throw _privateConstructorUsedError;
   int get bridgeProgress => throw _privateConstructorUsedError;
+  List<String> get completedModuleIds => throw _privateConstructorUsedError;
+  int get streakCount => throw _privateConstructorUsedError;
+  DateTime? get lastLoginDate => throw _privateConstructorUsedError;
+  List<bool> get weekHistory => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
@@ -57,6 +61,10 @@ abstract class $UserModelCopyWith<$Res> {
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
     int bridgeProgress,
+    List<String> completedModuleIds,
+    int streakCount,
+    DateTime? lastLoginDate,
+    List<bool> weekHistory,
     DateTime? createdAt,
   });
 }
@@ -85,6 +93,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
+    Object? completedModuleIds = null,
+    Object? streakCount = null,
+    Object? lastLoginDate = freezed,
+    Object? weekHistory = null,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -125,6 +137,22 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.bridgeProgress
                 : bridgeProgress // ignore: cast_nullable_to_non_nullable
                       as int,
+            completedModuleIds: null == completedModuleIds
+                ? _value.completedModuleIds
+                : completedModuleIds // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            streakCount: null == streakCount
+                ? _value.streakCount
+                : streakCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            lastLoginDate: freezed == lastLoginDate
+                ? _value.lastLoginDate
+                : lastLoginDate // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            weekHistory: null == weekHistory
+                ? _value.weekHistory
+                : weekHistory // ignore: cast_nullable_to_non_nullable
+                      as List<bool>,
             createdAt: freezed == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -154,6 +182,10 @@ abstract class _$$UserModelImplCopyWith<$Res>
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
     int bridgeProgress,
+    List<String> completedModuleIds,
+    int streakCount,
+    DateTime? lastLoginDate,
+    List<bool> weekHistory,
     DateTime? createdAt,
   });
 }
@@ -181,6 +213,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
     Object? bridgeProgress = null,
+    Object? completedModuleIds = null,
+    Object? streakCount = null,
+    Object? lastLoginDate = freezed,
+    Object? weekHistory = null,
     Object? createdAt = freezed,
   }) {
     return _then(
@@ -221,6 +257,22 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.bridgeProgress
             : bridgeProgress // ignore: cast_nullable_to_non_nullable
                   as int,
+        completedModuleIds: null == completedModuleIds
+            ? _value._completedModuleIds
+            : completedModuleIds // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        streakCount: null == streakCount
+            ? _value.streakCount
+            : streakCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        lastLoginDate: freezed == lastLoginDate
+            ? _value.lastLoginDate
+            : lastLoginDate // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        weekHistory: null == weekHistory
+            ? _value._weekHistory
+            : weekHistory // ignore: cast_nullable_to_non_nullable
+                  as List<bool>,
         createdAt: freezed == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -243,9 +295,23 @@ class _$UserModelImpl implements _UserModel {
     final List<String> earnedBadgeIds = const [],
     final List<String> completedPhotoUrls = const [],
     this.bridgeProgress = 0,
+    final List<String> completedModuleIds = const [],
+    this.streakCount = 0,
+    this.lastLoginDate,
+    final List<bool> weekHistory = const [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ],
     this.createdAt,
   }) : _earnedBadgeIds = earnedBadgeIds,
-       _completedPhotoUrls = completedPhotoUrls;
+       _completedPhotoUrls = completedPhotoUrls,
+       _completedModuleIds = completedModuleIds,
+       _weekHistory = weekHistory;
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -287,12 +353,36 @@ class _$UserModelImpl implements _UserModel {
   @override
   @JsonKey()
   final int bridgeProgress;
+  final List<String> _completedModuleIds;
+  @override
+  @JsonKey()
+  List<String> get completedModuleIds {
+    if (_completedModuleIds is EqualUnmodifiableListView)
+      return _completedModuleIds;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_completedModuleIds);
+  }
+
+  @override
+  @JsonKey()
+  final int streakCount;
+  @override
+  final DateTime? lastLoginDate;
+  final List<bool> _weekHistory;
+  @override
+  @JsonKey()
+  List<bool> get weekHistory {
+    if (_weekHistory is EqualUnmodifiableListView) return _weekHistory;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_weekHistory);
+  }
+
   @override
   final DateTime? createdAt;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, createdAt: $createdAt)';
+    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt)';
   }
 
   @override
@@ -316,6 +406,18 @@ class _$UserModelImpl implements _UserModel {
             ) &&
             (identical(other.bridgeProgress, bridgeProgress) ||
                 other.bridgeProgress == bridgeProgress) &&
+            const DeepCollectionEquality().equals(
+              other._completedModuleIds,
+              _completedModuleIds,
+            ) &&
+            (identical(other.streakCount, streakCount) ||
+                other.streakCount == streakCount) &&
+            (identical(other.lastLoginDate, lastLoginDate) ||
+                other.lastLoginDate == lastLoginDate) &&
+            const DeepCollectionEquality().equals(
+              other._weekHistory,
+              _weekHistory,
+            ) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
@@ -333,6 +435,10 @@ class _$UserModelImpl implements _UserModel {
     const DeepCollectionEquality().hash(_earnedBadgeIds),
     const DeepCollectionEquality().hash(_completedPhotoUrls),
     bridgeProgress,
+    const DeepCollectionEquality().hash(_completedModuleIds),
+    streakCount,
+    lastLoginDate,
+    const DeepCollectionEquality().hash(_weekHistory),
     createdAt,
   );
 
@@ -361,6 +467,10 @@ abstract class _UserModel implements UserModel {
     final List<String> earnedBadgeIds,
     final List<String> completedPhotoUrls,
     final int bridgeProgress,
+    final List<String> completedModuleIds,
+    final int streakCount,
+    final DateTime? lastLoginDate,
+    final List<bool> weekHistory,
     final DateTime? createdAt,
   }) = _$UserModelImpl;
 
@@ -385,6 +495,14 @@ abstract class _UserModel implements UserModel {
   List<String> get completedPhotoUrls;
   @override
   int get bridgeProgress;
+  @override
+  List<String> get completedModuleIds;
+  @override
+  int get streakCount;
+  @override
+  DateTime? get lastLoginDate;
+  @override
+  List<bool> get weekHistory;
   @override
   DateTime? get createdAt;
 
