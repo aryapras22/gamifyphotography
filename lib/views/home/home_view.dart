@@ -16,12 +16,40 @@ class HomeView extends ConsumerStatefulWidget {
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       ref.read(missionViewModelProvider.notifier).fetchModules();
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.listenManual(missionViewModelProvider, (prev, next) {
+        if ((prev?.modules.isEmpty ?? true) && next.modules.isNotEmpty) {
+          _scrollToActiveModule(next.modules);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToActiveModule(List modules) {
+    final idx = modules.indexWhere((m) => !m.isCompleted);
+    if (idx <= 0) return;
+    const headerHeight = 200.0;
+    const nodeHeight = 120.0;
+    _scrollController.animateTo(
+      headerHeight + idx * nodeHeight,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   String _greeting() {
@@ -57,6 +85,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
       backgroundColor: AppColors.backgroundGray,
       body: SafeArea(
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             // ── Dashboard Header ────────────────────────────────
             SliverPadding(
