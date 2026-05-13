@@ -2,6 +2,7 @@
 // TASK-06 — Wire LeaderboardView ke LeaderboardViewModel
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/leaderboard_model.dart';
 import '../../view_models/leaderboard_view_model.dart';
@@ -47,6 +48,13 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
         ),
         elevation: 1,
         backgroundColor: AppColors.surfaceWhite,
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              )
+            : null,
+        automaticallyImplyLeading: Navigator.of(context).canPop(),
         actions: [
           if (state.currentUserRank > 0)
             Padding(
@@ -271,24 +279,6 @@ class _LeaderboardTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Delta Rank indicator (mock)
-                    if (entry.rank % 3 == 0)
-                      Text(
-                        '+2 ↑',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.forestGreen,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    else if (entry.rank % 4 == 0)
-                      Text(
-                        '-1 ↓',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.coralRed,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                   ],
                 ),
                 if (isCurrentUser)
