@@ -17,11 +17,10 @@ import '../views/leaderboard/leaderboard_view.dart';
 import '../views/profile/profile_view.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final auth = ref.watch(authViewModelProvider);
-
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
+      final auth = ref.read(authViewModelProvider);
       final loc = state.matchedLocation;
       if (auth.isCheckingSession) return loc == '/splash' ? null : '/splash';
 
@@ -82,4 +81,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.listen(authViewModelProvider, (previous, next) {
+    router.refresh();
+  });
+
+  return router;
 });
