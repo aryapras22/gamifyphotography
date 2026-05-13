@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../home/home_view.dart';
+import '../progress/progress_view.dart';
+import '../crafting/crafting_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_view.dart';
 import '../../view_models/auth_view_model.dart';
@@ -24,6 +26,8 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
 
   final List<Widget> _pages = [
     const HomeView(),
+    const ProgressView(),
+    const CraftingView(),
     const LeaderboardView(),
     const ProfileView(),
   ];
@@ -74,6 +78,14 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded, size: 28),
               label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_rounded, size: 28),
+              label: 'Progress',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.handyman_rounded, size: 28),
+              label: 'Crafting',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.emoji_events_rounded, size: 28),
