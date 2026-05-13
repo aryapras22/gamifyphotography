@@ -42,9 +42,13 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
 
   Future<void> _triggerDailyLoginIfNeeded() async {
     if (!mounted) return;
-    final authUser = ref.read(authViewModelProvider).currentUser;
-    final userId = authUser?.id ?? _kFallbackUserId;
-    await showDailyLoginSheet(context, ref, userId);
+    try {
+      final authUser = ref.read(authViewModelProvider).currentUser;
+      final userId = authUser?.id ?? _kFallbackUserId;
+      await showDailyLoginSheet(context, ref, userId);
+    } catch (e) {
+      debugPrint('[DailyLogin] startup error suppressed: $e');
+    }
   }
 
   @override
