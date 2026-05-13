@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/app_colors.dart';
 import 'package:go_router/go_router.dart';
 import '../../view_models/crafting_view_model.dart';
 import '../../view_models/auth_view_model.dart';
@@ -37,11 +38,11 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
         elevation: 0,
         leading: GestureDetector(
           onTap: () => context.pop(),
-          child: const Padding(
+          child: Padding(
             padding: EdgeInsets.all(8.0),
             child: CircleAvatar(
-              backgroundColor: Colors.white24,
-              child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+              backgroundColor: AppColors.surfaceWhite.withValues(alpha: 0.24),
+              child: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.surfaceWhite, size: 20),
             ),
           ),
         ),
@@ -99,7 +100,7 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
             child: const Text(
               '?',
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.surfaceWhite,
                 fontSize: 64,
                 fontWeight: FontWeight.w900,
                 shadows: [Shadow(color: Colors.black45, blurRadius: 10)],
@@ -128,14 +129,14 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                     margin: const EdgeInsets.only(bottom: 20),
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF58CC02),
+                      color: AppColors.forestGreen,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))],
                     ),
                     child: const Text(
-                      'Jembatan Selesai! 🎉\nKamu mencapai New Creativity!',
+                      'Jembatan Selesai! ðŸŽ‰\nKamu mencapai New Creativity!',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
+                      style: TextStyle(color: AppColors.surfaceWhite, fontSize: 18, fontWeight: FontWeight.w900),
                     ),
                   ),
 
@@ -143,7 +144,7 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.handyman_rounded, color: Colors.white, size: 28),
+                    Icon(Icons.handyman_rounded, color: AppColors.surfaceWhite, size: 28),
                     const SizedBox(width: 12),
                     SizedBox(
                       width: 250,
@@ -151,11 +152,11 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                         lineHeight: 24.0,
                         percent: (state.currentPoints / state.requiredPoints).clamp(0.0, 1.0),
                         barRadius: const Radius.circular(12),
-                        backgroundColor: Colors.white30,
-                        progressColor: const Color(0xFFF59E0B), // Amber
+                        backgroundColor: AppColors.surfaceWhite.withValues(alpha: 0.3),
+                        progressColor: AppColors.xpAmber, // Amber
                         center: Text(
                           '${state.requiredPoints} XP untuk Crafting',
-                          style: const TextStyle(fontWeight: FontWeight.w800, color: Colors.white, fontSize: 12),
+                          style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.surfaceWhite, fontSize: 12),
                         ),
                       ),
                     ),
@@ -166,11 +167,11 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                 // Crafting Button
                 Animated3DButton(
                   color: (!state.isLoading && !state.craftingDone && state.currentPoints >= state.requiredPoints)
-                      ? const Color(0xFFF59E0B) // Active Orange
-                      : const Color(0xFF9E9E9E), // Inactive Grey
+                      ? AppColors.xpAmber // Active Orange
+                      : AppColors.disabled, // Inactive Grey
                   shadowColor: (!state.isLoading && !state.craftingDone && state.currentPoints >= state.requiredPoints)
-                      ? const Color(0xFFD97706)
-                      : const Color(0xFF616161),
+                      ? AppColors.lensGold
+                      : AppColors.disabled.withValues(alpha:0.8),
                   onPressed: state.isLoading
                       ? () {}
                       : (!state.craftingDone && state.currentPoints >= state.requiredPoints)
@@ -192,14 +193,14 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
                       ? const SizedBox(
                           width: 24, 
                           height: 24, 
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3)
+                          child: CircularProgressIndicator(color: AppColors.surfaceWhite, strokeWidth: 3)
                         )
                       : const Text(
                           'Crafting',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: AppColors.surfaceWhite,
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -256,7 +257,7 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
             text,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.surfaceWhite,
               fontWeight: FontWeight.w900,
               fontSize: 16,
               shadows: [Shadow(color: Colors.black54, offset: Offset(1, 1))],

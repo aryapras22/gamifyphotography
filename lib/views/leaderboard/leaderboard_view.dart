@@ -1,5 +1,5 @@
-// lib/views/leaderboard/leaderboard_view.dart
-// TASK-06 — Wire LeaderboardView ke LeaderboardViewModel
+﻿// lib/views/leaderboard/leaderboard_view.dart
+// TASK-06 â€” Wire LeaderboardView ke LeaderboardViewModel
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +13,7 @@ import '../../core/app_text_styles.dart';
 const String _kFallbackUserId = 'user_1';
 
 // Medal emoji untuk top 3
-const List<String> _kMedals = ['🥇', '🥈', '🥉'];
+const List<String> _kMedals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
 
 class LeaderboardView extends ConsumerStatefulWidget {
   const LeaderboardView({Key? key}) : super(key: key);
@@ -256,7 +256,7 @@ class _LeaderboardTile extends StatelessWidget {
               backgroundColor: avatarBgColor,
               child: Text(
                 initials,
-                style: AppTextStyles.title.copyWith(color: Colors.white, fontSize: 16),
+                style: AppTextStyles.title.copyWith(color: AppColors.surfaceWhite, fontSize: 16),
               ),
             ),
           ),

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../view_models/progress_view_model.dart';
+import '../../core/app_colors.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class ProgressView extends ConsumerStatefulWidget {
@@ -27,26 +28,26 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
 
     if (user == null) {
       return const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF6366F1))),
+        backgroundColor: AppColors.backgroundGray,
+        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Slate 50
+      backgroundColor: AppColors.backgroundGray, // Slate 50
       appBar: AppBar(
         title: const Text(
           'Profil & Progres',
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 22,
-            color: Color(0xFF0F172A), // Slate 900
+            color: AppColors.bodyText, // Slate 900
             letterSpacing: -0.5,
           ),
         ),
         elevation: 0,
-        backgroundColor: const Color(0xFFF8FAFC),
-        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+        backgroundColor: AppColors.backgroundGray,
+        iconTheme: const IconThemeData(color: AppColors.bodyText),
         centerTitle: false,
       ),
       body: SingleChildScrollView(
@@ -54,13 +55,13 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Premium User Card ───────────────────────────────────────
+            // â”€â”€ Premium User Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.surfaceWhite,
                 borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                border: Border.all(color: AppColors.cardBorder, width: 1.5),
                 boxShadow: const [
                   BoxShadow(
                     color: Color(0x0A000000),
@@ -76,25 +77,25 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                     width: 120,
                     height: 120,
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)], // Indigo to Purple
+                        colors: [AppColors.brandBlue, AppColors.brandBlue], // Indigo to Purple
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surfaceWhite,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
+                        border: Border.all(color: AppColors.surfaceWhite, width: 4),
                       ),
                       child: const Center(
                         child: Icon(
                           Icons.person_rounded,
                           size: 60,
-                          color: Color(0xFF6366F1),
+                          color: AppColors.brandBlue,
                         ),
                       ),
                     ),
@@ -105,7 +106,7 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF0F172A),
+                      color: AppColors.bodyText,
                       letterSpacing: -0.5,
                     ),
                   ),
@@ -120,12 +121,12 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                         children: [
                           const Text(
                             'LEVEL',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 1.2),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.secondaryText, letterSpacing: 1.2),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '${user.level}',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF6366F1)),
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.brandBlue),
                           ),
                         ],
                       ),
@@ -134,16 +135,16 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                         children: [
                           const Text(
                             'TOTAL XP',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF64748B), letterSpacing: 1.2),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.secondaryText, letterSpacing: 1.2),
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.star_rounded, color: Color(0xFFF59E0B), size: 24),
+                              const Icon(Icons.star_rounded, color: AppColors.xpAmber, size: 24),
                               const SizedBox(width: 4),
                               Text(
                                 '${user.points}',
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFFF59E0B)),
+                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.xpAmber),
                               ),
                             ],
                           ),
@@ -158,9 +159,9 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                     lineHeight: 16.0,
                     percent: state.progressPercentage,
                     barRadius: const Radius.circular(8),
-                    backgroundColor: const Color(0xFFF1F5F9), // Slate 100
-                    linearGradient: const LinearGradient(
-                      colors: [Color(0xFFF59E0B), Color(0xFFFCD34D)], // Amber to Gold
+                    backgroundColor: AppColors.backgroundGray, // Slate 100
+                    linearGradient: LinearGradient(
+                      colors: [AppColors.xpAmber, AppColors.xpAmber.withValues(alpha: 0.6)], // Amber to Gold
                     ),
                     padding: EdgeInsets.zero,
                   ),
@@ -174,13 +175,13 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
             ),
             const SizedBox(height: 40),
 
-            // ── Badges Section ──────────────────────────────────────────
+            // â”€â”€ Badges Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             const Text(
               'Koleksi Badge',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF0F172A),
+                color: AppColors.bodyText,
                 letterSpacing: -0.5,
               ),
             ),
@@ -190,15 +191,15 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surfaceWhite,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                  border: Border.all(color: AppColors.cardBorder, width: 1.5),
                 ),
                 child: const Center(
                   child: Text(
                     'Belum ada badge yang diperoleh.\nAyo selesaikan misi!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Color(0xFF64748B), fontWeight: FontWeight.w600, height: 1.5),
+                    style: TextStyle(fontSize: 16, color: AppColors.secondaryText, fontWeight: FontWeight.w600, height: 1.5),
                   ),
                 ),
               )
@@ -217,9 +218,9 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                   final badge = state.earnedBadges[index];
                   return Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.surfaceWhite,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
+                      border: Border.all(color: AppColors.cardBorder, width: 1.5),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0x05000000),
@@ -237,14 +238,14 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                           height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFEF3C7), Color(0xFFFEF08A)], // Light Amber gradient
+                            gradient: LinearGradient(
+                              colors: [AppColors.streakBg, Color(0xFFFEF08A)], // Light Amber gradient
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                                color: AppColors.xpAmber.withValues(alpha: 0.2),
                                 offset: const Offset(0, 8),
                                 blurRadius: 16,
                               )
@@ -254,7 +255,7 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                             child: Icon(
                               Icons.workspace_premium_rounded, // Premium badge icon
                               size: 44,
-                              color: Color(0xFFF59E0B),
+                              color: AppColors.xpAmber,
                             ),
                           ),
                         ),
@@ -265,7 +266,7 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                           style: const TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
-                            color: Color(0xFF0F172A),
+                            color: AppColors.bodyText,
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -278,7 +279,7 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF64748B),
+                              color: AppColors.secondaryText,
                               fontWeight: FontWeight.w500,
                               height: 1.4,
                             ),
