@@ -9,12 +9,15 @@ class UserModel with _$UserModel {
     required String id,
     required String name,
     required String email,
+    @Default('user') String role,
     @Default(0) int points,
     @Default(1) int level,
     @Default([]) List<String> earnedBadgeIds,
     @Default([]) List<String> completedPhotoUrls,
-    @Default(0) int bridgeProgress, // Tracker untuk jembatan
+    @Default(0) int bridgeProgress,
+    DateTime? createdAt,
   }) = _UserModel;
 
-  factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
+  factory UserModel.fromJson(Map<String, dynamic> json) =>
+      _$UserModelFromJson(json);
 }

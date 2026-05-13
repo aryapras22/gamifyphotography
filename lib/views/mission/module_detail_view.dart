@@ -6,7 +6,17 @@ import '../../core/app_colors.dart';
 import '../../view_models/mission_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../view_models/challenge_view_model.dart';
+import '../../models/photo_submission_model.dart';
+import '../../providers/service_providers.dart';
 import '../widgets/animated_3d_button.dart';
+
+final submissionStatusProvider = StreamProvider.autoDispose.family<PhotoSubmissionModel?, String>((ref, moduleId) {
+  final authState = ref.watch(authViewModelProvider);
+  final userId = authState.currentUser?.id;
+  if (userId == null) return Stream.value(null);
+  final service = ref.watch(photoSubmissionServiceProvider);
+  return service.watchUserSubmission(userId, moduleId);
+});
 
 class ModuleDetailView extends ConsumerStatefulWidget {
   const ModuleDetailView({Key? key}) : super(key: key);
@@ -340,24 +350,104 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Animated3DButton(
-            onPressed: () async {
-              await ref
-                  .read(challengeViewModelProvider.notifier)
-                  .loadChallenge(module.id);
-              if (context.mounted) {
-                context.push('/mission/challenge');
-              }
-            },
-            child: const Text(
-              'MULAI CHALLENGE',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: AppColors.surfaceWhite,
-                letterSpacing: 1.2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Consumer(
+                builder: (context, ref, child) {
+                  final submissionAsync = ref.watch(submissionStatusProvider(module.id));
+                  return submissionAsync.when(
+                    data: (submission) {
+                      if (submission == null) return const SizedBox.shrink();
+                      
+                      IconData icon;
+                      Color color;
+                      String text;
+                      
+                      switch (submission.status) {
+                        case 'approved':
+                          icon = Icons.check_circle;
+                          color = AppColors.forestGreen;
+                          text = 'Approved';
+                          break;
+                        case 'rejected':
+                          icon = Icons.cancel;
+                          color = AppColors.coralRed;
+                          text = 'Rejected';
+                          break;
+                        case 'pending':
+                        default:
+                          icon = Icons.schedule;
+                          color = AppColors.lensGold;
+                          text = 'Pending Review';
+                          break;
+                      }
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: color.withOpacity(0.5)),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(icon, color: color),
+                                const SizedBox(width: 8),
+                                Text(
+                                  text,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (submission.status == 'rejected' && submission.adminNote != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                submission.adminNote!,
+                                style: const TextStyle(
+                                  color: AppColors.secondaryText,
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, st) => const SizedBox.shrink(),
+                  );
+                },
               ),
-            ),
+              Animated3DButton(
+                onPressed: () async {
+                  await ref
+                      .read(challengeViewModelProvider.notifier)
+                      .loadChallenge(module.id);
+                  if (context.mounted) {
+                    context.push('/mission/challenge');
+                  }
+                },
+                child: const Text(
+                  'MULAI CHALLENGE',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.surfaceWhite,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],

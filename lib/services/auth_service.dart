@@ -1,26 +1,63 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class AuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
+
   Future<UserModel> login(String email, String password) async {
-    // Mock login
-    await Future.delayed(const Duration(seconds: 1));
-    if (email == 'test@test.com' && password == 'password') {
-      return UserModel(
-        id: 'user_1',
-        name: 'Test User',
-        email: email,
+    try {
+      final cred = await _auth.signInWithEmailAndPassword(
+        email: email.trim(), password: password,
       );
+      return await fetchUser(cred.user!.uid);
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapError(e));
     }
-    throw Exception('Invalid credentials');
   }
 
   Future<UserModel> register(String name, String email, String password) async {
-    // Mock register
-    await Future.delayed(const Duration(seconds: 1));
-    return UserModel(
-      id: 'user_2',
-      name: name,
-      email: email,
-    );
+    try {
+      final cred = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(), password: password,
+      );
+      final uid = cred.user!.uid;
+      final user = UserModel(
+        id: uid, name: name.trim(),
+        email: email.trim(), role: 'user',
+        createdAt: DateTime.now(),
+      );
+      await _db.collection('users').doc(uid).set({
+        ...user.toJson(),
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      return user;
+    } on FirebaseAuthException catch (e) {
+      throw Exception(_mapError(e));
+    }
+  }
+
+  Future<UserModel> fetchUser(String uid) async {
+    final doc = await _db.collection('users').doc(uid).get();
+    if (!doc.exists) throw Exception('User data not found.');
+    return UserModel.fromJson({...doc.data()!, 'id': uid});
+  }
+
+  Future<void> logout() async => _auth.signOut();
+
+  String _mapError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':     return 'Email is not registered.';
+      case 'wrong-password':
+      case 'invalid-credential': return 'Incorrect password.';
+      case 'email-already-in-use': return 'Email already in use.';
+      case 'weak-password':      return 'Password too weak (min 6 chars).';
+      case 'invalid-email':      return 'Invalid email format.';
+      case 'network-request-failed': return 'No internet connection.';
+      default: return 'Authentication failed. Please try again.';
+    }
   }
 }
