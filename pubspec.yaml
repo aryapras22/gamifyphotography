@@ -40,4 +40,5 @@ flutter:
   assets:
     - assets/images/visual_guides/
     - assets/images/badges/
+    - assets/images/examples/
     - assets/lottie/

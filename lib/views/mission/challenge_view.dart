@@ -149,38 +149,46 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     const SizedBox(height: 32),
 
                     if (hasPhoto)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: _isNetworkUrl(challenge.uploadedPhotoUrl)
-                            ? Image.network(
-                                challenge.uploadedPhotoUrl!,
-                                height: 300,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, progress) {
-                                  if (progress == null) return child;
-                                  return SizedBox(
-                                    height: 300,
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        value: progress.expectedTotalBytes != null
-                                            ? progress.cumulativeBytesLoaded /
-                                                progress.expectedTotalBytes!
-                                            : null,
-                                        color: AppColors.brandBlue,
+                      // ── DISPLAY DESIGN NOTE (SPR-011) ─────────────────────────────────────
+                      // User submissions are portrait photos (9:16). We display them at their
+                      // native ratio so the student and admin can assess the full composition:
+                      // horizon placement, subject framing, depth gradient to the edges.
+                      // BoxFit.cover and fixed heights are banned — they silently hide evidence.
+                      // ClipRRect removed — rounded corners misrepresent the photographic frame.
+                      // ─────────────────────────────────────────────────────────────────────
+                      SizedBox(
+                        width: double.infinity,
+                        child: AspectRatio(
+                          aspectRatio: 9 / 16,
+                          child: _isNetworkUrl(challenge.uploadedPhotoUrl)
+                              ? Image.network(
+                                  challenge.uploadedPhotoUrl!,
+                                  fit: BoxFit.contain,
+                                  loadingBuilder: (context, child, progress) {
+                                    if (progress == null) return child;
+                                    return Container(
+                                      color: AppColors.backgroundGray,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          value: progress.expectedTotalBytes != null
+                                              ? progress.cumulativeBytesLoaded /
+                                                  progress.expectedTotalBytes!
+                                              : null,
+                                          color: AppColors.brandBlue,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (_, __, ___) => const _PhotoErrorPlaceholder(height: 300),
-                              )
-                            : Image.file(
-                                File(challenge.uploadedPhotoUrl!),
-                                height: 300,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const _PhotoErrorPlaceholder(height: 300),
-                              ),
+                                    );
+                                  },
+                                  errorBuilder: (_, __, ___) =>
+                                      const _PhotoErrorPlaceholder(),
+                                )
+                              : Image.file(
+                                  File(challenge.uploadedPhotoUrl!),
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) =>
+                                      const _PhotoErrorPlaceholder(),
+                                ),
+                        ),
                       )
                     else
                       GestureDetector(
@@ -344,25 +352,26 @@ bool _isNetworkUrl(String? url) =>
     url != null && (url.startsWith('http://') || url.startsWith('https://'));
 
 class _PhotoErrorPlaceholder extends StatelessWidget {
-  final double height;
-  const _PhotoErrorPlaceholder({this.height = 300});
+  const _PhotoErrorPlaceholder();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height,
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.backgroundGray,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
+      color: AppColors.backgroundGray,
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.broken_image_rounded, size: 64, color: AppColors.disabled),
-          const SizedBox(height: 12),
-          const Text('Gagal memuat foto',
-              style: TextStyle(color: AppColors.secondaryText, fontSize: 14)),
+          Icon(Icons.broken_image_rounded,
+              size: 64, color: AppColors.disabled),
+          SizedBox(height: 12),
+          Text(
+            'Gagal memuat foto',
+            style: TextStyle(
+              color: AppColors.secondaryText,
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );

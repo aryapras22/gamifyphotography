@@ -27,6 +27,32 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     super.dispose();
   }
 
+  /// Returns the list of asset paths for example photos for the given module level.
+  /// File naming convention: assets/images/examples/LEVEL {N}-({i}).jpg
+  static List<String> _getExamplePhotoPaths(int level) {
+    const counts = <int, int>{
+      1: 4, 2: 4, 3: 4, 4: 2,
+      5: 4, 6: 3, 7: 4, 8: 3,
+      9: 4,
+      // 10: missing — fallback below
+      11: 4, 12: 3, 13: 3,
+    };
+
+    final count = counts[level];
+    if (count == null || count == 0) {
+      // TODO: add LEVEL 10 example photos to assets/images/examples/
+      // Fallback to Level 1
+      return List.generate(
+        4,
+        (i) => 'assets/images/examples/LEVEL 1-(${i + 1}).jpg',
+      );
+    }
+    return List.generate(
+      count,
+      (i) => 'assets/images/examples/LEVEL $level-(${i + 1}).jpg',
+    );
+  }
+
   String _getVisualGuideAsset(String moduleId) {
     // Extract nomor dari moduleId (M01 → 01, M12 → 12, dll)
     // final numStr = moduleId.replaceAll('M', '').padLeft(2, '0');
@@ -212,13 +238,8 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 220,
-                    child: CustomPaint(painter: _SamplePhotoPainter()),
-                  ),
+                _ExamplePhotoGallery(
+                  photoPaths: _getExamplePhotoPaths(module.order as int),
                 ),
               ],
             ),
@@ -688,6 +709,121 @@ class _RejectedResultCard extends StatelessWidget {
   }
 }
 
+/// Swipeable gallery of real reference example photos for a module level.
+/// Renders every photo at its native 16:9 landscape ratio — zero crop, zero clipping.
+class _ExamplePhotoGallery extends StatefulWidget {
+  final List<String> photoPaths;
+  const _ExamplePhotoGallery({required this.photoPaths});
+
+  @override
+  State<_ExamplePhotoGallery> createState() => _ExamplePhotoGalleryState();
+}
+
+class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
+  final PageController _controller = PageController();
+  int _current = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = widget.photoPaths.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Contoh Foto:',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppColors.secondaryText,
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // ── DISPLAY DESIGN NOTE (SPR-011) ─────────────────────────────────
+        // Photography training requires users to evaluate the full, unaltered
+        // frame. Cropping destroys composition evidence. We use AspectRatio(16:9)
+        // so the image fills the column width while revealing every pixel.
+        // Rounded corners removed — the frame edge IS the photographic boundary.
+        // Reference: Nielsen Norman Group — "Images in UX" (2024)
+        // ─────────────────────────────────────────────────────────────────
+        SizedBox(
+          width: double.infinity,
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: total,
+              onPageChanged: (i) => setState(() => _current = i),
+              itemBuilder: (context, index) {
+                return Image.asset(
+                  widget.photoPaths[index],
+                  fit: BoxFit.contain,  // NEVER use cover — see note above
+                  errorBuilder: (_, __, ___) => Container(
+                    color: AppColors.backgroundGray,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image_rounded,
+                        size: 48,
+                        color: AppColors.disabled,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+
+        if (total > 1) ...[
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              total,
+              (i) => GestureDetector(
+                onTap: () => _controller.animateToPage(
+                  i,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                ),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: _current == i ? 20 : 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: _current == i
+                        ? AppColors.brandBlue
+                        : AppColors.disabled,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              '${_current + 1} / $total',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ignore: unused_element
 class _SamplePhotoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
