@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../core/level_utils.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -64,7 +65,9 @@ class AuthService {
       streakCount: data['streakCount'] ?? 0,
       lastLoginDate: lastLoginDate,
       weekHistory: data['weekHistory'] != null
-          ? List<bool>.from(data['weekHistory'])
+          ? List<bool>.from(
+              (data['weekHistory'] as List).map((e) => e == true || e == 1),
+            )
           : List.filled(7, false),
       createdAt: data['createdAt'] is Timestamp
           ? (data['createdAt'] as Timestamp).toDate()
@@ -111,7 +114,7 @@ class AuthService {
       tx.update(ref, {
         'completedModuleIds': completedIds,
         'points': newPoints,
-        'level': (newPoints ~/ 100) + 1,
+        'level': calculateLevel(newPoints),
         if (newPhotoUrls.isNotEmpty)
           'completedPhotoUrls': FieldValue.arrayUnion(newPhotoUrls),
       });
@@ -139,7 +142,7 @@ class AuthService {
       tx.update(ref, {
         'completedModuleIds': completedIds,
         'points': newPoints,
-        'level': (newPoints ~/ 100) + 1,
+        'level': calculateLevel(newPoints),
         if (photoUrl.isNotEmpty)
           'completedPhotoUrls': FieldValue.arrayUnion([photoUrl]),
       });

@@ -70,7 +70,28 @@ class ProfileViewModel extends StateNotifier<ProfileState> {
   final BadgeService _badgeService;
 
   ProfileViewModel(this._ref, this._badgeService)
-      : super(const ProfileState());
+      : super(const ProfileState()) {
+    // ── HIGH-05 fix: listen perubahan user dari authViewModelProvider ──────
+    // Ketika points/level/badges berubah (akibat submission di-approve),
+    // profile state langsung diperbarui tanpa perlu user refresh manual.
+    _ref.listen<AuthState>(
+      authViewModelProvider,
+      (previous, next) {
+        if (!mounted) return;
+        if (next.currentUser != null &&
+            next.currentUser != previous?.currentUser) {
+          final user = next.currentUser!;
+          state = state.copyWith(
+            user: user,
+            earnedBadgeIds: List.of(user.earnedBadgeIds),
+            completedChallengePhotoUrls:
+                List<String>.from(user.completedPhotoUrls),
+          );
+        }
+      },
+    );
+    // ─────────────────────────────────────────────────────────────────────
+  }
 
   /// Muat data profil dari authViewModelProvider + badge service.
   Future<void> loadProfile() async {

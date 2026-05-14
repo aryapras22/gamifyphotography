@@ -204,15 +204,9 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                                   ),
                                 );
                                 if (xfile != null) {
-                                  final moduleTitle = ref
-                                          .read(missionViewModelProvider)
-                                          .activeModule
-                                          ?.title ??
-                                      challenge.moduleId;
                                   await ref
                                       .read(challengeViewModelProvider.notifier)
-                                      .uploadPhoto(xfile,
-                                          moduleTitle: moduleTitle);
+                                      .uploadPhoto(xfile);
                                 }
                               },
                         child: Container(

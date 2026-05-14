@@ -23,7 +23,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(missionViewModelProvider.notifier).fetchModules();
+      // ── HIGH-07 fix: hanya fetch jika belum ada data atau tidak sedang loading ─
+      final currentState = ref.read(missionViewModelProvider);
+      if (currentState.modules.isEmpty && !currentState.isLoading) {
+        ref.read(missionViewModelProvider.notifier).fetchModules();
+      }
+      // ─────────────────────────────────────────────────────────────────────────
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

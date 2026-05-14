@@ -35,39 +35,52 @@ final submissionHistoryProvider =
 /// This provider must be watched somewhere that stays alive (e.g., MainLayoutView).
 final submissionApprovalWatcherProvider =
     StreamProvider.autoDispose<void>((ref) async* {
-  // Only watch userId — restarts only on login/logout, not on every user update
   final userId = ref.watch(
     authViewModelProvider.select((s) => s.currentUser?.id),
   );
   if (userId == null) return;
 
-  // Use ref.read to avoid restarting this provider when service instances change
   final service = ref.read(photoSubmissionServiceProvider);
   final authService = ref.read(authServiceProvider);
   final authNotifier = ref.read(authViewModelProvider.notifier);
 
+  // ── CRIT-03 fix: in-memory guard mencegah concurrent double-award ───────
+  // Firestore transaction di awardPointsForApprovedSubmission sudah idempotent,
+  // tapi guard ini mencegah double network call jika dua snapshot tiba bersamaan.
+  final Set<String> _inFlight = {};
+  // ─────────────────────────────────────────────────────────────────────────
+
   await for (final submissions in service.watchAllUserSubmissions(userId)) {
     for (final submission in submissions) {
-      if (submission.status == 'approved' && submission.adminScore != null) {
-        // Re-read current user inside loop to get fresh completedModuleIds
-        final currentUser = ref.read(authViewModelProvider).currentUser;
-        if (currentUser == null) continue;
-        if (!currentUser.completedModuleIds.contains(submission.moduleId)) {
-          try {
-            await authService.awardPointsForApprovedSubmission(
-              userId: userId,
-              moduleId: submission.moduleId,
-              adminScore: submission.adminScore!,
-              photoUrl: submission.photoUrl,
-            );
-            // Refresh local user state from Firestore
-            final updatedUser = await authService.fetchUser(userId);
-            authNotifier.updateUser(updatedUser);
-          } catch (e) {
-            debugPrint('[SubmissionWatcher] failed to award points: $e');
-          }
-        }
+      if (submission.status != 'approved') continue;
+      if (submission.adminScore == null) continue;
+
+      // ── in-memory guard ──────────────────────────────────────────────────
+      if (_inFlight.contains(submission.moduleId)) continue;
+      // ────────────────────────────────────────────────────────────────────
+
+      final currentUser = ref.read(authViewModelProvider).currentUser;
+      if (currentUser == null) continue;
+      if (currentUser.completedModuleIds.contains(submission.moduleId)) continue;
+
+      // ── Mark as in-flight sebelum await ─────────────────────────────────
+      _inFlight.add(submission.moduleId);
+      // ────────────────────────────────────────────────────────────────────
+      try {
+        await authService.awardPointsForApprovedSubmission(
+          userId: userId,
+          moduleId: submission.moduleId,
+          adminScore: submission.adminScore!,
+          photoUrl: submission.photoUrl,
+        );
+        final updatedUser = await authService.fetchUser(userId);
+        authNotifier.updateUser(updatedUser);
+      } catch (e) {
+        debugPrint('[SubmissionWatcher] failed to award points: $e');
+        // Remove from in-flight agar bisa di-retry pada snapshot berikutnya
+        _inFlight.remove(submission.moduleId);
       }
+      // Setelah berhasil, biarkan tetap di _inFlight — modul sudah selesai.
     }
   }
 });

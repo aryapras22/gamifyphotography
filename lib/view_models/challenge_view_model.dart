@@ -5,6 +5,10 @@ import '../services/challenge_service.dart';
 import '../services/photo_submission_service.dart';
 import 'auth_view_model.dart';
 import '../providers/service_providers.dart';
+import 'mission_view_model.dart';
+
+// Sentinel untuk membedakan "tidak di-set" vs "di-set ke null"
+const _unset = Object();
 
 class ChallengeState {
   final ChallengeModel? challenge;
@@ -12,7 +16,7 @@ class ChallengeState {
   final int pointsEarned;
   final String? errorMessage;
 
-  ChallengeState({
+  const ChallengeState({
     this.challenge,
     this.isUploading = false,
     this.pointsEarned = 0,
@@ -23,13 +27,16 @@ class ChallengeState {
     ChallengeModel? challenge,
     bool? isUploading,
     int? pointsEarned,
-    String? errorMessage,
+    // ── CRIT-02 fix: gunakan sentinel agar null bisa di-set secara eksplisit ─
+    Object? errorMessage = _unset,
   }) {
     return ChallengeState(
       challenge: challenge ?? this.challenge,
       isUploading: isUploading ?? this.isUploading,
       pointsEarned: pointsEarned ?? this.pointsEarned,
-      errorMessage: errorMessage,
+      errorMessage: errorMessage == _unset
+          ? this.errorMessage
+          : errorMessage as String?,
     );
   }
 }
@@ -57,18 +64,34 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
     state = state.copyWith(challenge: challenge);
   }
 
-  Future<void> uploadPhoto(XFile file, {required String moduleTitle}) async {
+  Future<void> uploadPhoto(XFile file) async {
+    // ── CRIT-01 fix: null guard sebelum force-unwrap ──────────────────────
+    final currentChallenge = state.challenge;
+    if (currentChallenge == null) {
+      state = state.copyWith(
+        isUploading: false,
+        errorMessage: 'Misi belum dimuat. Silakan coba lagi.',
+      );
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     state = state.copyWith(isUploading: true, errorMessage: null);
     try {
       final url = await _challengeService.uploadPhoto(file);
-      final updatedChallenge = state.challenge!.copyWith(uploadedPhotoUrl: url);
+      final updatedChallenge = currentChallenge.copyWith(uploadedPhotoUrl: url);
+
+      // ── HIGH-04 fix: resolusi moduleTitle dipindah dari View ke ViewModel ─
+      final moduleTitle = _ref.read(missionViewModelProvider).activeModule?.title
+          ?? currentChallenge.moduleId;
+      // ──────────────────────────────────────────────────────────────────────
 
       final user = _ref.read(authViewModelProvider).currentUser;
-      if (user != null && state.challenge != null) {
+      if (user != null) {
         await _submissionService.submitPhoto(
           userId: user.id,
           userName: user.name,
-          moduleId: state.challenge!.moduleId,
+          moduleId: currentChallenge.moduleId,
           moduleTitle: moduleTitle,
           photoUrl: url,
         );
@@ -78,7 +101,7 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
     } catch (e) {
       state = state.copyWith(
         isUploading: false,
-        errorMessage: 'Upload failed. Please try again.',
+        errorMessage: 'Upload gagal. Silakan coba lagi.',
       );
     }
   }

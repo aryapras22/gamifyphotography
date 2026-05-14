@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/daily_login_service.dart';
 import '../providers/service_providers.dart';
 import 'auth_view_model.dart';
+import '../core/level_utils.dart';
 
 // ---------------------------------------------------------------------------
 // State
@@ -116,7 +117,7 @@ class DailyLoginViewModel extends StateNotifier<DailyLoginState> {
       if (user != null) {
         final updatedUser = user.copyWith(
           points: user.points + kDailyLoginPoints,
-          level: ((user.points + kDailyLoginPoints) ~/ 100) + 1,
+          level: calculateLevel(user.points + kDailyLoginPoints),
           streakCount: newStreak,
           lastLoginDate: DateTime.now(),
         );

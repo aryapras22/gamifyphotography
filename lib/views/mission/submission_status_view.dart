@@ -162,6 +162,27 @@ class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
           if (status == 'approved' && submission.adminScore != null)
             _ScoreCard(score: submission.adminScore!),
 
+          if (status == 'approved' && submission.adminNote != null && submission.adminNote!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.brandBlue,
+                  side: const BorderSide(color: AppColors.brandBlue),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () => context.push('/mission/feedback'),
+                icon: const Icon(Icons.comment_outlined, size: 18),
+                label: Text('Lihat Feedback Lengkap', style: AppTextStyles.button.copyWith(
+                  color: AppColors.brandBlue,
+                  fontSize: 14,
+                )),
+              ),
+            ),
+
           // Komentar admin
           if (submission.adminNote != null && submission.adminNote!.isNotEmpty)
             _AdminNoteCard(
@@ -244,7 +265,7 @@ class _StatusBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: config.color.withOpacity(0.1),
+        color: config.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: config.color, width: 2),
       ),
