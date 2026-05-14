@@ -7,6 +7,7 @@ import '../../view_models/auth_view_model.dart';
 import '../../view_models/daily_login_view_model.dart';
 import '../../view_models/mission_view_model.dart';
 import '../widgets/bouncing_node.dart';
+import '../../providers/submission_providers.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -135,52 +136,18 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     double currentOffset = _getOffset(index, screenWidth);
                     double prevOffset = index > 0 ? _getOffset(index - 1, screenWidth) : currentOffset;
                     double nextOffset = index < missionState.modules.length - 1 ? _getOffset(index + 1, screenWidth) : currentOffset;
+                    bool isPrevCompleted = index == 0 || missionState.modules[index - 1].isCompleted;
 
-                    return SizedBox(
-                      height: 120,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: PathPainter(
-                                currentOffset: currentOffset,
-                                prevOffset: prevOffset,
-                                nextOffset: nextOffset,
-                                isFirst: index == 0,
-                                isLast: index == missionState.modules.length - 1,
-                                isCompleted: module.isCompleted,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: (screenWidth / 2) - 40 + currentOffset, 
-                            child: BouncingNode(
-                              isPulsing: !module.isCompleted && (index == 0 || missionState.modules[index - 1].isCompleted),
-                              onTap: () => _showMissionBottomSheet(context, module),
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: module.isCompleted ? AppColors.lensGold : AppColors.brandBlue,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: module.isCompleted ? const Color(0xFFD6A600) : const Color(0xFF1590C8),
-                                      offset: const Offset(0, 6),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: AppTextStyles.display.copyWith(color: AppColors.surfaceWhite, fontSize: 28),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    return _MissionNode(
+                      module: module,
+                      index: index,
+                      totalModules: missionState.modules.length,
+                      currentOffset: currentOffset,
+                      prevOffset: prevOffset,
+                      nextOffset: nextOffset,
+                      screenWidth: screenWidth,
+                      isPrevCompleted: isPrevCompleted,
+                      onTap: () => _showMissionBottomSheet(context, module),
                     );
                   },
                   childCount: missionState.modules.length,
@@ -242,6 +209,138 @@ class _HomeViewState extends ConsumerState<HomeView> {
 // ─────────────────────────────────────────────────────────────────────────────
 // Sub-widgets & Painters
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _MissionNode extends ConsumerWidget {
+  final dynamic module;
+  final int index;
+  final int totalModules;
+  final double currentOffset;
+  final double prevOffset;
+  final double nextOffset;
+  final double screenWidth;
+  final bool isPrevCompleted;
+  final VoidCallback onTap;
+
+  const _MissionNode({
+    required this.module,
+    required this.index,
+    required this.totalModules,
+    required this.currentOffset,
+    required this.prevOffset,
+    required this.nextOffset,
+    required this.screenWidth,
+    required this.isPrevCompleted,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch submission status untuk modul ini saja
+    final submissionAsync = ref.watch(submissionStatusProvider(module.id));
+    final submissionStatus = submissionAsync.valueOrNull?.status;
+    final isPending = submissionStatus == 'pending' && !module.isCompleted;
+
+    // Tentukan visual berdasarkan state
+    final Color nodeColor;
+    final Color shadowColor;
+    final Widget nodeChild;
+
+    if (module.isCompleted) {
+      nodeColor = AppColors.lensGold;
+      shadowColor = const Color(0xFFD6A600);
+      nodeChild = const Icon(Icons.check_rounded, color: Colors.white, size: 32);
+    } else if (isPending) {
+      nodeColor = AppColors.lensGold.withValues(alpha: 0.8);
+      shadowColor = const Color(0xFFD6A600);
+      nodeChild = const Text('⏳', style: TextStyle(fontSize: 28));
+    } else {
+      nodeColor = AppColors.brandBlue;
+      shadowColor = const Color(0xFF1590C8);
+      nodeChild = Text(
+        '${index + 1}',
+        style: AppTextStyles.display.copyWith(
+          color: AppColors.surfaceWhite,
+          fontSize: 28,
+        ),
+      );
+    }
+
+    final isPulsing = !module.isCompleted && !isPending && isPrevCompleted;
+
+    return SizedBox(
+      height: 120,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: PathPainter(
+                currentOffset: currentOffset,
+                prevOffset: prevOffset,
+                nextOffset: nextOffset,
+                isFirst: index == 0,
+                isLast: index == totalModules - 1,
+                isCompleted: module.isCompleted,
+                isPending: isPending,
+              ),
+            ),
+          ),
+          Positioned(
+            left: (screenWidth / 2) - 40 + currentOffset,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BouncingNode(
+                  isPulsing: isPulsing,
+                  onTap: onTap,
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: nodeColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: shadowColor,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: nodeChild,
+                  ),
+                ),
+                // Label "Sedang Ditinjau" di bawah node
+                if (isPending) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.lensGold.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.lensGold.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    child: Text(
+                      '⏳ Ditinjau',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.lensGold,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _GreetingHeader extends StatelessWidget {
   final String name;
@@ -318,13 +417,26 @@ class PathPainter extends CustomPainter {
   final bool isFirst;
   final bool isLast;
   final bool isCompleted;
+  final bool isPending;
 
-  PathPainter({required this.currentOffset, required this.prevOffset, required this.nextOffset, required this.isFirst, required this.isLast, required this.isCompleted});
+  PathPainter({
+    required this.currentOffset,
+    required this.prevOffset,
+    required this.nextOffset,
+    required this.isFirst,
+    required this.isLast,
+    required this.isCompleted,
+    this.isPending = false,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isCompleted ? AppColors.lensGold : AppColors.cardBorder
+      ..color = isCompleted
+          ? AppColors.lensGold
+          : isPending
+              ? AppColors.lensGold.withValues(alpha: 0.4)
+              : AppColors.cardBorder
       ..strokeWidth = 12
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -349,6 +461,7 @@ class PathPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant PathPainter oldDelegate) {
     return oldDelegate.isCompleted != isCompleted ||
+           oldDelegate.isPending != isPending ||
            oldDelegate.currentOffset != currentOffset;
   }
 }

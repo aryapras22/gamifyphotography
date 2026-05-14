@@ -44,19 +44,26 @@ class LeaderboardViewModel extends StateNotifier<LeaderboardState> {
       final snapshot = await _db
           .collection('users')
           .orderBy('points', descending: true)
-          .limit(50)
+          .limit(100)
           .get();
 
       final ranked = <LeaderboardEntry>[];
-      for (var i = 0; i < snapshot.docs.length; i++) {
-        final doc = snapshot.docs[i];
+      int rankCounter = 1;
+      for (final doc in snapshot.docs) {
         final data = doc.data();
+        final role = (data['role'] as String?) ?? 'user';
+
+        if (role == 'admin') continue;
+
         ranked.add(LeaderboardEntry(
           userId: doc.id,
           userName: (data['name'] as String?) ?? 'Unknown',
           points: (data['points'] as int?) ?? 0,
-          rank: i + 1,
+          rank: rankCounter,
         ));
+        rankCounter++;
+
+        if (rankCounter > 50) break;
       }
 
       final myRank = ranked.indexWhere((e) => e.userId == currentUserId);
