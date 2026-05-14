@@ -9,6 +9,7 @@ import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_progress_view.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
+import '../../providers/submission_providers.dart';
 import 'daily_login_view.dart';
 
 class MainLayoutView extends ConsumerStatefulWidget {
@@ -49,6 +50,9 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
 
   @override
   Widget build(BuildContext context) {
+    // Keep the approval watcher alive across all tabs
+    ref.watch(submissionApprovalWatcherProvider);
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

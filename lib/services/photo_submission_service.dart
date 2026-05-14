@@ -64,4 +64,25 @@ class PhotoSubmissionService {
       return PhotoSubmissionModel.fromJson(data);
     });
   }
+
+  /// Returns a real-time stream of ALL submissions for a user, newest first.
+  Stream<List<PhotoSubmissionModel>> watchAllUserSubmissions(String userId) {
+    return _db
+        .collection('photo_submissions')
+        .where('userId', isEqualTo: userId)
+        .orderBy('submittedAt', descending: true)
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) {
+              final data = <String, dynamic>{...doc.data(), 'id': doc.id};
+              if (data['submittedAt'] is Timestamp) {
+                data['submittedAt'] =
+                    (data['submittedAt'] as Timestamp).toDate().toIso8601String();
+              }
+              if (data['reviewedAt'] is Timestamp) {
+                data['reviewedAt'] =
+                    (data['reviewedAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return PhotoSubmissionModel.fromJson(data);
+            }).toList());
+  }
 }
