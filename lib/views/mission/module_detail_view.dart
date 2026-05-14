@@ -9,6 +9,8 @@ import '../../view_models/challenge_view_model.dart';
 import '../../models/photo_submission_model.dart';
 import '../../providers/service_providers.dart';
 import '../widgets/animated_3d_button.dart';
+import '../../core/app_text_styles.dart';
+import 'submission_status_view.dart';
 
 final submissionStatusProvider = StreamProvider.autoDispose.family<PhotoSubmissionModel?, String>((ref, moduleId) {
   final authState = ref.watch(authViewModelProvider);
@@ -429,22 +431,35 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                 },
               ),
               Animated3DButton(
+                color: module.isCompleted
+                    ? AppColors.secondaryText.withValues(alpha: 0.5)
+                    : AppColors.brandBlue,
+                shadowColor: module.isCompleted
+                    ? const Color(0xFFC4C4C4)
+                    : const Color(0xFF1590C8),
                 onPressed: () async {
-                  await ref
-                      .read(challengeViewModelProvider.notifier)
-                      .loadChallenge(module.id);
-                  if (context.mounted) {
-                    context.push('/mission/challenge');
+                  if (module.isCompleted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => SubmissionStatusView(
+                          moduleId: module.id,
+                          moduleTitle: module.title,
+                        ),
+                      ),
+                    );
+                  } else {
+                    await ref
+                        .read(challengeViewModelProvider.notifier)
+                        .loadChallenge(module.id);
+                    if (context.mounted) {
+                      context.push('/mission/challenge');
+                    }
                   }
                 },
-                child: const Text(
-                  'MULAI CHALLENGE',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppColors.surfaceWhite,
-                    letterSpacing: 1.2,
-                  ),
+                child: Text(
+                  module.isCompleted ? 'LIHAT STATUS FOTO →' : 'MULAI CHALLENGE',
+                  style: AppTextStyles.button,
                 ),
               ),
             ],

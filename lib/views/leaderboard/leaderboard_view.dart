@@ -1,4 +1,4 @@
-﻿// lib/views/leaderboard/leaderboard_view.dart
+// lib/views/leaderboard/leaderboard_view.dart
 // TASK-06 â€” Wire LeaderboardView ke LeaderboardViewModel
 
 import 'package:flutter/material.dart';
@@ -25,10 +25,9 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authUser = ref.read(authViewModelProvider).currentUser;
-      if (authUser != null) {
-        ref.read(leaderboardViewModelProvider.notifier).loadLeaderboard(authUser.id);
-      }
+      final userId = ref.read(authViewModelProvider).currentUser?.id ?? '';
+      if (userId.isEmpty) return;
+      ref.read(leaderboardViewModelProvider.notifier).loadLeaderboard(userId);
     });
   }
 
@@ -36,7 +35,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   Widget build(BuildContext context) {
     final state = ref.watch(leaderboardViewModelProvider);
     final authUser = ref.watch(authViewModelProvider).currentUser;
-    final currentUserId = authUser?.id;
+    final currentUserId = authUser?.id ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
@@ -72,7 +71,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
           ? _buildLoadingSkeleton()
           : state.errorMessage != null
           ? _buildError(state.errorMessage!)
-          : _buildList(state.entries, currentUserId ?? ''),
+          : _buildList(state.entries, currentUserId),
     );
   }
 
@@ -123,16 +122,38 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
 
   Widget _buildError(String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: AppColors.coralRed),
-          const SizedBox(height: 12),
-          Text(
-            message,
-            style: AppTextStyles.body.copyWith(color: AppColors.coralRed),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.wifi_off_rounded, size: 56, color: AppColors.disabled),
+            const SizedBox(height: 16),
+            Text(message,
+                style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                textAlign: TextAlign.center),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandBlue,
+                foregroundColor: AppColors.surfaceWhite,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              onPressed: () {
+                final userId =
+                    ref.read(authViewModelProvider).currentUser?.id ?? '';
+                if (userId.isEmpty) return;
+                ref
+                    .read(leaderboardViewModelProvider.notifier)
+                    .loadLeaderboard(userId);
+              },
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -142,6 +163,20 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   // ---------------------------------------------------------------------------
 
   Widget _buildList(List<LeaderboardEntry> entries, String currentUserId) {
+    if (entries.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.leaderboard_outlined, size: 56, color: AppColors.disabled),
+            const SizedBox(height: 16),
+            const Text('Belum ada pemain di papan peringkat.',
+                style: TextStyle(color: AppColors.secondaryText, fontSize: 14),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: entries.length,

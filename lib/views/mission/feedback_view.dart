@@ -179,50 +179,73 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
 
 class _PhotoPreview extends StatelessWidget {
   final String? photoUrl;
-
   const _PhotoPreview({this.photoUrl});
+
+  bool get _isNetwork =>
+      photoUrl != null &&
+      (photoUrl!.startsWith('http://') || photoUrl!.startsWith('https://'));
+
+  bool get _isLocalFile =>
+      photoUrl != null &&
+      photoUrl!.isNotEmpty &&
+      !_isNetwork &&
+      File(photoUrl!).existsSync();
+
+  bool get _hasPhoto => _isNetwork || _isLocalFile;
 
   @override
   Widget build(BuildContext context) {
-    final isNetworkUrl = photoUrl != null && photoUrl!.startsWith('http');
-    final hasPhoto =
-        photoUrl != null &&
-        photoUrl!.isNotEmpty &&
-        (isNetworkUrl || File(photoUrl!).existsSync());
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
-      child: hasPhoto
-          ? (isNetworkUrl
+      child: _hasPhoto
+          ? (_isNetwork
               ? Image.network(
                   photoUrl!,
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return SizedBox(
+                      height: 220,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: progress.expectedTotalBytes != null
+                              ? progress.cumulativeBytesLoaded /
+                                  progress.expectedTotalBytes!
+                              : null,
+                          color: AppColors.brandBlue,
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (_, __, ___) => _buildEmpty(),
                 )
               : Image.file(
                   File(photoUrl!),
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildEmpty(),
                 ))
-          : Container(
-              height: 220,
-              width: double.infinity,
-              color: AppColors.backgroundGray,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    size: 56,
-                    color: AppColors.disabled,
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Tidak ada foto', style: AppTextStyles.caption),
-                ],
-              ),
-            ),
+          : _buildEmpty(),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Container(
+      height: 220,
+      width: double.infinity,
+      color: AppColors.backgroundGray,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.camera_alt_outlined, size: 56, color: AppColors.disabled),
+          const SizedBox(height: 8),
+          const Text('Tidak ada foto',
+              style: TextStyle(color: AppColors.secondaryText, fontSize: 12)),
+        ],
+      ),
     );
   }
 }

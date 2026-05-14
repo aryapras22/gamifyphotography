@@ -14,6 +14,7 @@ class PhotoSubmissionModel with _$PhotoSubmissionModel {
     required String photoUrl,
     @Default('pending') String status,
     String? adminNote,
+    int? adminScore,
     required DateTime submittedAt,
     DateTime? reviewedAt,
   }) = _PhotoSubmissionModel;

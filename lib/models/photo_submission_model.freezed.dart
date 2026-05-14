@@ -29,6 +29,7 @@ mixin _$PhotoSubmissionModel {
   String get photoUrl => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
   String? get adminNote => throw _privateConstructorUsedError;
+  int? get adminScore => throw _privateConstructorUsedError;
   DateTime get submittedAt => throw _privateConstructorUsedError;
   DateTime? get reviewedAt => throw _privateConstructorUsedError;
 
@@ -58,6 +59,7 @@ abstract class $PhotoSubmissionModelCopyWith<$Res> {
     String photoUrl,
     String status,
     String? adminNote,
+    int? adminScore,
     DateTime submittedAt,
     DateTime? reviewedAt,
   });
@@ -89,6 +91,7 @@ class _$PhotoSubmissionModelCopyWithImpl<
     Object? photoUrl = null,
     Object? status = null,
     Object? adminNote = freezed,
+    Object? adminScore = freezed,
     Object? submittedAt = null,
     Object? reviewedAt = freezed,
   }) {
@@ -126,6 +129,10 @@ class _$PhotoSubmissionModelCopyWithImpl<
                 ? _value.adminNote
                 : adminNote // ignore: cast_nullable_to_non_nullable
                       as String?,
+            adminScore: freezed == adminScore
+                ? _value.adminScore
+                : adminScore // ignore: cast_nullable_to_non_nullable
+                      as int?,
             submittedAt: null == submittedAt
                 ? _value.submittedAt
                 : submittedAt // ignore: cast_nullable_to_non_nullable
@@ -158,6 +165,7 @@ abstract class _$$PhotoSubmissionModelImplCopyWith<$Res>
     String photoUrl,
     String status,
     String? adminNote,
+    int? adminScore,
     DateTime submittedAt,
     DateTime? reviewedAt,
   });
@@ -185,6 +193,7 @@ class __$$PhotoSubmissionModelImplCopyWithImpl<$Res>
     Object? photoUrl = null,
     Object? status = null,
     Object? adminNote = freezed,
+    Object? adminScore = freezed,
     Object? submittedAt = null,
     Object? reviewedAt = freezed,
   }) {
@@ -222,6 +231,10 @@ class __$$PhotoSubmissionModelImplCopyWithImpl<$Res>
             ? _value.adminNote
             : adminNote // ignore: cast_nullable_to_non_nullable
                   as String?,
+        adminScore: freezed == adminScore
+            ? _value.adminScore
+            : adminScore // ignore: cast_nullable_to_non_nullable
+                  as int?,
         submittedAt: null == submittedAt
             ? _value.submittedAt
             : submittedAt // ignore: cast_nullable_to_non_nullable
@@ -247,6 +260,7 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
     required this.photoUrl,
     this.status = 'pending',
     this.adminNote,
+    this.adminScore,
     required this.submittedAt,
     this.reviewedAt,
   });
@@ -272,13 +286,15 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
   @override
   final String? adminNote;
   @override
+  final int? adminScore;
+  @override
   final DateTime submittedAt;
   @override
   final DateTime? reviewedAt;
 
   @override
   String toString() {
-    return 'PhotoSubmissionModel(id: $id, userId: $userId, userName: $userName, moduleId: $moduleId, moduleTitle: $moduleTitle, photoUrl: $photoUrl, status: $status, adminNote: $adminNote, submittedAt: $submittedAt, reviewedAt: $reviewedAt)';
+    return 'PhotoSubmissionModel(id: $id, userId: $userId, userName: $userName, moduleId: $moduleId, moduleTitle: $moduleTitle, photoUrl: $photoUrl, status: $status, adminNote: $adminNote, adminScore: $adminScore, submittedAt: $submittedAt, reviewedAt: $reviewedAt)';
   }
 
   @override
@@ -299,6 +315,8 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
             (identical(other.status, status) || other.status == status) &&
             (identical(other.adminNote, adminNote) ||
                 other.adminNote == adminNote) &&
+            (identical(other.adminScore, adminScore) ||
+                other.adminScore == adminScore) &&
             (identical(other.submittedAt, submittedAt) ||
                 other.submittedAt == submittedAt) &&
             (identical(other.reviewedAt, reviewedAt) ||
@@ -317,6 +335,7 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
     photoUrl,
     status,
     adminNote,
+    adminScore,
     submittedAt,
     reviewedAt,
   );
@@ -349,6 +368,7 @@ abstract class _PhotoSubmissionModel implements PhotoSubmissionModel {
     required final String photoUrl,
     final String status,
     final String? adminNote,
+    final int? adminScore,
     required final DateTime submittedAt,
     final DateTime? reviewedAt,
   }) = _$PhotoSubmissionModelImpl;
@@ -372,6 +392,8 @@ abstract class _PhotoSubmissionModel implements PhotoSubmissionModel {
   String get status;
   @override
   String? get adminNote;
+  @override
+  int? get adminScore;
   @override
   DateTime get submittedAt;
   @override

@@ -20,20 +20,18 @@ class LeaderboardState {
     bool? isLoading,
     int? currentUserRank,
     String? errorMessage,
-  }) {
-    return LeaderboardState(
-      entries: entries ?? this.entries,
-      isLoading: isLoading ?? this.isLoading,
-      currentUserRank: currentUserRank ?? this.currentUserRank,
-      errorMessage: errorMessage,
-    );
-  }
+  }) =>
+      LeaderboardState(
+        entries: entries ?? this.entries,
+        isLoading: isLoading ?? this.isLoading,
+        currentUserRank: currentUserRank ?? this.currentUserRank,
+        errorMessage: errorMessage,
+      );
 }
 
 final leaderboardViewModelProvider =
-    StateNotifierProvider<LeaderboardViewModel, LeaderboardState>((ref) {
-  return LeaderboardViewModel();
-});
+    StateNotifierProvider<LeaderboardViewModel, LeaderboardState>(
+        (ref) => LeaderboardViewModel());
 
 class LeaderboardViewModel extends StateNotifier<LeaderboardState> {
   final _db = FirebaseFirestore.instance;
@@ -45,52 +43,33 @@ class LeaderboardViewModel extends StateNotifier<LeaderboardState> {
     try {
       final snapshot = await _db
           .collection('users')
-          .where('role', isEqualTo: 'user')
           .orderBy('points', descending: true)
           .limit(50)
           .get();
 
-      final raw = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return LeaderboardEntry(
-          userId: doc.id,
-          userName: data['name'] ?? 'Unknown',
-          points: data['points'] ?? 0,
-          rank: 0,
-        );
-      }).toList();
-
       final ranked = <LeaderboardEntry>[];
-      for (var i = 0; i < raw.length; i++) {
+      for (var i = 0; i < snapshot.docs.length; i++) {
+        final doc = snapshot.docs[i];
+        final data = doc.data();
         ranked.add(LeaderboardEntry(
-          userId: raw[i].userId,
-          userName: raw[i].userId == currentUserId
-              ? '${raw[i].userName} (You)'
-              : raw[i].userName,
-          points: raw[i].points,
+          userId: doc.id,
+          userName: (data['name'] as String?) ?? 'Unknown',
+          points: (data['points'] as int?) ?? 0,
           rank: i + 1,
         ));
       }
 
-      final currentEntry = ranked.firstWhere(
-        (e) => e.userId == currentUserId,
-        orElse: () => LeaderboardEntry(
-          userId: currentUserId,
-          userName: 'You',
-          points: 0,
-          rank: ranked.length + 1,
-        ),
-      );
+      final myRank = ranked.indexWhere((e) => e.userId == currentUserId);
 
       state = state.copyWith(
         isLoading: false,
         entries: ranked,
-        currentUserRank: currentEntry.rank,
+        currentUserRank: myRank >= 0 ? myRank + 1 : 0,
       );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Failed to load leaderboard.',
+        errorMessage: 'Gagal memuat peringkat. Periksa koneksi internet.',
       );
     }
   }

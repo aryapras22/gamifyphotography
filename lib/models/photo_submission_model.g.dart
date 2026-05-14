@@ -17,6 +17,7 @@ _$PhotoSubmissionModelImpl _$$PhotoSubmissionModelImplFromJson(
   photoUrl: json['photoUrl'] as String,
   status: json['status'] as String? ?? 'pending',
   adminNote: json['adminNote'] as String?,
+  adminScore: (json['adminScore'] as num?)?.toInt(),
   submittedAt: DateTime.parse(json['submittedAt'] as String),
   reviewedAt: json['reviewedAt'] == null
       ? null
@@ -34,6 +35,7 @@ Map<String, dynamic> _$$PhotoSubmissionModelImplToJson(
   'photoUrl': instance.photoUrl,
   'status': instance.status,
   'adminNote': instance.adminNote,
+  'adminScore': instance.adminScore,
   'submittedAt': instance.submittedAt.toIso8601String(),
   'reviewedAt': instance.reviewedAt?.toIso8601String(),
 };

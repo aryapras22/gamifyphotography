@@ -1,9 +1,9 @@
-﻿// lib/views/profile/profile_view.dart
+// lib/views/profile/profile_view.dart
 // TASK-06 â€” ProfileView
 
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_text_styles.dart';
 import '../../core/app_colors.dart';
@@ -11,14 +11,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../view_models/profile_view_model.dart';
 import '../../models/badge_model.dart';
 
-class ProfileView extends ConsumerStatefulWidget {
-  const ProfileView({super.key});
+class ProfileTab extends ConsumerStatefulWidget {
+  const ProfileTab({super.key});
 
   @override
-  ConsumerState<ProfileView> createState() => _ProfileViewState();
+  ConsumerState<ProfileTab> createState() => _ProfileTabState();
 }
 
-class _ProfileViewState extends ConsumerState<ProfileView> {
+class _ProfileTabState extends ConsumerState<ProfileTab> {
   @override
   void initState() {
     super.initState();
@@ -31,56 +31,34 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileViewModelProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
-      appBar: AppBar(
-        backgroundColor: AppColors.surfaceWhite,
-        elevation: 0,
-        centerTitle: true,
-        leading: Navigator.of(context).canPop()
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: AppColors.bodyText,
-                ),
-                onPressed: () => context.pop(),
-              )
-            : null,
-        automaticallyImplyLeading: Navigator.of(context).canPop(),
-        title: Text(
-          'PROFIL',
-          style: AppTextStyles.heading.copyWith(letterSpacing: 1.5),
-        ),
-      ),
-      body: state.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.brandBlue),
-            )
-          : state.user == null
-          ? _buildErrorState(state.errorMessage)
-          : RefreshIndicator(
-              color: AppColors.brandBlue,
-              onRefresh: () =>
-                  ref.read(profileViewModelProvider.notifier).refreshProfile(),
-              child: ListView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                children: [
-                  _ProfileHeader(user: state.user!),
-                  const SizedBox(height: 24),
-                  _BadgeSection(
-                    allBadges: state.allBadges,
-                    earnedBadgeIds: state.earnedBadgeIds,
-                  ),
-                  const SizedBox(height: 24),
-                  _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
-                  const SizedBox(height: 32),
-                ],
+    return state.isLoading
+        ? const Center(
+            child: CircularProgressIndicator(color: AppColors.brandBlue),
+          )
+        : state.user == null
+        ? _buildErrorState(state.errorMessage)
+        : RefreshIndicator(
+            color: AppColors.brandBlue,
+            onRefresh: () =>
+                ref.read(profileViewModelProvider.notifier).refreshProfile(),
+            child: ListView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
               ),
+              children: [
+                _ProfileHeader(user: state.user!),
+                const SizedBox(height: 24),
+                _BadgeSection(
+                  allBadges: state.allBadges,
+                  earnedBadgeIds: state.earnedBadgeIds,
+                ),
+                const SizedBox(height: 24),
+                _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
+                const SizedBox(height: 32),
+              ],
             ),
-    );
+          );
   }
 
   Widget _buildErrorState(String? message) {
@@ -450,19 +428,30 @@ class _PhotoSection extends StatelessWidget {
                   ),
                   itemCount: photoUrls.length,
                   itemBuilder: (context, index) {
+                    final url = photoUrls[index];
+                    final isNetwork =
+                        url.startsWith('http://') || url.startsWith('https://');
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(photoUrls[index]),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: AppColors.backgroundGray,
-                          child: const Icon(
-                            Icons.broken_image_rounded,
-                            color: AppColors.disabled,
-                          ),
-                        ),
-                      ),
+                      child: isNetwork
+                          ? Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: AppColors.backgroundGray,
+                                child: const Icon(Icons.broken_image_rounded,
+                                    color: AppColors.disabled),
+                              ),
+                            )
+                          : Image.file(
+                              File(url),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: AppColors.backgroundGray,
+                                child: const Icon(Icons.broken_image_rounded,
+                                    color: AppColors.disabled),
+                              ),
+                            ),
                     );
                   },
                 ),

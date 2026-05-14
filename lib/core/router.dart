@@ -11,9 +11,8 @@ import '../views/mission/module_detail_view.dart';
 import '../views/mission/challenge_view.dart';
 import '../views/mission/feedback_view.dart';
 import '../views/crafting/crafting_view.dart';
-import '../views/progress/progress_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
-import '../views/profile/profile_view.dart';
+import '../views/profile/profile_progress_view.dart';
 
 /// Bridges Riverpod state changes into a [ChangeNotifier] that GoRouter
 /// can use as [refreshListenable]. This avoids calling router.refresh()
@@ -86,16 +85,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CraftingView(),
       ),
       GoRoute(
-        path: '/progress',
-        builder: (context, state) => const ProgressView(),
-      ),
-      GoRoute(
         path: '/leaderboard',
         builder: (context, state) => const LeaderboardView(),
       ),
       GoRoute(
         path: '/profile',
-        builder: (context, state) => const ProfileView(),
+        builder: (context, state) => const ProfileProgressView(),
       ),
     ],
   );

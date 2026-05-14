@@ -20,11 +20,14 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
   @override
   Widget build(BuildContext context) {
     ref.listen<ChallengeState>(challengeViewModelProvider, (previous, next) {
-      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+      if (next.errorMessage != null &&
+          next.errorMessage != previous?.errorMessage &&
+          mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.coralRed,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -136,19 +139,36 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     if (hasPhoto)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
-                        child: challenge.uploadedPhotoUrl!.startsWith('http') 
-                          ? Image.network(
-                              challenge.uploadedPhotoUrl!,
-                              height: 300,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.file(
-                              File(challenge.uploadedPhotoUrl!),
-                              height: 300,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
+                        child: _isNetworkUrl(challenge.uploadedPhotoUrl)
+                            ? Image.network(
+                                challenge.uploadedPhotoUrl!,
+                                height: 300,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, progress) {
+                                  if (progress == null) return child;
+                                  return SizedBox(
+                                    height: 300,
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        value: progress.expectedTotalBytes != null
+                                            ? progress.cumulativeBytesLoaded /
+                                                progress.expectedTotalBytes!
+                                            : null,
+                                        color: AppColors.brandBlue,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (_, __, ___) => const _PhotoErrorPlaceholder(height: 300),
+                              )
+                            : Image.file(
+                                File(challenge.uploadedPhotoUrl!),
+                                height: 300,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const _PhotoErrorPlaceholder(height: 300),
+                              ),
                       )
                     else
                       GestureDetector(
@@ -249,6 +269,35 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+bool _isNetworkUrl(String? url) =>
+    url != null && (url.startsWith('http://') || url.startsWith('https://'));
+
+class _PhotoErrorPlaceholder extends StatelessWidget {
+  final double height;
+  const _PhotoErrorPlaceholder({this.height = 300});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.backgroundGray,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.broken_image_rounded, size: 64, color: AppColors.disabled),
+          const SizedBox(height: 12),
+          const Text('Gagal memuat foto',
+              style: TextStyle(color: AppColors.secondaryText, fontSize: 14)),
+        ],
       ),
     );
   }

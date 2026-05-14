@@ -1,17 +1,17 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../view_models/progress_view_model.dart';
 import '../../core/app_colors.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
-class ProgressView extends ConsumerStatefulWidget {
-  const ProgressView({Key? key}) : super(key: key);
+class ProgressTab extends ConsumerStatefulWidget {
+  const ProgressTab({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<ProgressView> createState() => _ProgressViewState();
+  ConsumerState<ProgressTab> createState() => _ProgressTabState();
 }
 
-class _ProgressViewState extends ConsumerState<ProgressView> {
+class _ProgressTabState extends ConsumerState<ProgressTab> {
   @override
   void initState() {
     super.initState();
@@ -27,31 +27,11 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
     final user = state.user;
 
     if (user == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.backgroundGray,
-        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
-      );
+      return const Center(child: CircularProgressIndicator(color: AppColors.brandBlue));
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundGray, // Slate 50
-      appBar: AppBar(
-        title: const Text(
-          'Profil & Progres',
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: 22,
-            color: AppColors.bodyText, // Slate 900
-            letterSpacing: -0.5,
-          ),
-        ),
-        elevation: 0,
-        backgroundColor: AppColors.backgroundGray,
-        iconTheme: const IconThemeData(color: AppColors.bodyText),
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -293,7 +273,6 @@ class _ProgressViewState extends ConsumerState<ProgressView> {
             const SizedBox(height: 40),
           ],
         ),
-      ),
     );
   }
 }
