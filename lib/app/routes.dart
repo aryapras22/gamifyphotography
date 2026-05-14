@@ -51,12 +51,12 @@ GoRouter getRouter(String initialRoute) => GoRouter(
     ),
     GoRoute(
       path: '/progress',
-      builder: (context, state) => const ProgressView(),
+      builder: (context, state) => const ProgressTab(),
     ),
     GoRoute(
       path: '/leaderboard',
       builder: (context, state) => const LeaderboardView(),
     ),
-    GoRoute(path: '/profile', builder: (context, state) => const ProfileView()),
+    GoRoute(path: '/profile', builder: (context, state) => const ProfileTab()),
   ],
 );

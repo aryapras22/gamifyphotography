@@ -90,6 +90,34 @@ class AuthService {
     });
   }
 
+  /// Atomically adds points and moduleId using a Firestore transaction.
+  /// Server-side guard prevents double-add even if called twice.
+  Future<void> completeModuleAtomic({
+    required String userId,
+    required String moduleId,
+    required int pointsToAdd,
+    required List<String> newPhotoUrls,
+  }) async {
+    final ref = _db.collection('users').doc(userId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final data = snap.data()!;
+      final completedIds = List<String>.from(data['completedModuleIds'] ?? []);
+      if (completedIds.contains(moduleId)) return; // idempotent
+      completedIds.add(moduleId);
+      final currentPoints = (data['points'] as int?) ?? 0;
+      final newPoints = currentPoints + pointsToAdd;
+      tx.update(ref, {
+        'completedModuleIds': completedIds,
+        'points': newPoints,
+        'level': (newPoints ~/ 100) + 1,
+        if (newPhotoUrls.isNotEmpty)
+          'completedPhotoUrls': FieldValue.arrayUnion(newPhotoUrls),
+      });
+    });
+  }
+
   Future<void> logout() async => _auth.signOut();
 
   String _mapError(FirebaseAuthException e) {

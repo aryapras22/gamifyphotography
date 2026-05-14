@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/photo_submission_model.dart';
-import '../../view_models/submission_view_model.dart';
-import '../../view_models/auth_view_model.dart';
+import '../../providers/submission_providers.dart';
 import '../widgets/animated_3d_button.dart';
 
 class SubmissionStatusView extends ConsumerStatefulWidget {
@@ -25,21 +24,8 @@ class SubmissionStatusView extends ConsumerStatefulWidget {
 
 class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userId =
-          ref.read(authViewModelProvider).currentUser?.id ?? '';
-      ref
-          .read(submissionViewModelProvider.notifier)
-          .loadUserSubmissions(userId);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final state = ref.watch(submissionViewModelProvider);
-    final submission = state.byModuleId[widget.moduleId];
+    final submissionAsync = ref.watch(submissionStatusProvider(widget.moduleId));
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
@@ -52,12 +38,34 @@ class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: state.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.brandBlue))
-          : submission == null
-              ? _buildNoSubmission()
-              : _buildStatusCard(submission),
+      body: submissionAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.brandBlue),
+        ),
+        error: (e, st) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  size: 48, color: AppColors.coralRed),
+              const SizedBox(height: 16),
+              Text('Failed to load submission status.',
+                  style: AppTextStyles.body
+                      .copyWith(color: AppColors.secondaryText)),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () =>
+                    ref.invalidate(submissionStatusProvider(widget.moduleId)),
+                child: Text('Retry',
+                    style: AppTextStyles.body
+                        .copyWith(color: AppColors.brandBlue)),
+              ),
+            ],
+          ),
+        ),
+        data: (submission) =>
+            submission == null ? _buildNoSubmission() : _buildStatusCard(submission),
+      ),
     );
   }
 
@@ -112,8 +120,8 @@ class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
           _StatusBanner(status: status),
           const SizedBox(height: 24),
 
-          // Skor (hanya jika accepted)
-          if (status == 'accepted' && submission.adminScore != null)
+          // Skor (hanya jika approved)
+          if (status == 'approved' && submission.adminScore != null)
             _ScoreCard(score: submission.adminScore!),
 
           // Komentar admin
@@ -175,7 +183,7 @@ class _StatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final config = switch (status) {
-      'accepted' => (
+      'approved' => (
           icon: Icons.check_circle_rounded,
           color: AppColors.forestGreen,
           label: 'FOTO DISETUJUI ✅',

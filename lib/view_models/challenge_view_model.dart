@@ -87,55 +87,78 @@ class ChallengeViewModel extends StateNotifier<ChallengeState> {
 
   Future<void> completeChallenge() async {
     if (state.challenge == null) return;
-
     final user = _ref.read(authViewModelProvider).currentUser;
     if (user == null) return;
-
-    // Idempotent guard using Firestore data
     if (user.completedModuleIds.contains(state.challenge!.moduleId)) return;
     if (state.challenge!.isCompleted) return;
 
-    await _challengeService.completeChallenge(state.challenge!.id);
-    final updatedChallenge = state.challenge!.copyWith(isCompleted: true);
-    final points = updatedChallenge.pointReward;
+    state = state.copyWith(isUploading: true, errorMessage: null);
 
-    var updatedUser = user.copyWith(
-      points: user.points + points,
-      completedModuleIds: [...user.completedModuleIds, state.challenge!.moduleId],
-      level: ((user.points + points) ~/ 100) + 1,
-    );
+    try {
+      await _challengeService.completeChallenge(state.challenge!.id);
 
-    final photoUrl = state.challenge!.uploadedPhotoUrl;
-    if (photoUrl != null && photoUrl.isNotEmpty) {
-      updatedUser = updatedUser.copyWith(
-        completedPhotoUrls: [...updatedUser.completedPhotoUrls, photoUrl],
-      );
-    }
+      final updatedChallenge = state.challenge!.copyWith(isCompleted: true);
+      final points = updatedChallenge.pointReward;
+      final photoUrl = state.challenge!.uploadedPhotoUrl;
+      final newPhotoUrls =
+          (photoUrl != null && photoUrl.isNotEmpty) ? [photoUrl] : <String>[];
 
-    // Check badges
-    final badgeService = _ref.read(badgeServiceProvider);
-    final streak = _ref.read(dailyLoginViewModelProvider).currentStreak;
-    final newBadges = await badgeService.checkNewBadges(
-      level: updatedUser.level,
-      streak: streak,
-      earnedBadgeIds: updatedUser.earnedBadgeIds,
-      completedFirstMission: updatedUser.completedModuleIds.isNotEmpty,
-    );
-    if (newBadges.isNotEmpty) {
-      updatedUser = updatedUser.copyWith(
-        earnedBadgeIds: [
-          ...updatedUser.earnedBadgeIds,
-          ...newBadges.map((b) => b.id),
+      // Atomic Firestore transaction — prevents double point-add on retry
+      await _ref.read(authServiceProvider).completeModuleAtomic(
+            userId: user.id,
+            moduleId: state.challenge!.moduleId,
+            pointsToAdd: points,
+            newPhotoUrls: newPhotoUrls,
+          );
+
+      // Build updated in-memory user to sync local state
+      var updatedUser = user.copyWith(
+        points: user.points + points,
+        completedModuleIds: [
+          ...user.completedModuleIds,
+          state.challenge!.moduleId,
         ],
+        level: ((user.points + points) ~/ 100) + 1,
+        completedPhotoUrls: [...user.completedPhotoUrls, ...newPhotoUrls],
       );
+
+      // Badge check
+      final badgeService = _ref.read(badgeServiceProvider);
+      final streak = _ref.read(dailyLoginViewModelProvider).currentStreak;
+      final newBadges = await badgeService.checkNewBadges(
+        level: updatedUser.level,
+        streak: streak,
+        earnedBadgeIds: updatedUser.earnedBadgeIds,
+        completedFirstMission: updatedUser.completedModuleIds.isNotEmpty,
+      );
+      if (newBadges.isNotEmpty) {
+        updatedUser = updatedUser.copyWith(
+          earnedBadgeIds: [
+            ...updatedUser.earnedBadgeIds,
+            ...newBadges.map((b) => b.id),
+          ],
+        );
+        // Persist badge update separately (non-critical, no transaction needed)
+        await _ref.read(authServiceProvider).updateUserProgress(updatedUser);
+      }
+
+      _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
+      _ref
+          .read(missionViewModelProvider.notifier)
+          .markModuleCompleted(state.challenge!.moduleId);
+
+      state = state.copyWith(
+        challenge: updatedChallenge,
+        pointsEarned: points,
+        isUploading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isUploading: false,
+        errorMessage:
+            'Failed to complete mission. Check your connection and try again.',
+      );
+      rethrow;
     }
-
-    // CRITICAL: Persist to Firestore before updating in-memory state
-    await _ref.read(authServiceProvider).updateUserProgress(updatedUser);
-
-    _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
-    _ref.read(missionViewModelProvider.notifier).markModuleCompleted(state.challenge!.moduleId);
-
-    state = state.copyWith(challenge: updatedChallenge, pointsEarned: points);
   }
 }

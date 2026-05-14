@@ -6,20 +6,10 @@ import '../../core/app_colors.dart';
 import '../../view_models/mission_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../view_models/challenge_view_model.dart';
+import '../../providers/submission_providers.dart';
 import '../../models/photo_submission_model.dart';
-import '../../providers/service_providers.dart';
 import '../widgets/animated_3d_button.dart';
 import '../../core/app_text_styles.dart';
-import 'submission_status_view.dart';
-
-final submissionStatusProvider = StreamProvider.autoDispose.family<PhotoSubmissionModel?, String>((ref, moduleId) {
-  final authState = ref.watch(authViewModelProvider);
-  final userId = authState.currentUser?.id;
-  if (userId == null) return Stream.value(null);
-  final service = ref.watch(photoSubmissionServiceProvider);
-  return service.watchUserSubmission(userId, moduleId);
-});
-
 class ModuleDetailView extends ConsumerStatefulWidget {
   const ModuleDetailView({Key? key}) : super(key: key);
 
@@ -93,7 +83,12 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     final points = authState.currentUser?.points ?? 0;
 
     if (module == null) {
-      return const Scaffold(body: Center(child: Text('No module selected')));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/home');
+      });
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
+      );
     }
 
     return Scaffold(
@@ -352,120 +347,85 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Consumer(
-                builder: (context, ref, child) {
-                  final submissionAsync = ref.watch(submissionStatusProvider(module.id));
-                  return submissionAsync.when(
-                    data: (submission) {
-                      if (submission == null) return const SizedBox.shrink();
-                      
-                      IconData icon;
-                      Color color;
-                      String text;
-                      
-                      switch (submission.status) {
-                        case 'approved':
-                          icon = Icons.check_circle;
-                          color = AppColors.forestGreen;
-                          text = 'Approved';
-                          break;
-                        case 'rejected':
-                          icon = Icons.cancel;
-                          color = AppColors.coralRed;
-                          text = 'Rejected';
-                          break;
-                        case 'pending':
-                        default:
-                          icon = Icons.schedule;
-                          color = AppColors.lensGold;
-                          text = 'Pending Review';
-                          break;
-                      }
+          child: _buildActionPanel(context, module),
+        ),
+      ],
+    );
+  }
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: color.withOpacity(0.5)),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(icon, color: color),
-                                const SizedBox(width: 8),
-                                Text(
-                                  text,
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (submission.status == 'rejected' && submission.adminNote != null) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                submission.adminNote!,
-                                style: const TextStyle(
-                                  color: AppColors.secondaryText,
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ],
-                        ),
-                      );
-                    },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, st) => const SizedBox.shrink(),
-                  );
-                },
-              ),
-              Animated3DButton(
-                color: module.isCompleted
-                    ? AppColors.secondaryText.withValues(alpha: 0.5)
-                    : AppColors.brandBlue,
-                shadowColor: module.isCompleted
-                    ? const Color(0xFFC4C4C4)
-                    : const Color(0xFF1590C8),
-                onPressed: () async {
-                  if (module.isCompleted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => SubmissionStatusView(
-                          moduleId: module.id,
-                          moduleTitle: module.title,
-                        ),
-                      ),
-                    );
-                  } else {
-                    await ref
-                        .read(challengeViewModelProvider.notifier)
-                        .loadChallenge(module.id);
-                    if (context.mounted) {
-                      context.push('/mission/challenge');
-                    }
-                  }
-                },
+  /// Builds the bottom action area for the challenge page.
+  /// • If submitted → show status card (pending/approved/rejected)
+  /// • If not submitted → show MULAI CHALLENGE button
+  Widget _buildActionPanel(BuildContext context, module) {
+    final submissionAsync = ref.watch(submissionStatusProvider(module.id));
+    return submissionAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, st) {
+        debugPrint('[SubmissionStatus] stream error for ${module.id}: $e');
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: AppColors.coralRed.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.coralRed.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline_rounded,
+                  size: 18, color: AppColors.coralRed),
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text(
-                  module.isCompleted ? 'LIHAT STATUS FOTO →' : 'MULAI CHALLENGE',
-                  style: AppTextStyles.button,
+                  'Cannot load submission status. Check your connection.',
+                  style: TextStyle(fontSize: 13, color: AppColors.coralRed),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
+      data: (submission) {
+        if (submission == null) {
+          return _buildStartChallengeButton(context, module.id);
+        }
+        return switch (submission.status) {
+          'pending' => _PendingReviewCard(submission: submission),
+          'approved' => _ApprovedResultCard(submission: submission),
+          'rejected' => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _RejectedResultCard(submission: submission),
+                const SizedBox(height: 12),
+                _buildStartChallengeButton(context, module.id, isRetry: true),
+              ],
+            ),
+          _ => _buildStartChallengeButton(context, module.id),
+        };
+      },
+    );
+  }
+
+  Widget _buildStartChallengeButton(
+    BuildContext context,
+    String moduleId, {
+    bool isRetry = false,
+  }) {
+    return Animated3DButton(
+      color: AppColors.brandBlue,
+      shadowColor: const Color(0xFF1590C8),
+      onPressed: () async {
+        await ref
+            .read(challengeViewModelProvider.notifier)
+            .loadChallenge(moduleId);
+        if (context.mounted) {
+          context.push('/mission/challenge');
+        }
+      },
+      child: Text(
+        isRetry ? 'KIRIM ULANG FOTO →' : 'MULAI CHALLENGE',
+        style: AppTextStyles.button,
+      ),
     );
   }
 
@@ -490,6 +450,238 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
               fontWeight: FontWeight.w800,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Submission Status Cards ──────────────────────────────────────────────────
+
+class _PendingReviewCard extends StatelessWidget {
+  final PhotoSubmissionModel submission;
+  const _PendingReviewCard({required this.submission});
+
+  @override
+  Widget build(BuildContext context) {
+    final submittedAt = submission.submittedAt;
+    final formatted =
+        '${submittedAt.day} ${_month(submittedAt.month)} ${submittedAt.year}, '
+        '${submittedAt.hour.toString().padLeft(2, '0')}:'
+        '${submittedAt.minute.toString().padLeft(2, '0')}';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8E6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.xpAmber, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.schedule_rounded, color: AppColors.xpAmber, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Menunggu Review Admin',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: AppColors.bodyText,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Foto kamu sedang ditinjau. Kamu tetap bisa melanjutkan misi berikutnya!',
+            style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Dikirim: $formatted',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.secondaryText,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          if (submission.photoUrl.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: () => showDialog(
+                context: context,
+                builder: (_) => Dialog(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(submission.photoUrl,
+                        fit: BoxFit.contain),
+                  ),
+                ),
+              ),
+              child: const Text(
+                'Lihat Foto',
+                style: TextStyle(
+                  color: AppColors.brandBlue,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.brandBlue,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _month(int m) => const [
+        '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+        'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'
+      ][m];
+}
+
+class _ApprovedResultCard extends StatelessWidget {
+  final PhotoSubmissionModel submission;
+  const _ApprovedResultCard({required this.submission});
+
+  @override
+  Widget build(BuildContext context) {
+    final score = submission.adminScore ?? 0;
+    final note = submission.adminNote;
+    final reviewedAt = submission.reviewedAt;
+    final formattedDate = reviewedAt != null
+        ? '${reviewedAt.day}/${reviewedAt.month}/${reviewedAt.year} '
+            '${reviewedAt.hour.toString().padLeft(2, '0')}:'
+            '${reviewedAt.minute.toString().padLeft(2, '0')}'
+        : null;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.forestGreen.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.forestGreen, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.check_circle_rounded,
+                  color: AppColors.forestGreen, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Foto Disetujui!',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                  color: AppColors.forestGreen,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Skor Admin',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.bodyText)),
+              Text('$score / 100',
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.forestGreen)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: score / 100),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOutCubic,
+            builder: (_, value, __) => LinearProgressIndicator(
+              value: value,
+              backgroundColor: AppColors.backgroundGray,
+              color: AppColors.forestGreen,
+              minHeight: 8,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          if (note != null && note.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text('Catatan:',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.bodyText)),
+            const SizedBox(height: 4),
+            Text('"$note"',
+                style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.secondaryText,
+                    fontStyle: FontStyle.italic)),
+          ],
+          if (formattedDate != null) ...[
+            const SizedBox(height: 10),
+            Text('Ditinjau: $formattedDate',
+                style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.secondaryText,
+                    fontStyle: FontStyle.italic)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RejectedResultCard extends StatelessWidget {
+  final PhotoSubmissionModel submission;
+  const _RejectedResultCard({required this.submission});
+
+  @override
+  Widget build(BuildContext context) {
+    final note = submission.adminNote;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.coralRed.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.coralRed, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.cancel_rounded, color: AppColors.coralRed, size: 20),
+              SizedBox(width: 8),
+              Text('Foto Ditolak',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: AppColors.coralRed)),
+            ],
+          ),
+          if (note != null && note.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            const Text('Catatan Admin:',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.bodyText)),
+            const SizedBox(height: 4),
+            Text('"$note"',
+                style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.secondaryText,
+                    fontStyle: FontStyle.italic)),
+          ],
         ],
       ),
     );
