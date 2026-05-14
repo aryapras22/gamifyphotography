@@ -1,137 +1,257 @@
-// lib/views/profile/profile_view.dart
-// Sprint: Profile UI — Research-Based Redesign
+# Sprint: Profile UI — Research-Based Redesign
+**Branch:** `feature/profile-redesign`
+**Base:** `fix/color-consistency` (merge dulu sprint warna) atau `main`
+**Repo:** https://github.com/aryapras22/gamifyphotography
 
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../../core/app_text_styles.dart';
-import '../../core/app_colors.dart';
-import '../../view_models/profile_view_model.dart';
-import '../../view_models/auth_view_model.dart';
-import '../../models/badge_model.dart';
+---
 
-// ── Main ProfileTab ─────────────────────────────────────────────────────────
+## RESEARCH FINDINGS — Apa Saja yang Harus Ada di Profile Screen?
 
-class ProfileTab extends ConsumerStatefulWidget {
-  const ProfileTab({super.key});
+Berdasarkan riset dari:
+- **Eleken.co** — 20 profile page design examples & UX best practices
+- **Duolingo Profile** — benchmark gamification profile terbaik
+- **LinkedIn Profile** — hierarchy: identity → stats → achievement
+- **Gamification UX research** — badge, point, streak, progress bar sebagai motivator intrinsik
+- **Proposal skripsi GFD** — elemen gamifikasi yang disepakati: poin, level, badge, progress, feedback
 
-  @override
-  ConsumerState<ProfileTab> createState() => _ProfileTabState();
-}
+### Komponen Wajib (Must-Have)
 
-class _ProfileTabState extends ConsumerState<ProfileTab> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileViewModelProvider.notifier).loadProfile();
-    });
-  }
+| # | Komponen | Referensi | Alasan |
+|---|---|---|---|
+| 1 | **Hero Identity** (avatar, nama, email) | Semua top apps | First thing user lihat — harus prominent |
+| 2 | **Stat Cards** (Poin & Level) | Duolingo, LinkedIn | Motivasi utama — tunjukkan progres nyata |
+| 3 | **XP Progress Bar** menuju level berikutnya | Duolingo, proposal GFD | "Incompleteness effect" — user terdorong melengkapi |
+| 4 | **Badge/Lencana** earned vs locked | Proposal GFD, gamification research | Identitas visual atas pencapaian |
+| 5 | **Foto Karya Saya** (galeri misi selesai) | Instagram, Behance | Portfolio — bukti nyata kemampuan |
+| 6 | **Ringkasan Aktivitas** (misi selesai, streak) | GitHub activity, Duolingo streak | Dorong konsistensi latihan |
 
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(profileViewModelProvider);
+### Komponen Nice-to-Have (sprint ini)
 
-    if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.brandBlue),
-      );
-    }
+| # | Komponen | Referensi | Alasan |
+|---|---|---|---|
+| 7 | **Modul yang sedang berjalan** (in-progress) | Learning apps | Shortcut balik ke misi — reduce friction |
+| 8 | **Counter pencapaian** (total misi selesai) | LinkedIn stats | Rasa bangga & identitas |
+| 9 | **Logout button** yang mudah ditemukan | NWORX case study — bottom or top-right | Hindari "where's logout?" frustration |
+| 10 | **Pull-to-refresh** untuk update data | Standard mobile UX | Data profile harus bisa di-refresh manual |
 
-    if (state.user == null) {
-      return _buildErrorState(state.errorMessage);
-    }
+### Komponen yang TIDAK perlu (hindari scope creep)
 
-    return RefreshIndicator(
-      color: AppColors.brandBlue,
-      onRefresh: () => ref.read(profileViewModelProvider.notifier).refreshProfile(),
-      child: CustomScrollView(
-        slivers: [
-          // ── Hero SliverAppBar ────────────────────────────────────────
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 220,
-            backgroundColor: AppColors.brandBlue,
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            title: const Text(
-              'PROFIL',
-              style: TextStyle(
-                color: AppColors.surfaceWhite,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-              ),
-            ),
-            centerTitle: true,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout_rounded,
-                    color: AppColors.surfaceWhite),
-                tooltip: 'Keluar',
-                onPressed: () {
-                  ref.read(authViewModelProvider.notifier).logout();
-                  context.go('/login');
-                },
-              ),
-              const SizedBox(width: 8),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.pin,
-              background: _HeroHeader(user: state.user!),
-            ),
-          ),
+- Edit profile (nama, foto avatar) — fitur terpisah, tidak dalam sprint ini
+- Settings/pengaturan notifikasi — bukan prioritas prototype skripsi
+- Social features (follow, share) — app ini bukan sosial, tapi personal training
 
-          // ── Body ────────────────────────────────────────────────────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _StatRow(user: state.user!),
-                const SizedBox(height: 16),
-                _XpProgressBar(user: state.user!),
-                const SizedBox(height: 24),
-                _ActivitySummary(
-                  completedMissions: state.earnedBadgeIds.length,
-                  photoCount: state.completedChallengePhotoUrls.length,
+---
+
+## ANATOMY HASIL RISET — Layout Profile Optimal
+
+Berdasarkan analisis Duolingo (gamification profile terbaik) dan Eleken best practices:
+
+```
+┌─────────────────────────────────────────────┐
+│  [SliverAppBar - brandBlue - expandedH:220] │
+│  ┌─────────────────────────────────────────┐│
+│  │  🔵 Avatar (initials)                   ││
+│  │  Nama Pengguna                          ││
+│  │  email@gmail.com                        ││
+│  └─────────────────────────────────────────┘│
+│  [Collapsed → sticky blue bar + "PROFIL"]   │
+├─────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐                 │
+│  │  💎 200  │  │  🏆 Lv.3│   ← StatCards   │
+│  │  Poin    │  │  Level   │   (Expanded)    │
+│  └──────────┘  └──────────┘                 │
+│                                             │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━━░░░░░  Lv.4      │
+│  XP: 200 / 350  (Progress Bar ke level up) │
+│                                             │
+├─────────────────────────────────────────────┤
+│  📊 RINGKASAN AKTIVITAS                    │
+│  ┌────────┐ ┌────────┐ ┌────────┐          │
+│  │  🎯 5  │ │  🔥 3  │ │ 📸 8  │          │
+│  │ Misi   │ │ Streak │ │ Foto  │          │
+│  └────────┘ └────────┘ └────────┘          │
+├─────────────────────────────────────────────┤
+│  🏅 LENCANA SAYA                    3/8    │
+│  ┌──────────────────────────────────────┐   │
+│  │ [Badge] [Badge] [Badge] [🔒] [🔒]  │   │
+│  │  nama    nama    nama                │   │
+│  └──────────────────────────────────────┘   │
+├─────────────────────────────────────────────┤
+│  📸 FOTO SAYA                       8 foto │
+│  ┌────┐ ┌────┐ ┌────┐                       │
+│  │foto│ │foto│ │foto│  ← Grid 3 kolom       │
+│  └────┘ └────┘ └────┘  Network-aware load   │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## STRICT RULES
+
+1. Jangan ubah `AppColors`, `AppTextStyles`, ViewModel, Router, atau file lain selain yang disebutkan.
+2. Tidak ada package baru. Gunakan yang sudah ada di `pubspec.yaml`.
+3. `flutter analyze` zero errors setelah selesai.
+4. Semua data diambil dari `profileViewModelProvider` — jangan buat provider baru.
+5. Jika data tidak tersedia di ViewModel (misal: `completedMissionsCount`, `currentStreak`), gunakan fallback dari data yang ada: `earnedBadgeIds.length` untuk misi selesai, default 0 untuk streak sampai VM diupdate.
+6. Perubahan utama hanya di `lib/views/profile/profile_view.dart`.
+
+---
+
+## TASK 1 — Fix Critical Bug: Foto menampilkan warna blok
+
+**Root cause:** `Image.file(File("https://..."))` dipakai untuk URL Firebase Storage.
+
+Di `_PhotoSection`, **ganti seluruh `itemBuilder`**:
+
+```dart
+itemBuilder: (context, index) {
+  final url = photoUrls[index];
+  final isNetwork = url.startsWith('http://') || url.startsWith('https://');
+
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: isNetwork
+        ? Image.network(
+            url,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return Container(
+                color: AppColors.backgroundGray,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.brandBlue,
+                    strokeWidth: 2,
+                  ),
                 ),
-                const SizedBox(height: 24),
-                _BadgeSection(
-                  allBadges: state.allBadges,
-                  earnedBadgeIds: state.earnedBadgeIds,
-                ),
-                const SizedBox(height: 24),
-                _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
-              ]),
+              );
+            },
+            errorBuilder: (_, __, ___) => Container(
+              color: AppColors.backgroundGray,
+              child: const Icon(Icons.broken_image_rounded, color: AppColors.disabled),
+            ),
+          )
+        : Image.file(
+            File(url),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: AppColors.backgroundGray,
+              child: const Icon(Icons.broken_image_rounded, color: AppColors.disabled),
             ),
           ),
-        ],
-      ),
-    );
-  }
+  );
+},
+```
 
-  Widget _buildErrorState(String? message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.person_off_rounded, size: 64, color: AppColors.disabled),
-          const SizedBox(height: 16),
-          Text(
-            message ?? 'Terjadi kesalahan.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.disabled, fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
+**DoD Task 1:**
+- [ ] Foto dari Firebase Storage (https://...) tampil sebagai gambar nyata
+- [ ] Loading spinner tampil saat gambar diunduh
+- [ ] Placeholder broken_image tampil jika gagal, tidak crash
+- [ ] File lokal tetap pakai Image.file()
+
+---
+
+## TASK 2 — Redesign Layout: Hero AppBar
+
+**Root cause:** AppBar flat putih, avatar ganda, tidak ada visual identitas.
+
+Ganti `Scaffold.appBar` biasa dengan `CustomScrollView` + `SliverAppBar`:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  final state = ref.watch(profileViewModelProvider);
+
+  return Scaffold(
+    backgroundColor: AppColors.backgroundGray,
+    body: state.isLoading
+        ? const Center(child: CircularProgressIndicator(color: AppColors.brandBlue))
+        : state.user == null
+            ? _buildErrorState(state.errorMessage)
+            : RefreshIndicator(
+                color: AppColors.brandBlue,
+                onRefresh: () =>
+                    ref.read(profileViewModelProvider.notifier).refreshProfile(),
+                child: CustomScrollView(
+                  slivers: [
+                    // Hero SliverAppBar
+                    SliverAppBar(
+                      pinned: true,
+                      expandedHeight: 220,
+                      backgroundColor: AppColors.brandBlue,
+                      elevation: 0,
+                      automaticallyImplyLeading: false,
+                      title: const Text(
+                        'PROFIL',
+                        style: TextStyle(
+                          color: AppColors.surfaceWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      centerTitle: true,
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.logout_rounded, color: AppColors.surfaceWhite),
+                          tooltip: 'Keluar',
+                          onPressed: () {
+                            ref.read(authViewModelProvider.notifier).logout();
+                            context.go('/login');
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      flexibleSpace: FlexibleSpaceBar(
+                        collapseMode: CollapseMode.pin,
+                        background: _HeroHeader(user: state.user!),
+                      ),
+                    ),
+
+                    // Body content
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _StatRow(user: state.user!),
+                          const SizedBox(height: 16),
+                          _XpProgressBar(user: state.user!),
+                          const SizedBox(height: 24),
+                          _ActivitySummary(
+                            completedMissions: state.earnedBadgeIds.length, // fallback
+                            photoCount: state.completedChallengePhotoUrls.length,
+                          ),
+                          const SizedBox(height: 24),
+                          _BadgeSection(
+                            allBadges: state.allBadges,
+                            earnedBadgeIds: state.earnedBadgeIds,
+                          ),
+                          const SizedBox(height: 24),
+                          _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
+                        ]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+  );
 }
+```
 
-// ── TASK 3: Hero Header ──────────────────────────────────────────────────────
+**DoD Task 2:**
+- [ ] SliverAppBar expand ke 220px saat di atas, collapse ke 56px (sticky biru) saat scroll
+- [ ] Title "PROFIL" tampil saat collapsed, tersembunyi saat expanded
+- [ ] Logout icon di kanan atas, selalu terlihat
+- [ ] Tidak ada AppBar biasa / TabBar yang tersisa
+- [ ] Pull-to-refresh bekerja
 
+---
+
+## TASK 3 — Hero Header Widget
+
+Buat widget baru `_HeroHeader` di bawah class utama:
+
+```dart
 class _HeroHeader extends StatelessWidget {
   final dynamic user;
   const _HeroHeader({required this.user});
@@ -196,9 +316,21 @@ class _HeroHeader extends StatelessWidget {
     );
   }
 }
+```
 
-// ── TASK 4: Stat Cards (Responsive) ─────────────────────────────────────────
+**DoD Task 3:**
+- [ ] Avatar tunggal (tidak duplikat dari AppBar)
+- [ ] Ring putih transparan mengelilingi avatar — identitas visual yang jelas
+- [ ] Nama bold putih, email semi-transparan di bawahnya
+- [ ] Background biru solid `AppColors.brandBlue`
 
+---
+
+## TASK 4 — Stat Cards (Responsif)
+
+Ganti `_StatCard` lama (hardcoded `width: 120`) dengan layout `Expanded`:
+
+```dart
 class _StatRow extends StatelessWidget {
   final dynamic user;
   const _StatRow({required this.user});
@@ -297,13 +429,28 @@ class _StatCard extends StatelessWidget {
     );
   }
 }
+```
 
-// ── TASK 5: XP Progress Bar ──────────────────────────────────────────────────
+**DoD Task 4:**
+- [ ] Stat card responsif ke lebar layar (pakai Expanded, bukan width hardcode)
+- [ ] Poin card: biru, dengan animasi count-up dari 0
+- [ ] Level card: gold/amber
+- [ ] Ikon kecil di kiri label (diamond untuk poin, premium untuk level)
 
+---
+
+## TASK 5 — XP Progress Bar (BARU — belum ada)
+
+Komponen baru berdasarkan riset Duolingo & proposal GFD (elemen "Progress Bar"):
+
+```dart
 class _XpProgressBar extends StatelessWidget {
   final dynamic user;
   const _XpProgressBar({required this.user});
 
+  // Kalkulasi XP yang dibutuhkan per level
+  // Formula sederhana: setiap level butuh 100 * level XP
+  // Contoh: Lv1→Lv2 = 100 XP, Lv2→Lv3 = 200 XP, dst
   int get _xpForCurrentLevel => (user.level as int) * 100;
   int get _xpProgress => (user.points as int) % _xpForCurrentLevel;
   double get _progressPercent =>
@@ -328,10 +475,11 @@ class _XpProgressBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                children: const [
-                  Icon(Icons.bolt_rounded, color: AppColors.xpAmber, size: 18),
-                  SizedBox(width: 6),
-                  Text(
+                children: [
+                  const Icon(Icons.bolt_rounded,
+                      color: AppColors.xpAmber, size: 18),
+                  const SizedBox(width: 6),
+                  const Text(
                     'XP menuju Level berikutnya',
                     style: TextStyle(
                       fontSize: 13,
@@ -352,6 +500,7 @@ class _XpProgressBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
+          // Progress bar dengan animasi
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: _progressPercent),
             duration: const Duration(milliseconds: 1000),
@@ -359,6 +508,7 @@ class _XpProgressBar extends StatelessWidget {
             builder: (context, value, _) {
               return Stack(
                 children: [
+                  // Background track
                   Container(
                     height: 12,
                     width: double.infinity,
@@ -367,6 +517,7 @@ class _XpProgressBar extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  // Fill
                   FractionallySizedBox(
                     widthFactor: value,
                     child: Container(
@@ -384,6 +535,7 @@ class _XpProgressBar extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
+          // Label level
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -410,9 +562,22 @@ class _XpProgressBar extends StatelessWidget {
     );
   }
 }
+```
 
-// ── TASK 6: Activity Summary ─────────────────────────────────────────────────
+**DoD Task 5:**
+- [ ] Progress bar tampil dengan animasi fill dari 0% ke nilai aktual
+- [ ] Gradient biru→amber pada bar
+- [ ] Label "Lv.X" di kiri dan "Lv.X+1" di kanan
+- [ ] Counter "X / Y XP" tampil di kanan atas
+- [ ] Formula XP sederhana: `points % (level * 100)`
 
+---
+
+## TASK 6 — Activity Summary (BARU — belum ada)
+
+Komponen baru berdasarkan riset GitHub activity summary dan Duolingo streak:
+
+```dart
 class _ActivitySummary extends StatelessWidget {
   final int completedMissions;
   final int photoCount;
@@ -517,9 +682,21 @@ class _ActivityCard extends StatelessWidget {
     );
   }
 }
+```
 
-// ── TASK 7: Badge Section (4 columns + label + counter) ─────────────────────
+**DoD Task 6:**
+- [ ] 2 activity card tampil dalam satu baris: "Misi Selesai" dan "Foto Diupload"
+- [ ] Ikon berwarna di dalam rounded container berwarna muted
+- [ ] Count tampil besar, label kecil di bawahnya
+- [ ] Angka menggunakan data real dari ViewModel
 
+---
+
+## TASK 7 — Badge Section Redesign (4 kolom + label)
+
+Ganti `_BadgeSection` dengan versi baru (4 kolom, ada label, ada counter, ada checkmark):
+
+```dart
 class _BadgeSection extends StatelessWidget {
   final List<BadgeModel> allBadges;
   final List<String> earnedBadgeIds;
@@ -533,8 +710,7 @@ class _BadgeSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.military_tech_rounded,
-                size: 20, color: AppColors.brandBlue),
+            const Icon(Icons.military_tech_rounded, size: 20, color: AppColors.brandBlue),
             const SizedBox(width: 8),
             Text(
               'LENCANA SAYA',
@@ -573,20 +749,17 @@ class _BadgeSection extends StatelessWidget {
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: Text(
-                      'Memuat badge...',
-                      style: TextStyle(color: AppColors.disabled),
-                    ),
+                    child: Text('Memuat badge...', style: TextStyle(color: AppColors.disabled)),
                   ),
                 )
               : GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
+                    crossAxisCount: 4,           // 4 kolom — lebih besar dari 5
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.75,      // lebih tinggi untuk muat label
                   ),
                   itemCount: allBadges.length,
                   itemBuilder: (context, index) {
@@ -660,11 +833,7 @@ class _BadgeItem extends StatelessWidget {
                         color: AppColors.forestGreen,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.check,
-                        size: 10,
-                        color: AppColors.surfaceWhite,
-                      ),
+                      child: const Icon(Icons.check, size: 10, color: AppColors.surfaceWhite),
                     ),
                   ),
               ],
@@ -687,46 +856,23 @@ class _BadgeItem extends StatelessWidget {
     );
   }
 }
+```
 
-class _BadgeDetailSheet extends StatelessWidget {
-  final BadgeModel badge;
+**DoD Task 7:**
+- [ ] 4 kolom badge (tidak 5)
+- [ ] Label nama badge di bawah setiap badge (truncated jika terlalu panjang)
+- [ ] Counter "X / Y" tampil di header section
+- [ ] Badge earned: checkmark hijau di sudut kanan atas
+- [ ] Badge locked: grayscale + ikon lock
+- [ ] Tap badge earned → bottom sheet detail
 
-  const _BadgeDetailSheet({required this.badge});
+---
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 5,
-            decoration: BoxDecoration(
-              color: AppColors.cardBorder,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          const SizedBox(height: 20),
-          SvgPicture.asset(badge.iconPath, width: 80, height: 80),
-          const SizedBox(height: 16),
-          Text(badge.title, style: AppTextStyles.heading),
-          const SizedBox(height: 8),
-          Text(
-            badge.description,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.body.copyWith(color: AppColors.secondaryText),
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-}
+## TASK 8 — Photo Section (Network-Aware)
 
-// ── TASK 8: Photo Section (network-aware + counter) ─────────────────────────
+Ganti `_PhotoSection` dengan versi network-aware + counter foto:
 
+```dart
 class _PhotoSection extends StatelessWidget {
   final List<String> photoUrls;
   const _PhotoSection({required this.photoUrls});
@@ -738,20 +884,17 @@ class _PhotoSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.camera_alt_rounded,
-                size: 20, color: AppColors.brandBlue),
+            const Icon(Icons.camera_alt_rounded, size: 20, color: AppColors.brandBlue),
             const SizedBox(width: 8),
             Text(
               'FOTO SAYA',
-              style:
-                  AppTextStyles.title.copyWith(fontSize: 15, letterSpacing: 1.2),
+              style: AppTextStyles.title.copyWith(fontSize: 15, letterSpacing: 1.2),
             ),
             const Spacer(),
             if (photoUrls.isNotEmpty)
               Text(
                 '${photoUrls.length} foto',
-                style:
-                    const TextStyle(fontSize: 12, color: AppColors.secondaryText),
+                style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
               ),
           ],
         ),
@@ -781,8 +924,7 @@ class _PhotoSection extends StatelessWidget {
                   itemCount: photoUrls.length,
                   itemBuilder: (context, index) {
                     final url = photoUrls[index];
-                    final isNetwork =
-                        url.startsWith('http://') || url.startsWith('https://');
+                    final isNetwork = url.startsWith('http://') || url.startsWith('https://');
                     return ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: isNetwork
@@ -845,9 +987,15 @@ class _PhotoSection extends StatelessWidget {
     );
   }
 }
+```
 
-// ── TASK 9: Section Header Helper ───────────────────────────────────────────
+---
 
+## TASK 9 — Helper Widget: _SectionHeader
+
+Buat helper reusable yang dipakai oleh semua section:
+
+```dart
 class _SectionHeader extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -867,3 +1015,63 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
+```
+
+---
+
+## DEFINITION OF DONE — Full Sprint
+
+### Bug Fix
+- [ ] Foto Firebase Storage (https) tampil sebagai gambar nyata (bukan warna blok)
+- [ ] Tidak ada crash saat foto gagal load
+
+### Layout
+- [ ] SliverAppBar hero brandBlue (expandedHeight: 220), pinned saat scroll
+- [ ] Saat expanded: avatar + nama + email tampil di hero area
+- [ ] Saat collapsed: hanya title "PROFIL" + logout icon
+- [ ] Pull-to-refresh bekerja
+- [ ] Tidak ada AppBar biasa, TabBar, atau duplikat entry point Progress
+
+### Stat Cards
+- [ ] Dua card (Poin & Level) responsif dengan Expanded, tidak hardcoded width
+- [ ] Poin: animasi count-up, biru
+- [ ] Level: gold, tanpa animasi
+
+### XP Progress Bar (BARU)
+- [ ] Progress bar gradient (biru → amber) dengan animasi fill
+- [ ] Label level kiri dan level+1 kanan
+- [ ] Counter "X / Y XP" di kanan atas card
+
+### Activity Summary (BARU)
+- [ ] 2 metric card: Misi Selesai dan Foto Diupload
+- [ ] Data real dari ViewModel
+
+### Badge
+- [ ] 4 kolom (bukan 5)
+- [ ] Label nama badge tiap item (truncated jika panjang)
+- [ ] Counter "X / Y" di header section
+- [ ] Checkmark hijau untuk earned, grayscale + lock untuk locked
+- [ ] Tap → bottom sheet detail (dipertahankan dari versi lama)
+
+### Foto
+- [ ] Grid 3 kolom, network-aware
+- [ ] Counter "X foto" di header section
+- [ ] Empty state dengan icon dan teks motivasi
+
+### General
+- [ ] `flutter analyze` zero errors
+- [ ] Semua warna dari AppColors (tidak ada hardcode hex)
+- [ ] Semua text style dari AppTextStyles atau TextStyle dengan warna dari AppColors
+
+---
+
+## PR REQUIREMENTS
+
+- **Branch:** `feature/profile-redesign`
+- **Base:** `main` (atau `fix/color-consistency` jika sprint warna sudah di-merge)
+- **Title:** `feat: profile UI redesign — hero SliverAppBar, XP progress bar, activity summary, network photo grid`
+- **PR body mencakup:**
+  - Research basis (Duolingo, Eleken, Proposal GFD)
+  - Screenshot before & after
+  - Daftar komponen baru yang ditambahkan
+  - Notes: completedMissions menggunakan `earnedBadgeIds.length` sebagai fallback sampai VM diupdate
