@@ -709,11 +709,10 @@ class _RejectedResultCard extends StatelessWidget {
   }
 }
 
-/// A horizontally swipeable gallery of real example photos for a module level.
-/// Photos come from assets/images/examples/LEVEL {N}-({i}).jpg
+/// Swipeable gallery of real reference example photos for a module level.
+/// Renders every photo at its native 16:9 landscape ratio — zero crop, zero clipping.
 class _ExamplePhotoGallery extends StatefulWidget {
   final List<String> photoPaths;
-
   const _ExamplePhotoGallery({required this.photoPaths});
 
   @override
@@ -734,41 +733,39 @@ class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
   Widget build(BuildContext context) {
     final total = widget.photoPaths.length;
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label
-        const Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            'Contoh Foto:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.secondaryText,
-            ),
+        const Text(
+          'Contoh Foto:',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: AppColors.secondaryText,
           ),
         ),
         const SizedBox(height: 10),
-        // Photo carousel
+
+        // ── DISPLAY DESIGN NOTE (SPR-011) ─────────────────────────────────
+        // Photography training requires users to evaluate the full, unaltered
+        // frame. Cropping destroys composition evidence. We use AspectRatio(16:9)
+        // so the image fills the column width while revealing every pixel.
+        // Rounded corners removed — the frame edge IS the photographic boundary.
+        // Reference: Nielsen Norman Group — "Images in UX" (2024)
+        // ─────────────────────────────────────────────────────────────────
         SizedBox(
-          height: 220,
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: total,
-            onPageChanged: (i) => setState(() => _current = i),
-            itemBuilder: (context, index) {
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
+          width: double.infinity,
+          child: AspectRatio(
+            aspectRatio: 16 / 9,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: total,
+              onPageChanged: (i) => setState(() => _current = i),
+              itemBuilder: (context, index) {
+                return Image.asset(
                   widget.photoPaths[index],
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,  // NEVER use cover — see note above
                   errorBuilder: (_, __, ___) => Container(
-                    height: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundGray,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    color: AppColors.backgroundGray,
                     child: const Center(
                       child: Icon(
                         Icons.broken_image_rounded,
@@ -777,12 +774,12 @@ class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
-        // Dot indicators (only show if more than 1 photo)
+
         if (total > 1) ...[
           const SizedBox(height: 10),
           Row(
@@ -811,11 +808,13 @@ class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            '${_current + 1} / $total',
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.secondaryText,
+          Center(
+            child: Text(
+              '${_current + 1} / $total',
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.secondaryText,
+              ),
             ),
           ),
         ],

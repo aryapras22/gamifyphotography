@@ -100,17 +100,55 @@ class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Foto submission
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Image.network(
-              submission.photoUrl,
-              height: 220,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                height: 220,
-                color: AppColors.backgroundGray,
-                child: const Icon(Icons.broken_image_rounded,
-                    size: 56, color: AppColors.disabled),
+          // ── DISPLAY DESIGN NOTE (SPR-011) ───────────────────────────────────────
+          // The submission result page is the primary moment where both the student
+          // and admin evaluate the submitted photograph against the mission criteria.
+          // Displaying a cropped thumbnail destroys the learning feedback loop.
+          // Full 9:16 portrait ratio is enforced — zero crop, zero rounded clipping.
+          // ─────────────────────────────────────────────────────────────────────────
+          SizedBox(
+            width: double.infinity,
+            child: AspectRatio(
+              aspectRatio: 9 / 16,
+              child: Image.network(
+                submission.photoUrl,
+                fit: BoxFit.contain,
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) return child;
+                  return Container(
+                    color: AppColors.backgroundGray,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: progress.expectedTotalBytes != null
+                            ? progress.cumulativeBytesLoaded /
+                                progress.expectedTotalBytes!
+                            : null,
+                        color: AppColors.brandBlue,
+                      ),
+                    ),
+                  );
+                },
+                errorBuilder: (_, __, ___) => AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: Container(
+                    color: AppColors.backgroundGray,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.broken_image_rounded,
+                            size: 56, color: AppColors.disabled),
+                        SizedBox(height: 12),
+                        Text(
+                          'Gagal memuat foto',
+                          style: TextStyle(
+                            color: AppColors.secondaryText,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
