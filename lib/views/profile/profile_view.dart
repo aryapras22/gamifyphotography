@@ -11,6 +11,9 @@ import '../../core/app_colors.dart';
 import '../../view_models/profile_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../models/badge_model.dart';
+import '../../models/photo_submission_model.dart';
+import '../../providers/submission_providers.dart';
+import '../mission/submission_status_view.dart';
 
 // ── Main ProfileTab ─────────────────────────────────────────────────────────
 
@@ -104,6 +107,8 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                 ),
                 const SizedBox(height: 24),
                 _PhotoSection(photoUrls: state.completedChallengePhotoUrls),
+                const SizedBox(height: 24),
+                _SubmissionHistorySection(),
               ]),
             ),
           ),
@@ -864,6 +869,179 @@ class _SectionHeader extends StatelessWidget {
           style: AppTextStyles.title.copyWith(fontSize: 15, letterSpacing: 1.2),
         ),
       ],
+    );
+  }
+}
+
+// -- Submission History --------------------------------------------------------
+
+class _SubmissionHistorySection extends ConsumerWidget {
+  const _SubmissionHistorySection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(submissionHistoryProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.history_rounded, size: 20, color: AppColors.brandBlue),
+            const SizedBox(width: 8),
+            Text(
+              'RIWAYAT SUBMISSION',
+              style: AppTextStyles.title.copyWith(fontSize: 15, letterSpacing: 1.2),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        historyAsync.when(
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24),
+              child: CircularProgressIndicator(color: AppColors.brandBlue),
+            ),
+          ),
+          error: (_, __) => const SizedBox.shrink(),
+          data: (submissions) {
+            if (submissions.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceWhite,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.cardBorder, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    'Belum ada submission.',
+                    style: AppTextStyles.body.copyWith(color: AppColors.disabled),
+                  ),
+                ),
+              );
+            }
+            return Column(
+              children: submissions
+                  .map((s) => _SubmissionHistoryItem(
+                        submission: s,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SubmissionStatusView(
+                              moduleId: s.moduleId,
+                              moduleTitle: s.moduleTitle,
+                            ),
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _SubmissionHistoryItem extends StatelessWidget {
+  final PhotoSubmissionModel submission;
+  final VoidCallback onTap;
+
+  const _SubmissionHistoryItem({required this.submission, required this.onTap});
+
+  Color get _statusColor {
+    switch (submission.status) {
+      case 'approved': return AppColors.forestGreen;
+      case 'rejected': return AppColors.coralRed;
+      default: return AppColors.lensGold;
+    }
+  }
+
+  IconData get _statusIcon {
+    switch (submission.status) {
+      case 'approved': return Icons.check_circle_rounded;
+      case 'rejected': return Icons.cancel_rounded;
+      default: return Icons.hourglass_top_rounded;
+    }
+  }
+
+  String get _statusLabel {
+    switch (submission.status) {
+      case 'approved': return 'Disetujui';
+      case 'rejected': return 'Ditolak';
+      default: return 'Menunggu';
+    }
+  }
+
+  String _formatDate(DateTime d) => '${d.day}/${d.month}/${d.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.cardBorder, width: 2),
+          boxShadow: const [BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 3))],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                submission.photoUrl,
+                width: 56, height: 56, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 56, height: 56,
+                  color: AppColors.backgroundGray,
+                  child: const Icon(Icons.image_not_supported_rounded, color: AppColors.disabled, size: 24),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(submission.moduleTitle,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.bodyText),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(_statusIcon, size: 14, color: _statusColor),
+                      const SizedBox(width: 4),
+                      Text(_statusLabel,
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _statusColor)),
+                      if (submission.status == 'approved' && submission.adminScore != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.forestGreen.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text('${submission.adminScore} / 100',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.forestGreen)),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(_formatDate(submission.submittedAt),
+                    style: const TextStyle(fontSize: 11, color: AppColors.secondaryText)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppColors.disabled, size: 20),
+          ],
+        ),
+      ),
     );
   }
 }

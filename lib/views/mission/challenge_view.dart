@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import '../../view_models/challenge_view_model.dart';
 import '../../view_models/mission_view_model.dart';
+import '../../providers/submission_providers.dart';
 import '../widgets/animated_3d_button.dart';
 import 'custom_camera_view.dart';
+import 'submission_status_view.dart';
 import 'dart:io';
 import '../../core/app_colors.dart';
 
@@ -44,6 +46,13 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
         body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
       );
     }
+
+    // Watch submission status to block camera when pending
+    final submissionAsync = ref.watch(
+      submissionStatusProvider(challenge.moduleId),
+    );
+    final submissionStatus = submissionAsync.valueOrNull?.status;
+    final isPending = submissionStatus == 'pending';
 
     final hasPhoto =
         challenge.uploadedPhotoUrl != null &&
@@ -175,24 +184,29 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                       )
                     else
                       GestureDetector(
-                        onTap: () async {
-                          final XFile? xfile = await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => CustomCameraView(
-                                moduleId: challenge.moduleId,
-                              ),
-                            ),
-                          );
-
-                          if (xfile != null) {
-                            final moduleTitle = ref.read(missionViewModelProvider).activeModule?.title ?? challenge.moduleId;
-                            // Hanya upload foto — user harus tap "CEK HASIL" secara eksplisit
-                            await ref
-                                .read(challengeViewModelProvider.notifier)
-                                .uploadPhoto(xfile, moduleTitle: moduleTitle);
-                            // TIDAK ada completeChallenge() di sini (fix BUG-09)
-                          }
-                        },
+                        onTap: isPending
+                            ? null
+                            : () async {
+                                final XFile? xfile =
+                                    await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => CustomCameraView(
+                                      moduleId: challenge.moduleId,
+                                    ),
+                                  ),
+                                );
+                                if (xfile != null) {
+                                  final moduleTitle = ref
+                                          .read(missionViewModelProvider)
+                                          .activeModule
+                                          ?.title ??
+                                      challenge.moduleId;
+                                  await ref
+                                      .read(challengeViewModelProvider.notifier)
+                                      .uploadPhoto(xfile,
+                                          moduleTitle: moduleTitle);
+                                }
+                              },
                         child: Container(
                           width: double.infinity,
                           height: 250,
@@ -210,64 +224,110 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                               ),
                             ],
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.camera_alt_rounded,
-                                size: 80,
-                                color: AppColors.brandBlue,
-                              ),
-                              SizedBox(height: 16),
-                              Text(
-                                'AMBIL FOTO',
-                                style: TextStyle(
-                                  color: AppColors.brandBlue,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
+                          child: isPending
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.hourglass_top_rounded,
+                                        size: 64, color: AppColors.lensGold),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'MENUNGGU PENILAIAN',
+                                      style: TextStyle(
+                                        color: AppColors.lensGold,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Fotomu sedang ditinjau admin.',
+                                      style: TextStyle(
+                                        color: AppColors.secondaryText,
+                                        fontSize: 13,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.camera_alt_rounded,
+                                        size: 80, color: AppColors.brandBlue),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'AMBIL FOTO',
+                                      style: TextStyle(
+                                        color: AppColors.brandBlue,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
 
                     const SizedBox(height: 40),
 
-                    Animated3DButton(
-                      color: hasPhoto
-                          ? AppColors.forestGreen
-                          : AppColors.cardBorder,
-                      shadowColor: hasPhoto
-                          ? const Color(0xFF2D8A00)
-                          : const Color(0xFFC4C4C4),
-                      onPressed: hasPhoto && !state.isUploading
-                          ? () async {
-                              try {
-                                await ref
-                                    .read(challengeViewModelProvider.notifier)
-                                    .completeChallenge();
-                                if (mounted) context.push('/mission/feedback');
-                              } catch (_) {
-                                // errorMessage already set in ViewModel;
-                                // SnackBar shown via ref.listen above
-                              }
-                            }
-                          : () {},
-                      child: state.isUploading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              'CEK HASIL',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                color: hasPhoto
-                                    ? Colors.white
-                                    : AppColors.disabled,
-                                letterSpacing: 1.2,
+                    if (isPending)
+                      Animated3DButton(
+                        color: AppColors.lensGold,
+                        shadowColor: const Color(0xFFB8860B),
+                        onPressed: () {
+                          final moduleTitle = ref
+                                  .read(missionViewModelProvider)
+                                  .activeModule
+                                  ?.title ??
+                              challenge.moduleId;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => SubmissionStatusView(
+                                moduleId: challenge.moduleId,
+                                moduleTitle: moduleTitle,
                               ),
                             ),
-                    ),
+                          );
+                        },
+                        child: const Text(
+                          'LIHAT STATUS FOTO →',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      )
+                    else
+                      Animated3DButton(
+                        color: hasPhoto
+                            ? AppColors.forestGreen
+                            : AppColors.cardBorder,
+                        shadowColor: hasPhoto
+                            ? const Color(0xFF2D8A00)
+                            : const Color(0xFFC4C4C4),
+                        onPressed: hasPhoto && !state.isUploading
+                            ? () {
+                                if (mounted) context.push('/mission/feedback');
+                              }
+                            : () {},
+                        child: state.isUploading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : Text(
+                                'CEK HASIL',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: hasPhoto
+                                      ? Colors.white
+                                      : AppColors.disabled,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                      ),
                     const SizedBox(height: 40),
                   ],
                 ),

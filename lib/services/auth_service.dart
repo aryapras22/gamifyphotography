@@ -118,6 +118,34 @@ class AuthService {
     });
   }
 
+  /// Called when admin approves a submission. Awards adminScore points atomically.
+  /// Idempotent: safe to call multiple times — only awards if module not already in completedModuleIds.
+  Future<void> awardPointsForApprovedSubmission({
+    required String userId,
+    required String moduleId,
+    required int adminScore,
+    required String photoUrl,
+  }) async {
+    final ref = _db.collection('users').doc(userId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      if (!snap.exists) return;
+      final data = snap.data()!;
+      final completedIds = List<String>.from(data['completedModuleIds'] ?? []);
+      if (completedIds.contains(moduleId)) return; // already awarded
+      completedIds.add(moduleId);
+      final currentPoints = (data['points'] as int?) ?? 0;
+      final newPoints = currentPoints + adminScore;
+      tx.update(ref, {
+        'completedModuleIds': completedIds,
+        'points': newPoints,
+        'level': (newPoints ~/ 100) + 1,
+        if (photoUrl.isNotEmpty)
+          'completedPhotoUrls': FieldValue.arrayUnion([photoUrl]),
+      });
+    });
+  }
+
   Future<void> logout() async => _auth.signOut();
 
   String _mapError(FirebaseAuthException e) {

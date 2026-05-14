@@ -70,51 +70,42 @@ class _FeedbackViewState extends ConsumerState<FeedbackView> {
                   _PhotoPreview(photoUrl: photoUrl),
                   const SizedBox(height: 28),
 
-                  // ── Rolling Points Counter ─────────────────────
-                  if (state.pointsEarned > 0)
-                    TweenAnimationBuilder<int>(
-                      tween: IntTween(begin: 0, end: state.pointsEarned),
-                      duration: const Duration(milliseconds: 800),
-                      curve: Curves.easeInOut,
-                      builder: (context, value, _) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.forestGreen.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppColors.forestGreen,
-                            width: 2,
+                  // ── Pending Review Card ────────────────────────
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.lensGold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.lensGold, width: 2),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.hourglass_top_rounded,
+                            color: AppColors.lensGold, size: 28),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Foto terkirim!',
+                                style: AppTextStyles.title
+                                    .copyWith(color: AppColors.lensGold),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Poin akan diberikan setelah admin menilai fotomu.',
+                                style: AppTextStyles.body.copyWith(
+                                    color: AppColors.secondaryText),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.diamond_rounded,
-                              color: AppColors.forestGreen,
-                              size: 32,
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              '+$value poin',
-                              style: AppTextStyles.display.copyWith(
-                                color: AppColors.forestGreen,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    Text(
-                      'Misi Selesai!',
-                      style: AppTextStyles.heading.copyWith(
-                        color: AppColors.forestGreen,
-                      ),
+                      ],
                     ),
+                  ),
 
                   const SizedBox(height: 20),
 
@@ -240,7 +231,8 @@ class _PhotoPreview extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.camera_alt_outlined, size: 56, color: AppColors.disabled),
+          const Icon(Icons.camera_alt_outlined,
+              size: 56, color: AppColors.disabled),
           const SizedBox(height: 8),
           const Text('Tidak ada foto',
               style: TextStyle(color: AppColors.secondaryText, fontSize: 12)),
