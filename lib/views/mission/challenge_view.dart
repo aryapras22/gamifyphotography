@@ -37,8 +37,11 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
     final challenge = state.challenge;
 
     if (challenge == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/home');
+      });
       return const Scaffold(
-        body: Center(child: Text('No challenge available')),
+        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
       );
     }
 
@@ -240,11 +243,14 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                           : const Color(0xFFC4C4C4),
                       onPressed: hasPhoto && !state.isUploading
                           ? () async {
-                              await ref
-                                  .read(challengeViewModelProvider.notifier)
-                                  .completeChallenge();
-                              if (mounted) {
-                                context.push('/mission/feedback');
+                              try {
+                                await ref
+                                    .read(challengeViewModelProvider.notifier)
+                                    .completeChallenge();
+                                if (mounted) context.push('/mission/feedback');
+                              } catch (_) {
+                                // errorMessage already set in ViewModel;
+                                // SnackBar shown via ref.listen above
                               }
                             }
                           : () {},

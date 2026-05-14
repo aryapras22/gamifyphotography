@@ -11,6 +11,18 @@ class PhotoSubmissionService {
     required String moduleTitle,
     required String photoUrl,
   }) async {
+    // Guard: do not create a new submission if one is already pending or approved.
+    // A rejected submission allows re-submission (creates a new document).
+    final existing = await _db
+        .collection('photo_submissions')
+        .where('userId', isEqualTo: userId)
+        .where('moduleId', isEqualTo: moduleId)
+        .where('status', whereIn: ['pending', 'approved'])
+        .limit(1)
+        .get();
+
+    if (existing.docs.isNotEmpty) return;
+
     await _db.collection('photo_submissions').add({
       'userId': userId,
       'userName': userName,
@@ -19,6 +31,7 @@ class PhotoSubmissionService {
       'photoUrl': photoUrl,
       'status': 'pending',
       'adminNote': null,
+      'adminScore': null,
       'submittedAt': FieldValue.serverTimestamp(),
       'reviewedAt': null,
     });
@@ -30,12 +43,25 @@ class PhotoSubmissionService {
         .collection('photo_submissions')
         .where('userId', isEqualTo: userId)
         .where('moduleId', isEqualTo: moduleId)
+        .orderBy('submittedAt', descending: true)
         .limit(1)
         .snapshots()
         .map((snap) {
       if (snap.docs.isEmpty) return null;
       final doc = snap.docs.first;
-      return PhotoSubmissionModel.fromJson({...doc.data(), 'id': doc.id});
+      final data = <String, dynamic>{...doc.data(), 'id': doc.id};
+
+      // Normalize Firestore Timestamps to ISO 8601 strings for fromJson
+      if (data['submittedAt'] is Timestamp) {
+        data['submittedAt'] =
+            (data['submittedAt'] as Timestamp).toDate().toIso8601String();
+      }
+      if (data['reviewedAt'] is Timestamp) {
+        data['reviewedAt'] =
+            (data['reviewedAt'] as Timestamp).toDate().toIso8601String();
+      }
+
+      return PhotoSubmissionModel.fromJson(data);
     });
   }
 }
