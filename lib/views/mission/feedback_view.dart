@@ -184,20 +184,28 @@ class _PhotoPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNetworkUrl = photoUrl != null && photoUrl!.startsWith('http');
     final hasPhoto =
         photoUrl != null &&
         photoUrl!.isNotEmpty &&
-        File(photoUrl!).existsSync();
+        (isNetworkUrl || File(photoUrl!).existsSync());
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: hasPhoto
-          ? Image.file(
-              File(photoUrl!),
-              height: 220,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            )
+          ? (isNetworkUrl
+              ? Image.network(
+                  photoUrl!,
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                )
+              : Image.file(
+                  File(photoUrl!),
+                  height: 220,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ))
           : Container(
               height: 220,
               width: double.infinity,

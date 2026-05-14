@@ -19,6 +19,17 @@ class ChallengeView extends ConsumerStatefulWidget {
 class _ChallengeViewState extends ConsumerState<ChallengeView> {
   @override
   Widget build(BuildContext context) {
+    ref.listen<ChallengeState>(challengeViewModelProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage != previous?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     final state = ref.watch(challengeViewModelProvider);
     final challenge = state.challenge;
 
@@ -125,12 +136,19 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     if (hasPhoto)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
-                        child: Image.file(
-                          File(challenge.uploadedPhotoUrl!),
-                          height: 300,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
+                        child: challenge.uploadedPhotoUrl!.startsWith('http') 
+                          ? Image.network(
+                              challenge.uploadedPhotoUrl!,
+                              height: 300,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            )
+                          : Image.file(
+                              File(challenge.uploadedPhotoUrl!),
+                              height: 300,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                       )
                     else
                       GestureDetector(

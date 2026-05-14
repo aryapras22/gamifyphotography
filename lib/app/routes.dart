@@ -6,7 +6,6 @@ import '../views/auth/register_view.dart';
 import '../views/home/main_layout_view.dart';
 import '../views/mission/module_detail_view.dart';
 import '../views/mission/challenge_view.dart';
-import '../views/mission/challenge_brief_view.dart';
 import '../views/mission/feedback_view.dart';
 import '../views/crafting/crafting_view.dart';
 import '../views/progress/progress_view.dart';

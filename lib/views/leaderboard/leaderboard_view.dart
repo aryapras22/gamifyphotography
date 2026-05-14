@@ -10,8 +10,6 @@ import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 
-const String _kFallbackUserId = 'user_1';
-
 // Medal emoji untuk top 3
 const List<String> _kMedals = ['🥇', '🥈', '🥉'];
 
@@ -28,8 +26,9 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authUser = ref.read(authViewModelProvider).currentUser;
-      final userId = authUser?.id ?? _kFallbackUserId;
-      ref.read(leaderboardViewModelProvider.notifier).loadLeaderboard(userId);
+      if (authUser != null) {
+        ref.read(leaderboardViewModelProvider.notifier).loadLeaderboard(authUser.id);
+      }
     });
   }
 
@@ -37,7 +36,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
   Widget build(BuildContext context) {
     final state = ref.watch(leaderboardViewModelProvider);
     final authUser = ref.watch(authViewModelProvider).currentUser;
-    final currentUserId = authUser?.id ?? _kFallbackUserId;
+    final currentUserId = authUser?.id;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
@@ -73,7 +72,7 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
           ? _buildLoadingSkeleton()
           : state.errorMessage != null
           ? _buildError(state.errorMessage!)
-          : _buildList(state.entries, currentUserId),
+          : _buildList(state.entries, currentUserId ?? ''),
     );
   }
 

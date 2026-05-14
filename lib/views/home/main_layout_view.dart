@@ -12,8 +12,6 @@ import '../../view_models/auth_view_model.dart';
 import '../../core/app_colors.dart';
 import 'daily_login_view.dart';
 
-const String _kFallbackUserId = 'user_1';
-
 class MainLayoutView extends ConsumerStatefulWidget {
   const MainLayoutView({super.key});
 
@@ -44,8 +42,8 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
     if (!mounted) return;
     try {
       final authUser = ref.read(authViewModelProvider).currentUser;
-      final userId = authUser?.id ?? _kFallbackUserId;
-      await showDailyLoginSheet(context, ref, userId);
+      if (authUser == null) return;
+      await showDailyLoginSheet(context, ref, authUser.id);
     } catch (e) {
       debugPrint('[DailyLogin] startup error suppressed: $e');
     }
