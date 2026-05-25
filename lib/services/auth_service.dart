@@ -51,6 +51,14 @@ class AuthService {
       lastLoginDate = (data['lastLoginDate'] as Timestamp).toDate();
     }
 
+    // Parse quizScores: Firestore stores as Map<String, dynamic>
+    Map<String, int> quizScores = {};
+    if (data['quizScores'] is Map) {
+      (data['quizScores'] as Map).forEach((k, v) {
+        quizScores[k.toString()] = (v as num).toInt();
+      });
+    }
+
     return UserModel(
       id: uid,
       name: data['name'] ?? '',
@@ -72,6 +80,13 @@ class AuthService {
       createdAt: data['createdAt'] is Timestamp
           ? (data['createdAt'] as Timestamp).toDate()
           : null,
+      // Level system fields
+      completedLevels: data['completedLevels'] != null
+          ? List<int>.from((data['completedLevels'] as List).map((e) => (e as num).toInt()))
+          : [],
+      quizScores: quizScores,
+      pretestDone: data['pretestDone'] ?? false,
+      posttestDone: data['posttestDone'] ?? false,
     );
   }
 
@@ -90,6 +105,11 @@ class AuthService {
           ? Timestamp.fromDate(user.lastLoginDate!)
           : null,
       'weekHistory': user.weekHistory,
+      // Level system fields
+      'completedLevels': user.completedLevels,
+      'quizScores': user.quizScores,
+      'pretestDone': user.pretestDone,
+      'posttestDone': user.posttestDone,
     });
   }
 

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../view_models/crafting_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../widgets/animated_3d_button.dart';
+import '../quiz/pretest_view.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class CraftingView extends ConsumerStatefulWidget {
@@ -30,6 +31,18 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
     ref.listen<AuthState>(authViewModelProvider, (prev, next) {
       if (prev?.currentUser?.points != next.currentUser?.points) {
         ref.read(craftingViewModelProvider.notifier).loadCraftingStatus();
+      }
+    });
+
+    // TASK-09: Tampilkan posttest saat crafting selesai
+    ref.listen<CraftingState>(craftingViewModelProvider, (prev, next) {
+      if (next.triggerPosttest && !(prev?.triggerPosttest ?? false)) {
+        ref.read(craftingViewModelProvider.notifier).clearPosttestTrigger();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => PretestView(testType: TestType.posttest),
+          ),
+        );
       }
     });
 

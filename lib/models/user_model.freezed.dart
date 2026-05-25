@@ -34,7 +34,19 @@ mixin _$UserModel {
   int get streakCount => throw _privateConstructorUsedError;
   DateTime? get lastLoginDate => throw _privateConstructorUsedError;
   List<bool> get weekHistory => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt =>
+      throw _privateConstructorUsedError; // ── Level System (TASK-06) ────────────────────────────────────────────
+  /// Level materi/quiz yang sudah diselesaikan (nomor 1–25)
+  List<int> get completedLevels => throw _privateConstructorUsedError;
+
+  /// Skor quiz per level: {levelNumber: score}
+  Map<String, int> get quizScores => throw _privateConstructorUsedError;
+
+  /// Apakah pretest sudah dikerjakan
+  bool get pretestDone => throw _privateConstructorUsedError;
+
+  /// Apakah posttest sudah dikerjakan
+  bool get posttestDone => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -66,6 +78,10 @@ abstract class $UserModelCopyWith<$Res> {
     DateTime? lastLoginDate,
     List<bool> weekHistory,
     DateTime? createdAt,
+    List<int> completedLevels,
+    Map<String, int> quizScores,
+    bool pretestDone,
+    bool posttestDone,
   });
 }
 
@@ -98,6 +114,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? lastLoginDate = freezed,
     Object? weekHistory = null,
     Object? createdAt = freezed,
+    Object? completedLevels = null,
+    Object? quizScores = null,
+    Object? pretestDone = null,
+    Object? posttestDone = null,
   }) {
     return _then(
       _value.copyWith(
@@ -157,6 +177,22 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
+            completedLevels: null == completedLevels
+                ? _value.completedLevels
+                : completedLevels // ignore: cast_nullable_to_non_nullable
+                      as List<int>,
+            quizScores: null == quizScores
+                ? _value.quizScores
+                : quizScores // ignore: cast_nullable_to_non_nullable
+                      as Map<String, int>,
+            pretestDone: null == pretestDone
+                ? _value.pretestDone
+                : pretestDone // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            posttestDone: null == posttestDone
+                ? _value.posttestDone
+                : posttestDone // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -187,6 +223,10 @@ abstract class _$$UserModelImplCopyWith<$Res>
     DateTime? lastLoginDate,
     List<bool> weekHistory,
     DateTime? createdAt,
+    List<int> completedLevels,
+    Map<String, int> quizScores,
+    bool pretestDone,
+    bool posttestDone,
   });
 }
 
@@ -218,6 +258,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? lastLoginDate = freezed,
     Object? weekHistory = null,
     Object? createdAt = freezed,
+    Object? completedLevels = null,
+    Object? quizScores = null,
+    Object? pretestDone = null,
+    Object? posttestDone = null,
   }) {
     return _then(
       _$UserModelImpl(
@@ -277,6 +321,22 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
+        completedLevels: null == completedLevels
+            ? _value._completedLevels
+            : completedLevels // ignore: cast_nullable_to_non_nullable
+                  as List<int>,
+        quizScores: null == quizScores
+            ? _value._quizScores
+            : quizScores // ignore: cast_nullable_to_non_nullable
+                  as Map<String, int>,
+        pretestDone: null == pretestDone
+            ? _value.pretestDone
+            : pretestDone // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        posttestDone: null == posttestDone
+            ? _value.posttestDone
+            : posttestDone // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -308,10 +368,16 @@ class _$UserModelImpl implements _UserModel {
       false,
     ],
     this.createdAt,
+    final List<int> completedLevels = const [],
+    final Map<String, int> quizScores = const {},
+    this.pretestDone = false,
+    this.posttestDone = false,
   }) : _earnedBadgeIds = earnedBadgeIds,
        _completedPhotoUrls = completedPhotoUrls,
        _completedModuleIds = completedModuleIds,
-       _weekHistory = weekHistory;
+       _weekHistory = weekHistory,
+       _completedLevels = completedLevels,
+       _quizScores = quizScores;
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
@@ -379,10 +445,44 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   final DateTime? createdAt;
+  // ── Level System (TASK-06) ────────────────────────────────────────────
+  /// Level materi/quiz yang sudah diselesaikan (nomor 1–25)
+  final List<int> _completedLevels;
+  // ── Level System (TASK-06) ────────────────────────────────────────────
+  /// Level materi/quiz yang sudah diselesaikan (nomor 1–25)
+  @override
+  @JsonKey()
+  List<int> get completedLevels {
+    if (_completedLevels is EqualUnmodifiableListView) return _completedLevels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_completedLevels);
+  }
+
+  /// Skor quiz per level: {levelNumber: score}
+  final Map<String, int> _quizScores;
+
+  /// Skor quiz per level: {levelNumber: score}
+  @override
+  @JsonKey()
+  Map<String, int> get quizScores {
+    if (_quizScores is EqualUnmodifiableMapView) return _quizScores;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_quizScores);
+  }
+
+  /// Apakah pretest sudah dikerjakan
+  @override
+  @JsonKey()
+  final bool pretestDone;
+
+  /// Apakah posttest sudah dikerjakan
+  @override
+  @JsonKey()
+  final bool posttestDone;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt)';
+    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt, completedLevels: $completedLevels, quizScores: $quizScores, pretestDone: $pretestDone, posttestDone: $posttestDone)';
   }
 
   @override
@@ -419,7 +519,19 @@ class _$UserModelImpl implements _UserModel {
               _weekHistory,
             ) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            const DeepCollectionEquality().equals(
+              other._completedLevels,
+              _completedLevels,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._quizScores,
+              _quizScores,
+            ) &&
+            (identical(other.pretestDone, pretestDone) ||
+                other.pretestDone == pretestDone) &&
+            (identical(other.posttestDone, posttestDone) ||
+                other.posttestDone == posttestDone));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -440,6 +552,10 @@ class _$UserModelImpl implements _UserModel {
     lastLoginDate,
     const DeepCollectionEquality().hash(_weekHistory),
     createdAt,
+    const DeepCollectionEquality().hash(_completedLevels),
+    const DeepCollectionEquality().hash(_quizScores),
+    pretestDone,
+    posttestDone,
   );
 
   /// Create a copy of UserModel
@@ -472,6 +588,10 @@ abstract class _UserModel implements UserModel {
     final DateTime? lastLoginDate,
     final List<bool> weekHistory,
     final DateTime? createdAt,
+    final List<int> completedLevels,
+    final Map<String, int> quizScores,
+    final bool pretestDone,
+    final bool posttestDone,
   }) = _$UserModelImpl;
 
   factory _UserModel.fromJson(Map<String, dynamic> json) =
@@ -504,7 +624,22 @@ abstract class _UserModel implements UserModel {
   @override
   List<bool> get weekHistory;
   @override
-  DateTime? get createdAt;
+  DateTime? get createdAt; // ── Level System (TASK-06) ────────────────────────────────────────────
+  /// Level materi/quiz yang sudah diselesaikan (nomor 1–25)
+  @override
+  List<int> get completedLevels;
+
+  /// Skor quiz per level: {levelNumber: score}
+  @override
+  Map<String, int> get quizScores;
+
+  /// Apakah pretest sudah dikerjakan
+  @override
+  bool get pretestDone;
+
+  /// Apakah posttest sudah dikerjakan
+  @override
+  bool get posttestDone;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

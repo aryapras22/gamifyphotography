@@ -27,7 +27,22 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data)
-            .affectedKeys().hasOnly(['status', 'adminNote', 'reviewedAt']);
+            .affectedKeys().hasOnly(['status', 'adminNote', 'reviewedAt', 'adminScore']);
+      allow delete: if false;
+    }
+
+    // TASK-10 — Quiz Results (pretest, posttest, quiz evaluasi)
+    match /quiz_results/{docId} {
+      // User bisa write data miliknya sendiri
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+
+      // User bisa read hasil quiz miliknya; admin bisa read semua
+      allow read: if isAuthenticated()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Tidak ada update/delete
+      allow update: if false;
       allow delete: if false;
     }
   }

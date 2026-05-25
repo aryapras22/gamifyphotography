@@ -1,0 +1,37 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- Bold edge frame = subject boundary -->
+  <rect x="0" y="0" width="500" height="800" fill="none" stroke="#fff" stroke-width="3.5" opacity=".75"/>
+  <!-- Corner L-brackets -->
+  <g stroke="#fff" stroke-width="2.5" fill="none" opacity=".7">
+    <path d="M0,70 L0,0 L70,0"/>
+    <path d="M430,0 L500,0 L500,70"/>
+    <path d="M0,730 L0,800 L70,800"/>
+    <path d="M430,800 L500,800 L500,730"/>
+  </g>
+  <!-- Edge reach lines — top -->
+  <line x1="250" y1="0"   x2="250" y2="60"  stroke="#fff" stroke-width="1.2" opacity=".5"/>
+  <line x1="120" y1="0"   x2="120" y2="44"  stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <line x1="380" y1="0"   x2="380" y2="44"  stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <!-- bottom -->
+  <line x1="250" y1="800" x2="250" y2="740" stroke="#fff" stroke-width="1.2" opacity=".5"/>
+  <line x1="120" y1="800" x2="120" y2="756" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <line x1="380" y1="800" x2="380" y2="756" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <!-- left -->
+  <line x1="0"   y1="400" x2="60"  y2="400" stroke="#fff" stroke-width="1.2" opacity=".5"/>
+  <line x1="0"   y1="200" x2="44"  y2="200" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <line x1="0"   y1="600" x2="44"  y2="600" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <!-- right -->
+  <line x1="500" y1="400" x2="440" y2="400" stroke="#fff" stroke-width="1.2" opacity=".5"/>
+  <line x1="500" y1="200" x2="456" y2="200" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <line x1="500" y1="600" x2="456" y2="600" stroke="#fff" stroke-width=".7"  opacity=".3"/>
+  <!-- Diagonals -->
+  <line x1="0" y1="0"   x2="500" y2="800" stroke="#fff" stroke-width=".5" opacity=".12"/>
+  <line x1="500" y1="0" x2="0"   y2="800" stroke="#fff" stroke-width=".5" opacity=".12"/>
+  <!-- Inner dashed boundary (95% fill) -->
+  <rect x="22" y="22" width="456" height="756" fill="none" stroke="#fff" stroke-width=".9" opacity=".22" stroke-dasharray="9 9"/>
+  <!-- Center subject -->
+  <circle cx="250" cy="400" r="28" fill="none" stroke="#e03030" stroke-width="2.2"/>
+  <line x1="230" y1="400" x2="270" y2="400" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="250" y1="380" x2="250" y2="420" stroke="#e03030" stroke-width="1.3"/>
+</svg>

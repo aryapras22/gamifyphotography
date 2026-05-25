@@ -1,0 +1,31 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- Phi vertical: 500/1.618=309, secondary 309+(500-309)/1.618=427 -->
+  <!-- Phi horizontal: 800/1.618=494, secondary 800-494=306 -->
+  <line x1="309" y1="0"   x2="309" y2="800" stroke="#fff" stroke-width="1.3" opacity=".65"/>
+  <line x1="0"   y1="306" x2="500" y2="306" stroke="#fff" stroke-width="1.3" opacity=".65"/>
+  <line x1="427" y1="0"   x2="427" y2="800" stroke="#fff" stroke-width=".6"  opacity=".28"/>
+  <line x1="0"   y1="494" x2="500" y2="494" stroke="#fff" stroke-width=".6"  opacity=".28"/>
+  <!-- Phi rectangle outlines -->
+  <rect x="0"   y="0"   width="309" height="306" fill="none" stroke="#fff" stroke-width=".5" opacity=".15"/>
+  <rect x="309" y="0"   width="191" height="191" fill="none" stroke="#fff" stroke-width=".5" opacity=".15"/>
+  <rect x="309" y="191" width="118" height="115" fill="none" stroke="#fff" stroke-width=".5" opacity=".15"/>
+  <!-- Fibonacci spiral arcs -->
+  <path d="M309,306 Q309,0   0,0"      fill="none" stroke="#fff" stroke-width="1.1" opacity=".42"/>
+  <path d="M309,0   Q500,0   500,191"  fill="none" stroke="#fff" stroke-width="1"   opacity=".36"/>
+  <path d="M500,191 Q500,306 427,306"  fill="none" stroke="#fff" stroke-width=".9"  opacity=".30"/>
+  <path d="M427,306 Q309,306 309,250"  fill="none" stroke="#fff" stroke-width=".8"  opacity=".24"/>
+  <path d="M0,0     Q0,800  500,800"   fill="none" stroke="#fff" stroke-width=".7"  opacity=".16"/>
+  <path d="M500,800 Q0,800  0,306"     fill="none" stroke="#fff" stroke-width=".6"  opacity=".12"/>
+  <!-- Primary focal point -->
+  <circle cx="309" cy="306" r="24" fill="none" stroke="#e03030" stroke-width="2.2"/>
+  <line x1="291" y1="306" x2="327" y2="306" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="309" y1="288" x2="309" y2="324" stroke="#e03030" stroke-width="1.3"/>
+  <!-- Secondary -->
+  <circle cx="309" cy="494" r="16" fill="none" stroke="#e03030" stroke-width="1.5" opacity=".55"/>
+  <line x1="299" y1="494" x2="319" y2="494" stroke="#e03030" stroke-width=".9" opacity=".55"/>
+  <line x1="309" y1="484" x2="309" y2="504" stroke="#e03030" stroke-width=".9" opacity=".55"/>
+  <circle cx="427" cy="306" r="13" fill="none" stroke="#e03030" stroke-width="1.3" opacity=".40"/>
+  <line x1="420" y1="306" x2="434" y2="306" stroke="#e03030" stroke-width=".8" opacity=".40"/>
+  <line x1="427" y1="299" x2="427" y2="313" stroke="#e03030" stroke-width=".8" opacity=".40"/>
+</svg>

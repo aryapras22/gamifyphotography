@@ -6,6 +6,7 @@ import '../services/module_service.dart';
 import '../services/user_service.dart';
 import '../services/daily_login_service.dart';
 import '../services/photo_submission_service.dart';
+import '../services/level_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 final badgeServiceProvider = Provider<BadgeService>((ref) => BadgeService());
@@ -14,4 +15,5 @@ final moduleServiceProvider = Provider<ModuleService>((ref) => ModuleService());
 final userServiceProvider = Provider<UserService>((ref) => UserService());
 final dailyLoginServiceProvider = Provider<DailyLoginService>((ref) => DailyLoginService());
 final photoSubmissionServiceProvider = Provider<PhotoSubmissionService>((ref) => PhotoSubmissionService());
+final levelServiceProvider = Provider<LevelService>((ref) => LevelService());
 

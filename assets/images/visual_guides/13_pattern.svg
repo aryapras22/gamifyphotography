@@ -1,0 +1,92 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- 9×5 uniform diamond/rhombus grid -->
+  <g fill="none" stroke="#fff" stroke-width=".9" opacity=".38">
+    <!-- col spacing ~55, row ~88 -->
+    <!-- row1 y=70 -->
+    <polygon points="55,50  75,70  55,90  35,70"/>
+    <polygon points="110,50 130,70 110,90 90,70"/>
+    <polygon points="165,50 185,70 165,90 145,70"/>
+    <polygon points="220,50 240,70 220,90 200,70"/>
+    <polygon points="275,50 295,70 275,90 255,70"/>
+    <polygon points="330,50 350,70 330,90 310,70"/>
+    <polygon points="385,50 405,70 385,90 365,70"/>
+    <polygon points="440,50 460,70 440,90 420,70"/>
+    <!-- row2 y=158 -->
+    <polygon points="55,138  75,158  55,178  35,158"/>
+    <polygon points="110,138 130,158 110,178 90,158"/>
+    <polygon points="165,138 185,158 165,178 145,158"/>
+    <polygon points="220,138 240,158 220,178 200,158"/>
+    <polygon points="275,138 295,158 275,178 255,158"/>
+    <polygon points="330,138 350,158 330,178 310,158"/>
+    <polygon points="385,138 405,158 385,178 365,158"/>
+    <polygon points="440,138 460,158 440,178 420,158"/>
+    <!-- row3 y=246 -->
+    <polygon points="55,226  75,246  55,266  35,246"/>
+    <polygon points="110,226 130,246 110,266 90,246"/>
+    <polygon points="165,226 185,246 165,266 145,246"/>
+    <polygon points="220,226 240,246 220,266 200,246"/> <!-- BREAK — skip 275 -->
+    <polygon points="330,226 350,246 330,266 310,246"/>
+    <polygon points="385,226 405,246 385,266 365,246"/>
+    <polygon points="440,226 460,246 440,266 420,246"/>
+    <!-- row4 y=334 -->
+    <polygon points="55,314  75,334  55,354  35,334"/>
+    <polygon points="110,314 130,334 110,354 90,334"/>
+    <polygon points="165,314 185,334 165,354 145,334"/>
+    <polygon points="220,314 240,334 220,354 200,334"/>
+    <polygon points="275,314 295,334 275,354 255,334"/>
+    <polygon points="330,314 350,334 330,354 310,334"/>
+    <polygon points="385,314 405,334 385,354 365,334"/>
+    <polygon points="440,314 460,334 440,354 420,334"/>
+    <!-- row5 y=422 -->
+    <polygon points="55,402  75,422  55,442  35,422"/>
+    <polygon points="110,402 130,422 110,442 90,422"/>
+    <polygon points="165,402 185,422 165,442 145,422"/>
+    <polygon points="220,402 240,422 220,442 200,422"/>
+    <polygon points="275,402 295,422 275,442 255,422"/>
+    <polygon points="330,402 350,422 330,442 310,422"/>
+    <polygon points="385,402 405,422 385,442 365,422"/>
+    <polygon points="440,402 460,422 440,442 420,422"/>
+    <!-- row6 y=510 -->
+    <polygon points="55,490  75,510  55,530  35,510"/>
+    <polygon points="110,490 130,510 110,530 90,510"/>
+    <polygon points="165,490 185,510 165,530 145,510"/>
+    <polygon points="220,490 240,510 220,530 200,510"/>
+    <polygon points="275,490 295,510 275,530 255,510"/>
+    <polygon points="330,490 350,510 330,530 310,510"/>
+    <polygon points="385,490 405,510 385,530 365,510"/>
+    <polygon points="440,490 460,510 440,530 420,510"/>
+    <!-- row7 y=598 -->
+    <polygon points="55,578  75,598  55,618  35,598"/>
+    <polygon points="110,578 130,598 110,618 90,598"/>
+    <polygon points="165,578 185,598 165,618 145,598"/>
+    <polygon points="220,578 240,598 220,618 200,598"/>
+    <polygon points="275,578 295,598 275,618 255,598"/>
+    <polygon points="330,578 350,598 330,618 310,598"/>
+    <polygon points="385,578 405,598 385,618 365,598"/>
+    <polygon points="440,578 460,598 440,618 420,598"/>
+    <!-- row8 y=686 -->
+    <polygon points="55,666  75,686  55,706  35,686"/>
+    <polygon points="110,666 130,686 110,706 90,686"/>
+    <polygon points="165,666 185,686 165,706 145,686"/>
+    <polygon points="220,666 240,686 220,706 200,686"/>
+    <polygon points="275,666 295,686 275,706 255,686"/>
+    <polygon points="330,666 350,686 330,706 310,686"/>
+    <polygon points="385,666 405,686 385,706 365,686"/>
+    <polygon points="440,666 460,686 440,706 420,686"/>
+    <!-- row9 y=762 -->
+    <polygon points="55,742  75,762  55,782  35,762"/>
+    <polygon points="110,742 130,762 110,782 90,762"/>
+    <polygon points="165,742 185,762 165,782 145,762"/>
+    <polygon points="220,742 240,762 220,782 200,762"/>
+    <polygon points="275,742 295,762 275,782 255,762"/>
+    <polygon points="330,742 350,762 330,782 310,762"/>
+    <polygon points="385,742 405,762 385,782 365,762"/>
+    <polygon points="440,742 460,762 440,782 420,762"/>
+  </g>
+  <!-- Break highlight + subject -->
+  <polygon points="275,226 295,246 275,266 255,246" fill="none" stroke="#e03030" stroke-width="2" stroke-dasharray="5 3"/>
+  <circle cx="275" cy="246" r="36" fill="none" stroke="#e03030" stroke-width="1" opacity=".35"/>
+  <line x1="257" y1="246" x2="293" y2="246" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="275" y1="228" x2="275" y2="264" stroke="#e03030" stroke-width="1.3"/>
+</svg>

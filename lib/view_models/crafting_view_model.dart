@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_view_model.dart';
 import '../providers/service_providers.dart';
 import '../services/user_service.dart';
+
 class CraftingState {
   final bool craftingDone;
   final int currentPoints;
@@ -9,14 +10,17 @@ class CraftingState {
   final int bridgeProgress;
   final int maxBridgeSegments;
   final bool isLoading;
+  /// true saat crafting baru saja selesai dan posttest perlu ditampilkan
+  final bool triggerPosttest;
 
   CraftingState({
     this.craftingDone = false,
     this.currentPoints = 0,
-    this.requiredPoints = 1000, // as per user's image, 1000 point for crafting
+    this.requiredPoints = 1000,
     this.bridgeProgress = 0,
     this.maxBridgeSegments = 5,
     this.isLoading = false,
+    this.triggerPosttest = false,
   });
 
   CraftingState copyWith({
@@ -26,6 +30,7 @@ class CraftingState {
     int? bridgeProgress,
     int? maxBridgeSegments,
     bool? isLoading,
+    bool? triggerPosttest,
   }) {
     return CraftingState(
       craftingDone: craftingDone ?? this.craftingDone,
@@ -34,6 +39,7 @@ class CraftingState {
       bridgeProgress: bridgeProgress ?? this.bridgeProgress,
       maxBridgeSegments: maxBridgeSegments ?? this.maxBridgeSegments,
       isLoading: isLoading ?? this.isLoading,
+      triggerPosttest: triggerPosttest ?? this.triggerPosttest,
     );
   }
 }
@@ -59,7 +65,6 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
   bool get hasSufficientPoints => state.currentPoints >= state.requiredPoints;
 
   Future<void> doCrafting(int pointCost) async {
-    // Only craft if we have enough points AND bridge is not finished
     if (state.isLoading || !hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments) return;
 
     state = state.copyWith(isLoading: true);
@@ -74,16 +79,29 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
           );
           _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
         }
-        
+
         final newProgress = state.bridgeProgress + 1;
+        final justFinished = newProgress >= state.maxBridgeSegments;
+
+        // Cek apakah posttest perlu ditampilkan
+        final currentUser = _ref.read(authViewModelProvider).currentUser;
+        final needPosttest = justFinished && (currentUser?.posttestDone == false);
+
         state = state.copyWith(
-          craftingDone: newProgress >= state.maxBridgeSegments,
+          craftingDone: justFinished,
           currentPoints: state.currentPoints - pointCost,
           bridgeProgress: newProgress,
+          isLoading: false,
+          triggerPosttest: needPosttest,
         );
+      } else {
+        state = state.copyWith(isLoading: false);
       }
-    } finally {
+    } catch (_) {
       state = state.copyWith(isLoading: false);
     }
   }
+
+  /// Reset triggerPosttest setelah posttest ditampilkan
+  void clearPosttestTrigger() => state = state.copyWith(triggerPosttest: false);
 }

@@ -1,0 +1,37 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- L-Shape main lines: vertical left bar + horizontal bottom bar -->
+  <!-- Vertical bar (left side, full height) -->
+  <rect x="55" y="0" width="110" height="640" fill="#ffffff06"/>
+  <line x1="55"  y1="0"   x2="55"  y2="640" stroke="#fff" stroke-width="1.4" opacity=".65"/>
+  <line x1="165" y1="0"   x2="165" y2="640" stroke="#fff" stroke-width="1.4" opacity=".65"/>
+  <!-- Horizontal bar (bottom, full width) -->
+  <rect x="0" y="640" width="500" height="110" fill="#ffffff06"/>
+  <line x1="0"   y1="640" x2="500" y2="640" stroke="#fff" stroke-width="1.4" opacity=".65"/>
+  <line x1="0"   y1="750" x2="500" y2="750" stroke="#fff" stroke-width="1.4" opacity=".65"/>
+  <!-- Corner of L (junction indicator) -->
+  <rect x="55" y="640" width="110" height="110" fill="#ffffff10"/>
+  <!-- L corner bold mark -->
+  <path d="M55,640 L165,640 L165,750" fill="none" stroke="#fff" stroke-width="2.5" opacity=".7"/>
+  <path d="M55,640 L55,750 L165,750" fill="none" stroke="#fff" stroke-width=".8" opacity=".3"/>
+  <!-- Inner corner right angle -->
+  <path d="M75,620 L75,660 L115,660" fill="none" stroke="#fff" stroke-width=".9" opacity=".4"/>
+  <!-- Content area (remaining open space) -->
+  <rect x="165" y="0" width="335" height="640" fill="#ffffff03"/>
+  <!-- Subject placement: at the L corner (power point) -->
+  <circle cx="165" cy="640" r="26" fill="none" stroke="#e03030" stroke-width="2.2"/>
+  <line x1="147" y1="640" x2="183" y2="640" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="165" y1="622" x2="165" y2="658" stroke="#e03030" stroke-width="1.3"/>
+  <!-- Secondary elements along L arms (optional placements) -->
+  <circle cx="110" cy="200" r="16" fill="none" stroke="#e03030" stroke-width="1.5" opacity=".5"/>
+  <line x1="101" y1="200" x2="119" y2="200" stroke="#e03030" stroke-width=".9" opacity=".5"/>
+  <line x1="110" y1="191" x2="110" y2="209" stroke="#e03030" stroke-width=".9" opacity=".5"/>
+  <circle cx="350" cy="695" r="16" fill="none" stroke="#e03030" stroke-width="1.5" opacity=".5"/>
+  <line x1="341" y1="695" x2="359" y2="695" stroke="#e03030" stroke-width=".9" opacity=".5"/>
+  <line x1="350" y1="686" x2="350" y2="704" stroke="#e03030" stroke-width=".9" opacity=".5"/>
+  <!-- ROT ghost (faint) -->
+  <line x1="167" y1="0"   x2="167" y2="800" stroke="#fff" stroke-width=".4" opacity=".1"/>
+  <line x1="333" y1="0"   x2="333" y2="800" stroke="#fff" stroke-width=".4" opacity=".1"/>
+  <line x1="0"   y1="267" x2="500" y2="267" stroke="#fff" stroke-width=".4" opacity=".1"/>
+  <line x1="0"   y1="533" x2="500" y2="533" stroke="#fff" stroke-width=".4" opacity=".1"/>
+</svg>

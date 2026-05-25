@@ -1,0 +1,50 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- Warm zone (left half) — represented by density of dots -->
+  <g fill="#fff" opacity=".18">
+    <circle cx="60"  cy="80"  r="14"/><circle cx="140" cy="160" r="18"/>
+    <circle cx="55"  cy="260" r="12"/><circle cx="145" cy="340" r="20"/>
+    <circle cx="70"  cy="450" r="16"/><circle cx="130" cy="540" r="14"/>
+    <circle cx="65"  cy="640" r="18"/><circle cx="145" cy="720" r="12"/>
+    <circle cx="110" cy="120" r="10"/><circle cx="100" cy="310" r="10"/>
+    <circle cx="85"  cy="500" r="10"/><circle cx="105" cy="680" r="10"/>
+  </g>
+  <!-- Cool zone (right half) -->
+  <g fill="#fff" opacity=".12">
+    <circle cx="360" cy="80"  r="14"/><circle cx="440" cy="160" r="18"/>
+    <circle cx="355" cy="260" r="12"/><circle cx="445" cy="340" r="20"/>
+    <circle cx="370" cy="450" r="16"/><circle cx="430" cy="540" r="14"/>
+    <circle cx="365" cy="640" r="18"/><circle cx="445" cy="720" r="12"/>
+    <circle cx="410" cy="120" r="10"/><circle cx="400" cy="310" r="10"/>
+    <circle cx="385" cy="500" r="10"/><circle cx="405" cy="680" r="10"/>
+  </g>
+  <!-- Central divider -->
+  <line x1="250" y1="0" x2="250" y2="800" stroke="#fff" stroke-width="1.4" opacity=".6"/>
+  <!-- Warm side hatching -->
+  <g stroke="#fff" stroke-width=".5" opacity=".1">
+    <line x1="0" y1="100" x2="200" y2="100"/><line x1="0" y1="200" x2="200" y2="200"/>
+    <line x1="0" y1="300" x2="200" y2="300"/><line x1="0" y1="400" x2="200" y2="400"/>
+    <line x1="0" y1="500" x2="200" y2="500"/><line x1="0" y1="600" x2="200" y2="600"/>
+    <line x1="0" y1="700" x2="200" y2="700"/>
+  </g>
+  <!-- Cool side grid -->
+  <g stroke="#fff" stroke-width=".4" opacity=".08">
+    <line x1="300" y1="0" x2="300" y2="800"/><line x1="350" y1="0" x2="350" y2="800"/>
+    <line x1="400" y1="0" x2="400" y2="800"/><line x1="450" y1="0" x2="450" y2="800"/>
+    <line x1="250" y1="133" x2="500" y2="133"/><line x1="250" y1="266" x2="500" y2="266"/>
+    <line x1="250" y1="400" x2="500" y2="400"/><line x1="250" y1="533" x2="500" y2="533"/>
+    <line x1="250" y1="666" x2="500" y2="666"/>
+  </g>
+  <!-- ROT ghost -->
+  <line x1="167" y1="0"   x2="167" y2="800" stroke="#fff" stroke-width=".4" opacity=".12"/>
+  <line x1="333" y1="0"   x2="333" y2="800" stroke="#fff" stroke-width=".4" opacity=".12"/>
+  <line x1="0"   y1="267" x2="500" y2="267" stroke="#fff" stroke-width=".4" opacity=".12"/>
+  <line x1="0"   y1="533" x2="500" y2="533" stroke="#fff" stroke-width=".4" opacity=".12"/>
+  <!-- Subject at border — high contrast junction -->
+  <circle cx="250" cy="267" r="24" fill="none" stroke="#e03030" stroke-width="2.2"/>
+  <line x1="232" y1="267" x2="268" y2="267" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="250" y1="249" x2="250" y2="285" stroke="#e03030" stroke-width="1.3"/>
+  <!-- Zone labels -->
+  <text x="100" y="775" text-anchor="middle" fill="#ffffff30" font-size="13" font-family="sans-serif">warm</text>
+  <text x="390" y="775" text-anchor="middle" fill="#ffffff25" font-size="13" font-family="sans-serif">cool</text>
+</svg>

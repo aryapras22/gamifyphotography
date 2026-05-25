@@ -1,0 +1,39 @@
+<svg viewBox="0 0 500 800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="500" height="800" fill="#000"/>
+  <!-- 3 depth bands -->
+  <rect x="0" y="0"   width="500" height="230" fill="#ffffff05"/>
+  <rect x="0" y="230" width="500" height="300" fill="#ffffff08"/>
+  <rect x="0" y="530" width="500" height="270" fill="#ffffff04"/>
+  <!-- Band dividers -->
+  <line x1="0" y1="230" x2="500" y2="230" stroke="#fff" stroke-width="1.1" opacity=".55"/>
+  <line x1="0" y1="530" x2="500" y2="530" stroke="#fff" stroke-width="1.1" opacity=".55"/>
+  <!-- Perspective convergence lines -->
+  <line x1="0"   y1="530" x2="250" y2="0"   stroke="#fff" stroke-width=".4" opacity=".15"/>
+  <line x1="500" y1="530" x2="250" y2="0"   stroke="#fff" stroke-width=".4" opacity=".15"/>
+  <line x1="0"   y1="800" x2="250" y2="230" stroke="#fff" stroke-width=".4" opacity=".14"/>
+  <line x1="500" y1="800" x2="250" y2="230" stroke="#fff" stroke-width=".4" opacity=".14"/>
+  <!-- Layer depth lines -->
+  <g stroke="#fff" stroke-width=".4" opacity=".12">
+    <line x1="50"  y1="530" x2="50"  y2="800"/>
+    <line x1="150" y1="530" x2="150" y2="800"/>
+    <line x1="250" y1="530" x2="250" y2="800"/>
+    <line x1="350" y1="530" x2="350" y2="800"/>
+    <line x1="450" y1="530" x2="450" y2="800"/>
+  </g>
+  <!-- BG subject (small, faint) -->
+  <circle cx="250" cy="115" r="14" fill="none" stroke="#e03030" stroke-width="1.3" opacity=".5"/>
+  <line x1="241" y1="115" x2="259" y2="115" stroke="#e03030" stroke-width=".8" opacity=".5"/>
+  <line x1="250" y1="106" x2="250" y2="124" stroke="#e03030" stroke-width=".8" opacity=".5"/>
+  <!-- Mid subject (main) -->
+  <circle cx="250" cy="380" r="24" fill="none" stroke="#e03030" stroke-width="2.2"/>
+  <line x1="232" y1="380" x2="268" y2="380" stroke="#e03030" stroke-width="1.3"/>
+  <line x1="250" y1="362" x2="250" y2="398" stroke="#e03030" stroke-width="1.3"/>
+  <!-- Foreground interest (large, offset) -->
+  <circle cx="350" cy="670" r="30" fill="none" stroke="#e03030" stroke-width="1.8" opacity=".75"/>
+  <line x1="328" y1="670" x2="372" y2="670" stroke="#e03030" stroke-width="1.1" opacity=".75"/>
+  <line x1="350" y1="648" x2="350" y2="692" stroke="#e03030" stroke-width="1.1" opacity=".75"/>
+  <!-- Band labels (minimal) -->
+  <text x="20" y="48"  fill="#ffffff28" font-size="13" font-family="sans-serif">background</text>
+  <text x="20" y="258" fill="#ffffff40" font-size="13" font-family="sans-serif">midground</text>
+  <text x="20" y="558" fill="#ffffff28" font-size="13" font-family="sans-serif">foreground</text>
+</svg>

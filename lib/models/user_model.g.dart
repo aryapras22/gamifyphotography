@@ -42,6 +42,18 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
+      completedLevels:
+          (json['completedLevels'] as List<dynamic>?)
+              ?.map((e) => (e as num).toInt())
+              .toList() ??
+          const [],
+      quizScores:
+          (json['quizScores'] as Map<String, dynamic>?)?.map(
+            (k, e) => MapEntry(k, (e as num).toInt()),
+          ) ??
+          const {},
+      pretestDone: json['pretestDone'] as bool? ?? false,
+      posttestDone: json['posttestDone'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -60,4 +72,8 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'lastLoginDate': instance.lastLoginDate?.toIso8601String(),
       'weekHistory': instance.weekHistory,
       'createdAt': instance.createdAt?.toIso8601String(),
+      'completedLevels': instance.completedLevels,
+      'quizScores': instance.quizScores,
+      'pretestDone': instance.pretestDone,
+      'posttestDone': instance.posttestDone,
     };
