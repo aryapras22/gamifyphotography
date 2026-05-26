@@ -28,7 +28,9 @@ mixin _$ModuleModel {
       throw _privateConstructorUsedError; // teks materi (opsional — konten detail ada di levels)
   int get order => throw _privateConstructorUsedError; // urutan level
   bool get isCompleted => throw _privateConstructorUsedError;
-  int get levelCount => throw _privateConstructorUsedError;
+  int get levelCount =>
+      throw _privateConstructorUsedError; // jumlah level dalam modul (untuk tampilan UI)
+  List<String> get referenceImageUrls => throw _privateConstructorUsedError;
 
   /// Serializes this ModuleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -55,6 +57,7 @@ abstract class $ModuleModelCopyWith<$Res> {
     int order,
     bool isCompleted,
     int levelCount,
+    List<String> referenceImageUrls,
   });
 }
 
@@ -80,6 +83,7 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
     Object? order = null,
     Object? isCompleted = null,
     Object? levelCount = null,
+    Object? referenceImageUrls = null,
   }) {
     return _then(
       _value.copyWith(
@@ -111,6 +115,10 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
                 ? _value.levelCount
                 : levelCount // ignore: cast_nullable_to_non_nullable
                       as int,
+            referenceImageUrls: null == referenceImageUrls
+                ? _value.referenceImageUrls
+                : referenceImageUrls // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -134,6 +142,7 @@ abstract class _$$ModuleModelImplCopyWith<$Res>
     int order,
     bool isCompleted,
     int levelCount,
+    List<String> referenceImageUrls,
   });
 }
 
@@ -158,6 +167,7 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
     Object? order = null,
     Object? isCompleted = null,
     Object? levelCount = null,
+    Object? referenceImageUrls = null,
   }) {
     return _then(
       _$ModuleModelImpl(
@@ -189,6 +199,10 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
             ? _value.levelCount
             : levelCount // ignore: cast_nullable_to_non_nullable
                   as int,
+        referenceImageUrls: null == referenceImageUrls
+            ? _value._referenceImageUrls
+            : referenceImageUrls // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -205,7 +219,8 @@ class _$ModuleModelImpl implements _ModuleModel {
     required this.order,
     this.isCompleted = false,
     this.levelCount = 0,
-  });
+    final List<String> referenceImageUrls = const [],
+  }) : _referenceImageUrls = referenceImageUrls;
 
   factory _$ModuleModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$ModuleModelImplFromJson(json);
@@ -229,10 +244,21 @@ class _$ModuleModelImpl implements _ModuleModel {
   @override
   @JsonKey()
   final int levelCount;
+  // jumlah level dalam modul (untuk tampilan UI)
+  final List<String> _referenceImageUrls;
+  // jumlah level dalam modul (untuk tampilan UI)
+  @override
+  @JsonKey()
+  List<String> get referenceImageUrls {
+    if (_referenceImageUrls is EqualUnmodifiableListView)
+      return _referenceImageUrls;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_referenceImageUrls);
+  }
 
   @override
   String toString() {
-    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount)';
+    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount, referenceImageUrls: $referenceImageUrls)';
   }
 
   @override
@@ -250,7 +276,11 @@ class _$ModuleModelImpl implements _ModuleModel {
             (identical(other.isCompleted, isCompleted) ||
                 other.isCompleted == isCompleted) &&
             (identical(other.levelCount, levelCount) ||
-                other.levelCount == levelCount));
+                other.levelCount == levelCount) &&
+            const DeepCollectionEquality().equals(
+              other._referenceImageUrls,
+              _referenceImageUrls,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -264,6 +294,7 @@ class _$ModuleModelImpl implements _ModuleModel {
     order,
     isCompleted,
     levelCount,
+    const DeepCollectionEquality().hash(_referenceImageUrls),
   );
 
   /// Create a copy of ModuleModel
@@ -289,6 +320,7 @@ abstract class _ModuleModel implements ModuleModel {
     required final int order,
     final bool isCompleted,
     final int levelCount,
+    final List<String> referenceImageUrls,
   }) = _$ModuleModelImpl;
 
   factory _ModuleModel.fromJson(Map<String, dynamic> json) =
@@ -307,7 +339,9 @@ abstract class _ModuleModel implements ModuleModel {
   @override
   bool get isCompleted;
   @override
-  int get levelCount;
+  int get levelCount; // jumlah level dalam modul (untuk tampilan UI)
+  @override
+  List<String> get referenceImageUrls;
 
   /// Create a copy of ModuleModel
   /// with the given fields replaced by the non-null parameter values.

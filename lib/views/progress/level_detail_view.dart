@@ -2,6 +2,7 @@
 // TASK-04 (original) + TASK-M05 (multi-foto) + TASK-M06 (howToUseImage)
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // TASK-SVG-01
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_colors.dart';
 import '../../models/level_model.dart';
@@ -123,7 +124,26 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
 
 /// Render satu gambar: network jika URL dimulai 'http', asset jika tidak.
 Widget buildLevelImage(String url, {double height = 220}) {
+  final bool isSvg =
+      url.toLowerCase().endsWith('.svg') || url.contains('.svg?');
+
   if (url.startsWith('http')) {
+    if (isSvg) {
+      return SvgPicture.network(
+        url,
+        height: height,
+        fit: BoxFit.contain, // contain agar grid guide tidak terpotong
+        placeholderBuilder: (_) => SizedBox(
+          height: height,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.brandBlue,
+              strokeWidth: 2,
+            ),
+          ),
+        ),
+      );
+    }
     return Image.network(
       url,
       height: height,
@@ -140,6 +160,15 @@ Widget buildLevelImage(String url, {double height = 220}) {
               ),
             ),
       errorBuilder: (_, __, ___) => _imagePlaceholder(height),
+    );
+  }
+
+  // Asset local
+  if (isSvg) {
+    return SvgPicture.asset(
+      url,
+      height: height,
+      fit: BoxFit.contain,
     );
   }
   return Image.asset(

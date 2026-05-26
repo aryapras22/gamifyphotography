@@ -13,6 +13,7 @@ class ModuleModel with _$ModuleModel {
     required int order,                  // urutan level
     @Default(false) bool isCompleted,
     @Default(0) int levelCount,          // jumlah level dalam modul (untuk tampilan UI)
+    @Default([]) List<String> referenceImageUrls, // foto contoh dari firebase
   }) = _ModuleModel;
 
   factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);

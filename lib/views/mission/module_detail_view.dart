@@ -9,6 +9,7 @@ import '../../view_models/challenge_view_model.dart';
 import '../../providers/submission_providers.dart';
 import '../../models/photo_submission_model.dart';
 import '../widgets/animated_3d_button.dart';
+import '../../models/module_model.dart';
 import '../../core/app_text_styles.dart';
 class ModuleDetailView extends ConsumerStatefulWidget {
   const ModuleDetailView({Key? key}) : super(key: key);
@@ -205,7 +206,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     );
   }
 
-  Widget _buildTheoryPage(module) {
+  Widget _buildTheoryPage(ModuleModel module) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -237,9 +238,10 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
                 _ExamplePhotoGallery(
-                  photoPaths: _getExamplePhotoPaths(module.order as int),
+                  photoPaths: module.referenceImageUrls.isNotEmpty
+                      ? module.referenceImageUrls
+                      : _getExamplePhotoPaths(module.order),
                 ),
               ],
             ),
@@ -269,7 +271,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     );
   }
 
-  Widget _buildVisualGuidePage(module, WidgetRef ref, BuildContext context) {
+  Widget _buildVisualGuidePage(ModuleModel module, WidgetRef ref, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -761,8 +763,40 @@ class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
               itemCount: total,
               onPageChanged: (i) => setState(() => _current = i),
               itemBuilder: (context, index) {
+                // If the path starts with http, it's a network image (from Firebase).
+                // We can use CachedNetworkImage or Image.network.
+                // Let's use buildLevelImage-like logic but specifically tailored for ExamplePhotoGallery.
+                final url = widget.photoPaths[index];
+                if (url.startsWith('http')) {
+                  return Image.network(
+                    url,
+                    fit: BoxFit.contain,  // NEVER use cover — see note above
+                    errorBuilder: (_, __, ___) => Container(
+                      color: AppColors.backgroundGray,
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image_rounded,
+                          size: 48,
+                          color: AppColors.disabled,
+                        ),
+                      ),
+                    ),
+                    loadingBuilder: (_, child, progress) => progress == null
+                        ? child
+                        : Container(
+                            color: AppColors.backgroundGray,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.brandBlue,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                  );
+                }
+
                 return Image.asset(
-                  widget.photoPaths[index],
+                  url,
                   fit: BoxFit.contain,  // NEVER use cover — see note above
                   errorBuilder: (_, __, ___) => Container(
                     color: AppColors.backgroundGray,

@@ -36,6 +36,12 @@ class ModuleService {
           data.putIfAbsent('isCompleted', () => false);
           data.putIfAbsent('levelCount', () => 0);
 
+          if (!data.containsKey('referenceImageUrls') || data['referenceImageUrls'] == null) {
+            final page1 = raw['page1'];
+            final urls = (page1 is Map ? page1['referenceImageUrls'] : null);
+            data['referenceImageUrls'] = urls != null ? List<String>.from(urls) : <String>[];
+          }
+
           return ModuleModel.fromJson(data);
         }).toList();
       }
