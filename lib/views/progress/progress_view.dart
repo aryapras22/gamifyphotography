@@ -29,7 +29,8 @@ class _ProgressTabState extends ConsumerState<ProgressTab>
     Future.microtask(() {
       ref.read(progressViewModelProvider.notifier).loadUserProgress();
       ref.read(progressViewModelProvider.notifier).loadBadges();
-      ref.read(levelViewModelProvider.notifier).loadLevels();
+      // TASK-M03: load Firestore content + progress
+      ref.read(levelViewModelProvider.notifier).loadAll();
     });
   }
 
@@ -282,11 +283,11 @@ class _LevelCard extends ConsumerWidget {
     if (config.isMateri) {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => LevelDetailView(config: config)),
-      ).then((_) => ref.read(levelViewModelProvider.notifier).loadLevels());
+      ).then((_) => ref.read(levelViewModelProvider.notifier).loadAll());
     } else {
       Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => QuizLevelView(config: config)),
-      ).then((_) => ref.read(levelViewModelProvider.notifier).loadLevels());
+      ).then((_) => ref.read(levelViewModelProvider.notifier).loadAll());
     }
   }
 }

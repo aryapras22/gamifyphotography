@@ -1,5 +1,5 @@
 // lib/views/progress/level_detail_view.dart
-// TASK-04 — Level Detail Screen (2-Page Materi)
+// TASK-04 (original) + TASK-M05 (multi-foto) + TASK-M06 (howToUseImage)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +11,7 @@ import '../quiz/pretest_view.dart';
 class LevelDetailView extends ConsumerStatefulWidget {
   final LevelConfig config;
 
-  const LevelDetailView({Key? key, required this.config}) : super(key: key);
+  const LevelDetailView({super.key, required this.config});
 
   @override
   ConsumerState<LevelDetailView> createState() => _LevelDetailViewState();
@@ -20,8 +20,6 @@ class LevelDetailView extends ConsumerStatefulWidget {
 class _LevelDetailViewState extends ConsumerState<LevelDetailView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  MateriContent get _content => widget.config.materiContent!;
 
   @override
   void initState() {
@@ -35,6 +33,17 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
     super.dispose();
   }
 
+  /// Resolve MateriContent: prefer Firestore data, fallback to hardcoded
+  MateriContent get _content {
+    final fsLevel = ref.read(levelViewModelProvider.notifier)
+        .getLevelContent(widget.config.levelNumber);
+    if (fsLevel != null) {
+      final merged = fsLevel.toMateriContent();
+      if (merged != null) return merged;
+    }
+    return widget.config.materiContent!;
+  }
+
   Future<void> _onComplete() async {
     await ref
         .read(levelViewModelProvider.notifier)
@@ -42,7 +51,6 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
 
     if (!mounted) return;
 
-    // Cek apakah perlu tampilkan pretest
     final lvState = ref.read(levelViewModelProvider);
     if (lvState.showPretest) {
       ref.read(levelViewModelProvider.notifier).clearShowPretest();
@@ -56,6 +64,7 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
 
   @override
   Widget build(BuildContext context) {
+    final content = _content;
     return Scaffold(
       backgroundColor: AppColors.backgroundGray,
       appBar: AppBar(
@@ -102,61 +111,131 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _Page1(content: _content),
-          _Page2(
-            content: _content,
-            onComplete: _onComplete,
-          ),
+          _Page1(content: content),
+          _Page2(content: content, onComplete: _onComplete),
         ],
       ),
     );
   }
 }
 
-// ── Page 1: Pengertian + Referensi Foto ──────────────────────────────────
+// ── Shared image helper (TASK-M05) ────────────────────────────────────────
 
-class _Page1 extends StatelessWidget {
+/// Render satu gambar: network jika URL dimulai 'http', asset jika tidak.
+Widget buildLevelImage(String url, {double height = 220}) {
+  if (url.startsWith('http')) {
+    return Image.network(
+      url,
+      height: height,
+      fit: BoxFit.cover,
+      loadingBuilder: (_, child, progress) => progress == null
+          ? child
+          : SizedBox(
+              height: height,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.brandBlue,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+      errorBuilder: (_, __, ___) => _imagePlaceholder(height),
+    );
+  }
+  return Image.asset(
+    url,
+    height: height,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => _imagePlaceholder(height),
+  );
+}
+
+Widget _imagePlaceholder(double height) => Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.cardBorder,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: const Center(
+        child: Icon(Icons.photo_library_rounded, size: 48, color: AppColors.disabled),
+      ),
+    );
+
+// ── Page 1: Pengertian + Referensi Foto (TASK-M05: multi-foto carousel) ──
+
+class _Page1 extends StatefulWidget {
   final MateriContent content;
   const _Page1({required this.content});
 
   @override
+  State<_Page1> createState() => _Page1State();
+}
+
+class _Page1State extends State<_Page1> {
+  int _photoIndex = 0;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final imageUrls = widget.content.allImageUrls;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Referensi foto
-          if (content.page1ImagePath != null) ...[
+          // ── Foto referensi (carousel jika > 1) ──
+          if (imageUrls.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: Image.asset(
-                content.page1ImagePath!,
-                height: 220,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  height: 220,
-                  decoration: BoxDecoration(
-                    color: AppColors.cardBorder,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.photo_library_rounded, size: 48, color: AppColors.disabled),
-                      const SizedBox(height: 8),
-                      Text(
-                        content.page1Title,
-                        style: const TextStyle(color: AppColors.secondaryText, fontWeight: FontWeight.w600),
+              child: imageUrls.length == 1
+                  ? buildLevelImage(imageUrls.first)
+                  : SizedBox(
+                      height: 220,
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: imageUrls.length,
+                        onPageChanged: (i) => setState(() => _photoIndex = i),
+                        itemBuilder: (_, i) => buildLevelImage(imageUrls[i]),
                       ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
             ),
+            // Dot indicator (hanya jika > 1 foto)
+            if (imageUrls.length > 1) ...[
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(imageUrls.length, (i) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: _photoIndex == i ? 20 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _photoIndex == i
+                          ? AppColors.brandBlue
+                          : AppColors.cardBorder,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  );
+                }),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
-              'Foto referensi: ${content.page1Title}',
+              'Foto referensi: ${widget.content.page1Title}',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
@@ -168,7 +247,7 @@ class _Page1 extends StatelessWidget {
           ],
           // Judul
           Text(
-            content.page1Title,
+            widget.content.page1Title,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w900,
@@ -185,7 +264,7 @@ class _Page1 extends StatelessWidget {
               border: Border.all(color: AppColors.cardBorder, width: 1.5),
             ),
             child: Text(
-              content.page1Description,
+              widget.content.page1Description,
               style: const TextStyle(
                 fontSize: 16,
                 color: AppColors.bodyText,
@@ -194,7 +273,6 @@ class _Page1 extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // Hint untuk lanjut
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
@@ -213,7 +291,7 @@ class _Page1 extends StatelessWidget {
   }
 }
 
-// ── Page 2: Kapan & Cara Menggunakan ─────────────────────────────────────
+// ── Page 2: Kapan & Cara Menggunakan (TASK-M06: howToUseImage) ────────────
 
 class _Page2 extends StatelessWidget {
   final MateriContent content;
@@ -228,7 +306,6 @@ class _Page2 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Kapan digunakan
           _SectionCard(
             icon: Icons.calendar_today_rounded,
             iconColor: AppColors.brandBlue,
@@ -236,15 +313,15 @@ class _Page2 extends StatelessWidget {
             content: content.page2WhenToUse,
           ),
           const SizedBox(height: 16),
-          // Cara menggunakan
           _SectionCard(
             icon: Icons.tips_and_updates_rounded,
             iconColor: AppColors.lensGold,
             title: 'Cara Menggunakan',
             content: content.page2HowToUse,
+            // TASK-M06: foto cara penggunaan dari Firestore
+            imageUrl: content.page2HowToUseImageUrl,
           ),
           const SizedBox(height: 32),
-          // Tombol Selesai
           ElevatedButton(
             onPressed: onComplete,
             style: ElevatedButton.styleFrom(
@@ -278,12 +355,14 @@ class _SectionCard extends StatelessWidget {
   final Color iconColor;
   final String title;
   final String content;
+  final String? imageUrl; // TASK-M06
 
   const _SectionCard({
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.content,
+    this.imageUrl,
   });
 
   @override
@@ -328,6 +407,14 @@ class _SectionCard extends StatelessWidget {
               height: 1.7,
             ),
           ),
+          // TASK-M06: tampilkan foto cara penggunaan jika ada
+          if (imageUrl != null && imageUrl!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: buildLevelImage(imageUrl!, height: 180),
+            ),
+          ],
         ],
       ),
     );

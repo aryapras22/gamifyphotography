@@ -216,39 +216,30 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Gambar soal (jika ada)
-                  if (question.imagePath != null) ...[
+                  // TASK-M07: Gambar soal (jika ada — bisa asset atau network URL)
+                  if (question.imagePath != null && question.imagePath!.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        question.imagePath!,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: AppColors.cardBorder,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: Icon(Icons.image_not_supported_rounded,
-                                size: 48, color: AppColors.disabled),
-                          ),
-                        ),
-                      ),
+                      child: _buildQuestionImage(question.imagePath!, height: 200),
                     ),
                     const SizedBox(height: 20),
                   ],
-                  // Pertanyaan
-                  Text(
-                    question.question,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.bodyText,
-                      height: 1.5,
+                  // TASK-M07: Teks pertanyaan — gunakan displayText (questionText ?? question)
+                  if (question.displayText.isNotEmpty)
+                    Text(
+                      question.displayText,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.bodyText,
+                        height: 1.5,
+                      ),
+                    )
+                  else
+                    const Text(
+                      'Soal tidak tersedia',
+                      style: TextStyle(color: AppColors.secondaryText, fontSize: 16),
                     ),
-                  ),
                   const SizedBox(height: 24),
                   // Pilihan jawaban
                   ...List.generate(question.options.length, (i) {
@@ -314,6 +305,55 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
 }
 
 // ── Helper Widgets ────────────────────────────────────────────────────────
+
+/// Render gambar soal: network jika URL dimulai 'http', asset jika tidak.
+Widget _buildQuestionImage(String url, {double height = 200}) {
+  if (url.startsWith('http')) {
+    return Image.network(
+      url,
+      height: height,
+      fit: BoxFit.cover,
+      loadingBuilder: (_, child, progress) => progress == null
+          ? child
+          : SizedBox(
+              height: height,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.brandBlue,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+      errorBuilder: (_, __, ___) => Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: AppColors.cardBorder,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Icon(Icons.image_not_supported_rounded,
+              size: 48, color: AppColors.disabled),
+        ),
+      ),
+    );
+  }
+  return Image.asset(
+    url,
+    height: height,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.cardBorder,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Center(
+        child: Icon(Icons.image_not_supported_rounded,
+            size: 48, color: AppColors.disabled),
+      ),
+    ),
+  );
+}
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;

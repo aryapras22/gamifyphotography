@@ -25,9 +25,10 @@ mixin _$ModuleModel {
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get materialContent =>
-      throw _privateConstructorUsedError; // teks materi
+      throw _privateConstructorUsedError; // teks materi (opsional — konten detail ada di levels)
   int get order => throw _privateConstructorUsedError; // urutan level
   bool get isCompleted => throw _privateConstructorUsedError;
+  int get levelCount => throw _privateConstructorUsedError;
 
   /// Serializes this ModuleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,6 +54,7 @@ abstract class $ModuleModelCopyWith<$Res> {
     String materialContent,
     int order,
     bool isCompleted,
+    int levelCount,
   });
 }
 
@@ -77,6 +79,7 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
     Object? materialContent = null,
     Object? order = null,
     Object? isCompleted = null,
+    Object? levelCount = null,
   }) {
     return _then(
       _value.copyWith(
@@ -104,6 +107,10 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
                 ? _value.isCompleted
                 : isCompleted // ignore: cast_nullable_to_non_nullable
                       as bool,
+            levelCount: null == levelCount
+                ? _value.levelCount
+                : levelCount // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -126,6 +133,7 @@ abstract class _$$ModuleModelImplCopyWith<$Res>
     String materialContent,
     int order,
     bool isCompleted,
+    int levelCount,
   });
 }
 
@@ -149,6 +157,7 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
     Object? materialContent = null,
     Object? order = null,
     Object? isCompleted = null,
+    Object? levelCount = null,
   }) {
     return _then(
       _$ModuleModelImpl(
@@ -176,6 +185,10 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
             ? _value.isCompleted
             : isCompleted // ignore: cast_nullable_to_non_nullable
                   as bool,
+        levelCount: null == levelCount
+            ? _value.levelCount
+            : levelCount // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -188,9 +201,10 @@ class _$ModuleModelImpl implements _ModuleModel {
     required this.id,
     required this.title,
     required this.description,
-    required this.materialContent,
+    this.materialContent = '',
     required this.order,
     this.isCompleted = false,
+    this.levelCount = 0,
   });
 
   factory _$ModuleModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -203,18 +217,22 @@ class _$ModuleModelImpl implements _ModuleModel {
   @override
   final String description;
   @override
+  @JsonKey()
   final String materialContent;
-  // teks materi
+  // teks materi (opsional — konten detail ada di levels)
   @override
   final int order;
   // urutan level
   @override
   @JsonKey()
   final bool isCompleted;
+  @override
+  @JsonKey()
+  final int levelCount;
 
   @override
   String toString() {
-    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted)';
+    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount)';
   }
 
   @override
@@ -230,7 +248,9 @@ class _$ModuleModelImpl implements _ModuleModel {
                 other.materialContent == materialContent) &&
             (identical(other.order, order) || other.order == order) &&
             (identical(other.isCompleted, isCompleted) ||
-                other.isCompleted == isCompleted));
+                other.isCompleted == isCompleted) &&
+            (identical(other.levelCount, levelCount) ||
+                other.levelCount == levelCount));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -243,6 +263,7 @@ class _$ModuleModelImpl implements _ModuleModel {
     materialContent,
     order,
     isCompleted,
+    levelCount,
   );
 
   /// Create a copy of ModuleModel
@@ -264,9 +285,10 @@ abstract class _ModuleModel implements ModuleModel {
     required final String id,
     required final String title,
     required final String description,
-    required final String materialContent,
+    final String materialContent,
     required final int order,
     final bool isCompleted,
+    final int levelCount,
   }) = _$ModuleModelImpl;
 
   factory _ModuleModel.fromJson(Map<String, dynamic> json) =
@@ -279,11 +301,13 @@ abstract class _ModuleModel implements ModuleModel {
   @override
   String get description;
   @override
-  String get materialContent; // teks materi
+  String get materialContent; // teks materi (opsional — konten detail ada di levels)
   @override
   int get order; // urutan level
   @override
   bool get isCompleted;
+  @override
+  int get levelCount;
 
   /// Create a copy of ModuleModel
   /// with the given fields replaced by the non-null parameter values.

@@ -1,10 +1,13 @@
 // lib/view_models/level_view_model.dart
-// TASK-07 — Logic Gate: Level Lock/Unlock
+// TASK-07 (original) + TASK-M03 (Firestore migration)
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/level_model.dart';
 import '../models/user_model.dart';
 import '../services/level_service.dart';
+import '../services/firestore_level_content_service.dart';
+// ignore: deprecated_member_use
 import '../core/level_content_data.dart';
 import '../providers/service_providers.dart';
 import 'auth_view_model.dart';
@@ -16,45 +19,56 @@ enum LevelStatus { locked, available, completedPass, completedFail }
 class LevelEntry {
   final LevelConfig config;
   final LevelStatus status;
-  final int? quizScore; // null jika belum pernah dikerjakan
+  final int? quizScore;
+  /// Firestore level data — null jika belum dimuat atau fallback ke hardcoded
+  final FirestoreLevel? firestoreLevel;
 
   const LevelEntry({
     required this.config,
     required this.status,
     this.quizScore,
+    this.firestoreLevel,
   });
 }
 
 class LevelState {
   final List<LevelEntry> entries;
   final bool isLoading;
+  /// Loading konten level dari Firestore (terpisah dari isLoading progress)
+  final bool isContentLoading;
   final String? errorMessage;
-  /// Apakah pretest perlu ditampilkan (setelah Level 1 selesai, belum pernah pretest)
   final bool showPretest;
-  /// Apakah posttest perlu ditampilkan (setelah crafting selesai, belum pernah posttest)
   final bool showPosttest;
+  /// Data konten level dari Firestore (kosong = belum dimuat / fallback)
+  final List<FirestoreLevel> firestoreLevels;
 
   const LevelState({
     this.entries = const [],
     this.isLoading = false,
+    this.isContentLoading = false,
     this.errorMessage,
     this.showPretest = false,
     this.showPosttest = false,
+    this.firestoreLevels = const [],
   });
 
   LevelState copyWith({
     List<LevelEntry>? entries,
     bool? isLoading,
+    bool? isContentLoading,
     String? errorMessage,
     bool? showPretest,
     bool? showPosttest,
+    List<FirestoreLevel>? firestoreLevels,
   }) {
     return LevelState(
       entries: entries ?? this.entries,
       isLoading: isLoading ?? this.isLoading,
+      isContentLoading: isContentLoading ?? this.isContentLoading,
       errorMessage: errorMessage,
       showPretest: showPretest ?? this.showPretest,
       showPosttest: showPosttest ?? this.showPosttest,
+      firestoreLevels: firestoreLevels ?? this.firestoreLevels,
     );
   }
 }
@@ -63,7 +77,11 @@ class LevelState {
 
 final levelViewModelProvider =
     StateNotifierProvider<LevelViewModel, LevelState>(
-  (ref) => LevelViewModel(ref, ref.read(levelServiceProvider)),
+  (ref) => LevelViewModel(
+    ref,
+    ref.read(levelServiceProvider),
+    ref.read(firestoreLevelContentServiceProvider),
+  ),
 );
 
 // ── ViewModel ──────────────────────────────────────────────────────────────
@@ -71,34 +89,84 @@ final levelViewModelProvider =
 class LevelViewModel extends StateNotifier<LevelState> {
   final Ref _ref;
   final LevelService _levelService;
+  final FirestoreLevelContentService _firestoreLevelContentService;
 
-  LevelViewModel(this._ref, this._levelService) : super(const LevelState());
+  LevelViewModel(this._ref, this._levelService, this._firestoreLevelContentService)
+      : super(const LevelState());
 
   UserModel? get _user => _ref.read(authViewModelProvider).currentUser;
 
+  // ── Content Loading ───────────────────────────────────────────────────────
+
+  /// Muat konten level dari Firestore.
+  /// Fallback otomatis ke LevelContentData hardcoded jika Firestore gagal/kosong.
+  Future<void> loadLevelContent() async {
+    state = state.copyWith(isContentLoading: true);
+    try {
+      final levels = await _firestoreLevelContentService.getAllActiveLevels();
+      if (levels.isNotEmpty) {
+        state = state.copyWith(
+          firestoreLevels: levels,
+          isContentLoading: false,
+        );
+        debugPrint('[LevelViewModel] Loaded ${levels.length} levels from Firestore');
+      } else {
+        // Firestore kosong — gunakan fallback hardcoded (zero downtime)
+        debugPrint('[LevelViewModel] Firestore empty, using hardcoded fallback');
+        state = state.copyWith(isContentLoading: false);
+      }
+    } catch (e) {
+      debugPrint('[LevelViewModel] Firestore content error, fallback: $e');
+      state = state.copyWith(isContentLoading: false);
+    }
+  }
+
+  /// Ambil [FirestoreLevel] berdasarkan levelNumber dari state.
+  /// Return null jika belum dimuat atau tidak ada di Firestore.
+  FirestoreLevel? getLevelContent(int levelNumber) {
+    try {
+      return state.firestoreLevels
+          .firstWhere((l) => l.levelNumber == levelNumber);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Progress Loading ──────────────────────────────────────────────────────
+
   /// Muat semua 25 level dengan status lock/unlock berdasarkan progress user.
+  /// Menggunakan firestoreLevels jika tersedia, fallback ke LevelContentData.
   void loadLevels() {
     final user = _user;
     if (user == null) return;
-
     final entries = _buildEntries(user);
     state = state.copyWith(entries: entries, isLoading: false);
   }
 
-  /// Bangun daftar LevelEntry dengan status yang tepat berdasarkan progress user.
+  /// Muat konten Firestore + progress sekaligus (convenience method).
+  Future<void> loadAll() async {
+    await loadLevelContent();
+    loadLevels();
+  }
+
+  // ── Entry Building ────────────────────────────────────────────────────────
+
   List<LevelEntry> _buildEntries(UserModel user) {
     final completed = user.completedLevels;
     final quizScores = user.quizScores;
 
-    return LevelContentData.levels.map((config) {
+    // Gunakan Firestore levels jika tersedia, fallback ke hardcoded
+    final configs = _resolveConfigs();
+
+    return configs.map((config) {
       final n = config.levelNumber;
       final isCompleted = completed.contains(n);
       final score = quizScores[n.toString()];
+      final firestoreLevel = getLevelContent(n);
 
       LevelStatus status;
 
       if (isCompleted) {
-        // Level sudah selesai
         if (config.isQuiz) {
           final s = score ?? 0;
           status = s >= config.passingScore
@@ -108,8 +176,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
           status = LevelStatus.completedPass;
         }
       } else if (_isUnlocked(n, completed, quizScores)) {
-        // Level tersedia
-        // Untuk quiz yang pernah dikerjakan tapi gagal, tetap available (bisa retry)
         if (config.isQuiz && score != null && score < config.passingScore) {
           status = LevelStatus.completedFail;
         } else {
@@ -119,23 +185,49 @@ class LevelViewModel extends StateNotifier<LevelState> {
         status = LevelStatus.locked;
       }
 
-      return LevelEntry(config: config, status: status, quizScore: score);
+      return LevelEntry(
+        config: config,
+        status: status,
+        quizScore: score,
+        firestoreLevel: firestoreLevel,
+      );
     }).toList();
   }
 
-  /// Logika unlock level:
-  /// - Level 1 selalu tersedia
-  /// - Level 2–9: unlock jika level sebelumnya selesai
-  /// - Level 10 (quiz): unlock jika level 9 selesai
-  /// - Level 11: unlock jika level 10 quiz LULUS (≥70)
-  /// - Level 12–14: unlock berurutan
-  /// - Level 15 (quiz): unlock jika level 14 selesai
-  /// - Level 16: unlock jika level 15 quiz LULUS
-  /// - Level 17–19: unlock berurutan
-  /// - Level 20 (quiz): unlock jika level 19 selesai
-  /// - Level 21: unlock jika level 20 quiz LULUS
-  /// - Level 22–24: unlock berurutan
-  /// - Level 25 (quiz): unlock jika level 24 selesai
+  /// Resolve konfigurasi level: merge Firestore data ke LevelConfig hardcoded.
+  /// Firestore data digunakan untuk konten (page1/page2), hardcoded untuk struktur.
+  List<LevelConfig> _resolveConfigs() {
+    // ignore: deprecated_member_use
+    final hardcoded = LevelContentData.levels;
+    if (state.firestoreLevels.isEmpty) return hardcoded;
+
+    return hardcoded.map((config) {
+      final fsLevel = getLevelContent(config.levelNumber);
+      if (fsLevel == null) return config;
+
+      // Merge: gunakan title dan passingScore dari Firestore jika tersedia
+      if (config.isMateri) {
+        final mergedContent = fsLevel.toMateriContent() ??
+            config.materiContent;
+        return LevelConfig(
+          levelNumber: config.levelNumber,
+          title: fsLevel.title.isNotEmpty ? fsLevel.title : config.title,
+          type: config.type,
+          materiContent: mergedContent,
+          passingScore: config.passingScore,
+        );
+      }
+      // Quiz: title dari Firestore, soal tetap dari hardcoded (soal di-load terpisah)
+      return LevelConfig(
+        levelNumber: config.levelNumber,
+        title: fsLevel.title.isNotEmpty ? fsLevel.title : config.title,
+        type: config.type,
+        questions: config.questions,
+        passingScore: fsLevel.passingScore,
+      );
+    }).toList();
+  }
+
   bool _isUnlocked(
     int levelNumber,
     List<int> completed,
@@ -146,24 +238,23 @@ class LevelViewModel extends StateNotifier<LevelState> {
     final prev = levelNumber - 1;
     final prevCompleted = completed.contains(prev);
 
-    // Level setelah quiz checkpoint memerlukan quiz lulus
     if (levelNumber == 11 || levelNumber == 16 || levelNumber == 21) {
-      final quizLevel = levelNumber - 1; // 10, 15, 20
+      final quizLevel = levelNumber - 1;
       final quizScore = quizScores[quizLevel.toString()] ?? 0;
-      final quizConfig = LevelContentData.getLevel(quizLevel);
-      final passingScore = quizConfig?.passingScore ?? 70;
+      // Cek passingScore dari Firestore jika tersedia
+      final fsLevel = getLevelContent(quizLevel);
+      final passingScore = fsLevel?.passingScore ??
+          // ignore: deprecated_member_use
+          LevelContentData.getLevel(quizLevel)?.passingScore ??
+          70;
       return quizScore >= passingScore;
     }
 
-    // Level setelah quiz 25 (jembatan) — tidak ada level 26, tapi posttest trigger
-    // Level normal: unlock jika level sebelumnya selesai
     return prevCompleted;
   }
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
-  /// Selesaikan level materi. Unlock level berikutnya.
-  /// Jika level 1 selesai dan pretest belum dikerjakan, set showPretest = true.
   Future<void> completeMaterialLevel(int levelNumber) async {
     final user = _user;
     if (user == null) return;
@@ -175,14 +266,11 @@ class LevelViewModel extends StateNotifier<LevelState> {
         levelNumber: levelNumber,
       );
 
-      // Update local user state
       final updatedCompleted = [...user.completedLevels, levelNumber];
       final updatedUser = user.copyWith(completedLevels: updatedCompleted);
       _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
 
       final entries = _buildEntries(updatedUser);
-
-      // Cek apakah perlu tampilkan pretest (setelah Level 1)
       final showPretest = levelNumber == 1 && !user.pretestDone;
 
       state = state.copyWith(
@@ -198,7 +286,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }
   }
 
-  /// Submit hasil quiz evaluasi (level 10/15/20/25).
   Future<void> submitQuizResult({
     required int levelNumber,
     required int score,
@@ -207,14 +294,16 @@ class LevelViewModel extends StateNotifier<LevelState> {
     final user = _user;
     if (user == null) return;
 
-    final config = LevelContentData.getLevel(levelNumber);
-    if (config == null) return;
-
-    final passed = score >= config.passingScore;
+    // Cek passingScore dari Firestore atau fallback hardcoded
+    final fsLevel = getLevelContent(levelNumber);
+    final passingScore = fsLevel?.passingScore ??
+        // ignore: deprecated_member_use
+        LevelContentData.getLevel(levelNumber)?.passingScore ??
+        70;
+    final passed = score >= passingScore;
 
     state = state.copyWith(isLoading: true);
     try {
-      // Simpan ke quiz_results collection
       await _levelService.saveQuizResult(
         userId: user.id,
         levelNumber: levelNumber,
@@ -223,7 +312,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
         passed: passed,
       );
 
-      // Update level completion jika lulus
       await _levelService.completeQuizLevel(
         userId: user.id,
         levelNumber: levelNumber,
@@ -231,7 +319,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
         passed: passed,
       );
 
-      // Update local user state
       final updatedScores = Map<String, int>.from(user.quizScores);
       final existingScore = updatedScores[levelNumber.toString()] ?? 0;
       if (score > existingScore) {
@@ -259,7 +346,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }
   }
 
-  /// Submit hasil pretest. Level 2 di-unlock setelah ini.
   Future<void> submitPretest({
     required int score,
     required List<int> answers,
@@ -292,7 +378,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }
   }
 
-  /// Submit hasil posttest. Dipanggil setelah crafting selesai.
   Future<void> submitPosttest({
     required int score,
     required List<int> answers,
@@ -323,10 +408,8 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }
   }
 
-  /// Dismiss pretest flag (jika user sudah selesai pretest)
   void clearShowPretest() => state = state.copyWith(showPretest: false);
 
-  /// Set showPosttest = true (dipanggil dari CraftingViewModel saat crafting selesai)
   void triggerPosttest() {
     final user = _user;
     if (user == null || user.posttestDone) return;

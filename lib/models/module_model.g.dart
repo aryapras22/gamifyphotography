@@ -11,9 +11,10 @@ _$ModuleModelImpl _$$ModuleModelImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       title: json['title'] as String,
       description: json['description'] as String,
-      materialContent: json['materialContent'] as String,
+      materialContent: json['materialContent'] as String? ?? '',
       order: (json['order'] as num).toInt(),
       isCompleted: json['isCompleted'] as bool? ?? false,
+      levelCount: (json['levelCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
@@ -24,4 +25,5 @@ Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
       'materialContent': instance.materialContent,
       'order': instance.order,
       'isCompleted': instance.isCompleted,
+      'levelCount': instance.levelCount,
     };

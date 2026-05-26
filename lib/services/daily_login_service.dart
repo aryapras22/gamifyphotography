@@ -86,4 +86,25 @@ class DailyLoginService {
     if (data['weekHistory'] == null) return List.filled(kMaxStreakDays, false);
     return List<bool>.from(data['weekHistory']);
   }
+
+  /// Ambil riwayat login 30 hari terakhir dari subcollection `daily_logins`.
+  /// Digunakan untuk menampilkan streak calendar di Profile.
+  Future<List<DateTime>> getDailyLoginHistory(String userId) async {
+    try {
+      final snap = await _db
+          .collection('users')
+          .doc(userId)
+          .collection('daily_logins')
+          .orderBy('loginAt', descending: true)
+          .limit(30)
+          .get();
+      return snap.docs.map((d) {
+        final ts = d.data()['loginAt'] as Timestamp?;
+        return ts?.toDate() ?? DateTime.now();
+      }).toList();
+    } catch (_) {
+      // Subcollection belum ada — kembalikan list kosong
+      return [];
+    }
+  }
 }

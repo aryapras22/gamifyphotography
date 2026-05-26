@@ -1,6 +1,7 @@
 // lib/views/quiz/pretest_view.dart
 // TASK-08 — Pretest View (muncul setelah Level 1 selesai)
 // TASK-09 — Reused for Posttest
+// TASK-M07 — Firestore fallback + questionText support
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import '../../core/app_colors.dart';
 import '../../core/pretest_questions.dart';
 import '../../models/level_model.dart';
 import '../../view_models/level_view_model.dart';
+import '../../providers/service_providers.dart';
 
 enum TestType { pretest, posttest }
 
@@ -30,8 +32,9 @@ class _PretestViewState extends ConsumerState<PretestView> {
   final List<int?> _selectedAnswers = [];
   bool _started = false;
   bool _submitting = false;
-
-  List<QuizQuestion> get _questions => PretestQuestions.questions;
+  // TASK-M07: soal dari Firestore (jika tersedia) atau fallback hardcoded
+  List<QuizQuestion> _questions = [];
+  bool _questionsLoaded = false;
 
   String get _title =>
       widget.testType == TestType.pretest ? 'Pre-Test Fotografi' : 'Post-Test Fotografi';
@@ -43,7 +46,31 @@ class _PretestViewState extends ConsumerState<PretestView> {
   @override
   void initState() {
     super.initState();
-    _selectedAnswers.addAll(List.filled(_questions.length, null));
+    _loadQuestions();
+  }
+
+  /// TASK-M07: Muat soal dari Firestore, fallback ke hardcoded jika kosong/error
+  Future<void> _loadQuestions() async {
+    try {
+      final service = ref.read(firestoreLevelContentServiceProvider);
+      final firestoreQuestions = await service.getPretestQuestions();
+      if (firestoreQuestions.isNotEmpty) {
+        setState(() {
+          _questions = firestoreQuestions;
+          _selectedAnswers.addAll(List.filled(_questions.length, null));
+          _questionsLoaded = true;
+        });
+        return;
+      }
+    } catch (_) {
+      // Firestore gagal — gunakan fallback
+    }
+    // Fallback ke hardcoded
+    setState(() {
+      _questions = PretestQuestions.questions;
+      _selectedAnswers.addAll(List.filled(_questions.length, null));
+      _questionsLoaded = true;
+    });
   }
 
   void _selectAnswer(int optionIndex) {
@@ -106,6 +133,12 @@ class _PretestViewState extends ConsumerState<PretestView> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_questionsLoaded) {
+      return const Scaffold(
+        backgroundColor: AppColors.backgroundGray,
+        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
+      );
+    }
     if (!_started) return _buildIntroScreen();
     return _buildTestScreen();
   }
@@ -257,34 +290,26 @@ class _PretestViewState extends ConsumerState<PretestView> {
                     if (question.imagePath != null) ...[
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          question.imagePath!,
-                          height: 200,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            height: 160,
-                            decoration: BoxDecoration(
-                              color: AppColors.cardBorder,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Center(
-                              child: Icon(Icons.image_not_supported_rounded,
-                                  size: 40, color: AppColors.disabled),
-                            ),
-                          ),
-                        ),
+                        child: _buildQuestionImage(question.imagePath!, height: 200),
                       ),
                       const SizedBox(height: 20),
                     ],
-                    Text(
-                      question.question,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.bodyText,
-                        height: 1.5,
+                    // TASK-M07: gunakan displayText (questionText ?? question)
+                    if (question.displayText.isNotEmpty)
+                      Text(
+                        question.displayText,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.bodyText,
+                          height: 1.5,
+                        ),
+                      )
+                    else
+                      const Text(
+                        'Soal tidak tersedia',
+                        style: TextStyle(color: AppColors.secondaryText, fontSize: 16),
                       ),
-                    ),
                     const SizedBox(height: 24),
                     ...List.generate(question.options.length, (i) {
                       final isSelected = selected == i;
@@ -471,4 +496,53 @@ class _InfoRow extends StatelessWidget {
       ],
     );
   }
+}
+
+/// TASK-M07: Render gambar soal — network atau asset
+Widget _buildQuestionImage(String url, {double height = 200}) {
+  if (url.startsWith('http')) {
+    return Image.network(
+      url,
+      height: height,
+      fit: BoxFit.cover,
+      loadingBuilder: (_, child, progress) => progress == null
+          ? child
+          : SizedBox(
+              height: height,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.brandBlue,
+                  strokeWidth: 2,
+                ),
+              ),
+            ),
+      errorBuilder: (_, __, ___) => Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: AppColors.cardBorder,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Icon(Icons.image_not_supported_rounded,
+              size: 40, color: AppColors.disabled),
+        ),
+      ),
+    );
+  }
+  return Image.asset(
+    url,
+    height: height,
+    fit: BoxFit.cover,
+    errorBuilder: (_, __, ___) => Container(
+      height: height,
+      decoration: BoxDecoration(
+        color: AppColors.cardBorder,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Center(
+        child: Icon(Icons.image_not_supported_rounded,
+            size: 40, color: AppColors.disabled),
+      ),
+    ),
+  );
 }

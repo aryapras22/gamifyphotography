@@ -9,9 +9,10 @@ class ModuleModel with _$ModuleModel {
     required String id,
     required String title,
     required String description,
-    required String materialContent, // teks materi
-    required int order,              // urutan level
+    @Default('') String materialContent, // teks materi (opsional — konten detail ada di levels)
+    required int order,                  // urutan level
     @Default(false) bool isCompleted,
+    @Default(0) int levelCount,          // jumlah level dalam modul (untuk tampilan UI)
   }) = _ModuleModel;
 
   factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);

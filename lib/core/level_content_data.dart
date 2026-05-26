@@ -1,9 +1,19 @@
 // lib/core/level_content_data.dart
 // TASK-02 — Konten 25 Level (hardcoded)
+// TASK-M08 — Deprecated: gunakan FirestoreLevelContentService via LevelViewModel
 
 import '../models/level_model.dart';
 
 /// Semua 25 level konfigurasi — akses via [LevelContentData.levels]
+///
+/// @Deprecated: Gunakan `FirestoreLevelContentService` via `LevelViewModel.firestoreLevels`.
+/// `LevelContentData` hanya dipertahankan sebagai fallback offline.
+/// Akan dihapus setelah semua data ter-seed ke Firestore dan diverifikasi.
+@Deprecated(
+  'Gunakan FirestoreLevelContentService via LevelViewModel.firestoreLevels. '
+  'LevelContentData hanya dipertahankan sebagai fallback offline. '
+  'Akan dihapus setelah semua data ter-seed ke Firestore.',
+)
 class LevelContentData {
   LevelContentData._();
 
