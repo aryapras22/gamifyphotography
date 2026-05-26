@@ -28,14 +28,14 @@ class DailyLoginService {
 
   Future<bool> hasClaimedToday(String userId) async {
     final data = await _fetchFields(userId);
-    final ts = data['lastLoginDate'];
+    final ts = data['lastLoginAt'];
     if (ts == null) return false;
     return _isToday((ts as Timestamp).toDate());
   }
 
   Future<int> getCurrentStreak(String userId) async {
     final data = await _fetchFields(userId);
-    final ts = data['lastLoginDate'];
+    final ts = data['lastLoginAt'];
     int streak = data['streakCount'] ?? 0;
     if (ts == null) return 0;
     final last = (ts as Timestamp).toDate();
@@ -48,7 +48,7 @@ class DailyLoginService {
 
   Future<int> claimDailyLogin(String userId) async {
     final data = await _fetchFields(userId);
-    final ts = data['lastLoginDate'];
+    final ts = data['lastLoginAt'];
     int streak = data['streakCount'] ?? 0;
     List<bool> history = data['weekHistory'] != null
         ? List<bool>.from(data['weekHistory'])
@@ -74,7 +74,7 @@ class DailyLoginService {
 
     await _userRef(userId).update({
       'streakCount': streak,
-      'lastLoginDate': Timestamp.fromDate(DateTime.now()),
+      'lastLoginAt': Timestamp.fromDate(DateTime.now()),
       'weekHistory': history,
     });
 
@@ -95,11 +95,11 @@ class DailyLoginService {
           .collection('users')
           .doc(userId)
           .collection('daily_logins')
-          .orderBy('loginAt', descending: true)
+          .orderBy('date', descending: true)
           .limit(30)
           .get();
       return snap.docs.map((d) {
-        final ts = d.data()['loginAt'] as Timestamp?;
+        final ts = d.data()['date'] as Timestamp?;
         return ts?.toDate() ?? DateTime.now();
       }).toList();
     } catch (_) {

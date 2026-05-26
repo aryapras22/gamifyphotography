@@ -46,9 +46,9 @@ class AuthService {
     if (!doc.exists) throw Exception('User data not found.');
     final data = doc.data()!;
 
-    DateTime? lastLoginDate;
-    if (data['lastLoginDate'] is Timestamp) {
-      lastLoginDate = (data['lastLoginDate'] as Timestamp).toDate();
+    DateTime? lastLoginAt;
+    if (data['lastLoginAt'] is Timestamp) {
+      lastLoginAt = (data['lastLoginAt'] as Timestamp).toDate();
     }
 
     // Parse quizScores: Firestore stores as Map<String, dynamic>
@@ -72,7 +72,7 @@ class AuthService {
       completedModuleIds: List<String>.from(data['completedModuleIds'] ?? []),
       // TASK-M11: fallback untuk field lama 'loginStreak' (deprecated di admin FIX-05)
       streakCount: (data['streakCount'] ?? data['loginStreak'] ?? 0) as int,
-      lastLoginDate: lastLoginDate,
+      lastLoginDate: lastLoginAt,
       weekHistory: data['weekHistory'] != null
           ? List<bool>.from(
               (data['weekHistory'] as List).map((e) => e == true || e == 1),
@@ -102,7 +102,7 @@ class AuthService {
       'completedPhotoUrls': user.completedPhotoUrls,
       'completedModuleIds': user.completedModuleIds,
       'streakCount': user.streakCount,
-      'lastLoginDate': user.lastLoginDate != null
+      'lastLoginAt': user.lastLoginDate != null
           ? Timestamp.fromDate(user.lastLoginDate!)
           : null,
       'weekHistory': user.weekHistory,

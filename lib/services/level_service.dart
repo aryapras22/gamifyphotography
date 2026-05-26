@@ -86,7 +86,7 @@ class LevelService {
       'type': 'pretest',
       'score': score,
       'answers': answers,
-      'timestamp': FieldValue.serverTimestamp(),
+      'submittedAt': FieldValue.serverTimestamp(),
     });
 
     // Tandai pretestDone di user doc
@@ -109,7 +109,7 @@ class LevelService {
       'type': 'posttest',
       'score': score,
       'answers': answers,
-      'timestamp': FieldValue.serverTimestamp(),
+      'submittedAt': FieldValue.serverTimestamp(),
     });
 
     batch.update(_userRef(userId), {'posttestDone': true});
@@ -127,12 +127,12 @@ class LevelService {
   }) async {
     await _db.collection('quiz_results').add({
       'userId': userId,
-      'type': 'quiz_evaluasi',
+      'type': 'quiz_level_$levelNumber',
       'levelNumber': levelNumber,
       'score': score,
       'answers': answers,
       'passed': passed,
-      'timestamp': FieldValue.serverTimestamp(),
+      'submittedAt': FieldValue.serverTimestamp(),
     });
   }
 }

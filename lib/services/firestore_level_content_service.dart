@@ -14,7 +14,7 @@ class FirestoreLevelContentService {
   /// Firestore index diperlukan: isActive ASC + order ASC
   Future<List<FirestoreLevel>> getAllActiveLevels() async {
     final snap = await _db
-        .collection('levels')
+        .collection('modules')
         .where('isActive', isEqualTo: true)
         .orderBy('order')
         .get();
@@ -29,7 +29,7 @@ class FirestoreLevelContentService {
   /// Firestore index: order ASC (single-field, auto-created)
   Future<List<QuizQuestion>> getQuizQuestions(String levelId) async {
     final snap = await _db
-        .collection('levels')
+        .collection('modules')
         .doc(levelId)
         .collection('questions')
         .orderBy('order')
@@ -57,7 +57,7 @@ class FirestoreLevelContentService {
   Future<FirestoreLevel?> getLevelByNumber(int levelNumber) async {
     try {
       final snap = await _db
-          .collection('levels')
+          .collection('modules')
           .where('levelNumber', isEqualTo: levelNumber)
           .where('isActive', isEqualTo: true)
           .limit(1)

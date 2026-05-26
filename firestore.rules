@@ -27,7 +27,8 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
       allow update: if isAdmin()
         && request.resource.data.diff(resource.data)
-            .affectedKeys().hasOnly(['status', 'adminNote', 'reviewedAt', 'adminScore']);
+            .affectedKeys().hasOnly(['status', 'adminNote', 'reviewedAt', 'adminScore',
+                                     'reviewedByUserId', 'reviewedByName']);
       allow delete: if false;
     }
 

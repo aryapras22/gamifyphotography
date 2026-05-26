@@ -15,11 +15,27 @@ class ModuleService {
       final snap = await _db.collection('modules').orderBy('order').get();
       if (snap.docs.isNotEmpty) {
         return snap.docs.map((d) {
-          final data = <String, dynamic>{...d.data(), 'id': d.id};
+          final raw = d.data();
+          final data = <String, dynamic>{...raw, 'id': d.id};
+
+          // Admin stores description inside page1.description (nested),
+          // but ModuleModel.fromJson requires a top-level 'description'.
+          // Extract it here so fromJson doesn't throw and fall back to hardcoded.
+          if (!data.containsKey('description') || data['description'] == null) {
+            final page1 = raw['page1'];
+            data['description'] = (page1 is Map ? page1['description'] : null) ?? '';
+          }
+
+          // materialContent: use page1.description as a readable summary if absent
+          if (!data.containsKey('materialContent') || data['materialContent'] == null || data['materialContent'] == '') {
+            final page1 = raw['page1'];
+            data['materialContent'] = (page1 is Map ? page1['description'] : null) ?? '';
+          }
+
           // Firestore tidak menyimpan isCompleted — default false
           data.putIfAbsent('isCompleted', () => false);
-          data.putIfAbsent('materialContent', () => '');
           data.putIfAbsent('levelCount', () => 0);
+
           return ModuleModel.fromJson(data);
         }).toList();
       }
