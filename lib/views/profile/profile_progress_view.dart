@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_colors.dart';
+import '../../providers/service_providers.dart';
+import '../progress/progress_view.dart';
 import 'profile_view.dart';
 
 /// Thin wrapper so the router's `/profile` route and the
@@ -11,9 +13,11 @@ class ProfileProgressView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
-      backgroundColor: AppColors.backgroundGray,
-      body: ProfileTab(),
+    final subIndex = ref.watch(profileTabSubIndexProvider);
+    return Scaffold(
+      backgroundColor: AppColors.brandBg,
+      body: subIndex == 0 ? const ProfileTab() : const ProgressTab(),
     );
   }
 }
+

@@ -1,27 +1,24 @@
-// lib/views/quiz/quiz_level_view.dart
-// TASK-05 — Quiz Level Screen
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_text_styles.dart';
 import '../../models/level_model.dart';
-import 'quiz_result_view.dart';
 import '../../providers/service_providers.dart';
 import '../../view_models/level_view_model.dart';
+import '../widgets/brutal_widgets.dart';
 
 class QuizLevelView extends ConsumerStatefulWidget {
   final LevelConfig config;
-  /// Jika true, ini adalah pretest/posttest (tidak ada passing score)
   final bool isPrePostTest;
-  /// Callback setelah quiz selesai (untuk pretest/posttest)
   final void Function(int score, List<int> answers)? onComplete;
 
   const QuizLevelView({
-    Key? key,
+    super.key,
     required this.config,
     this.isPrePostTest = false,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<QuizLevelView> createState() => _QuizLevelViewState();
@@ -29,9 +26,12 @@ class QuizLevelView extends ConsumerStatefulWidget {
 
 class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
   int _currentIndex = 0;
-  final List<int?> _selectedAnswers = [];
-  bool _started = false;
+  int? _pickedIndex;
+  bool _submitted = false;
+  int _correctCount = 0;
+
   List<QuizQuestion> _questions = [];
+  final List<int?> _answers = [];
   bool _isLoading = true;
 
   @override
@@ -45,7 +45,6 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
       final service = ref.read(firestoreLevelContentServiceProvider);
       String? levelId;
 
-      // 1. Cari dari state provider
       final fsLevels = ref.read(levelViewModelProvider).firestoreLevels;
       try {
         final matched = fsLevels.firstWhere(
@@ -54,7 +53,6 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
         levelId = matched.id;
       } catch (_) {}
 
-      // 2. Fallback: query Firestore langsung jika levelId belum ketemu
       if (levelId == null) {
         final fsLevel = await service.getLevelByNumber(widget.config.levelNumber);
         levelId = fsLevel?.id;
@@ -65,7 +63,6 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
         if (fsQuestions.isNotEmpty) {
           setState(() {
             _questions = fsQuestions;
-            _selectedAnswers.addAll(List.filled(_questions.length, null));
             _isLoading = false;
           });
           return;
@@ -75,52 +72,120 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
       debugPrint('Gagal memuat soal dari Firestore: $e');
     }
 
-    // Fallback ke hardcoded
+    // Fallback to hardcoded configs
     setState(() {
       _questions = widget.config.questions ?? [];
-      _selectedAnswers.clear();
-      _selectedAnswers.addAll(List.filled(_questions.length, null));
       _isLoading = false;
     });
   }
 
-  void _selectAnswer(int optionIndex) {
-    if (_selectedAnswers[_currentIndex] != null) return; // sudah dijawab
-    setState(() {
-      _selectedAnswers[_currentIndex] = optionIndex;
-    });
-  }
-
-  void _nextQuestion() {
-    if (_currentIndex < _questions.length - 1) {
-      setState(() => _currentIndex++);
+  void _handleAnswer() {
+    final q = _questions[_currentIndex];
+    
+    if (!_submitted) {
+      // User clicks Jawab
+      setState(() {
+        _submitted = true;
+        _answers.add(_pickedIndex);
+        if (_pickedIndex == q.correctIndex) {
+          _correctCount++;
+        }
+      });
     } else {
-      _finishQuiz();
+      // User clicks Lanjut or Lihat Hasil
+      final isLast = _currentIndex == _questions.length - 1;
+      if (isLast) {
+        _finishQuiz();
+      } else {
+        setState(() {
+          _currentIndex++;
+          _pickedIndex = null;
+          _submitted = false;
+        });
+      }
     }
   }
 
-  void _finishQuiz() {
-    int correct = 0;
-    for (int i = 0; i < _questions.length; i++) {
-      if (_selectedAnswers[i] == _questions[i].correctIndex) correct++;
-    }
-    final score = LevelConfig.calculateScore(correct, _questions.length);
-    final answers = _selectedAnswers.map((a) => a ?? -1).toList();
+  Future<void> _finishQuiz() async {
+    final score = LevelConfig.calculateScore(_correctCount, _questions.length);
+    final finalAnswers = _answers.map((a) => a ?? -1).toList();
 
     if (widget.isPrePostTest && widget.onComplete != null) {
-      widget.onComplete!(score, answers);
+      widget.onComplete!(score, finalAnswers);
       return;
     }
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => QuizResultView(
-          config: widget.config,
+    // Save progress to database
+    await ref.read(levelViewModelProvider.notifier).submitQuizResult(
+          levelNumber: widget.config.levelNumber,
           score: score,
-          correctAnswers: correct,
-          totalQuestions: _questions.length,
-          answers: answers,
+          answers: finalAnswers,
+        );
+
+    final fsLevel = ref.read(levelViewModelProvider.notifier).getLevelContent(widget.config.levelNumber);
+    final passingScore = fsLevel?.passingScore ?? widget.config.passingScore;
+    final passed = score >= passingScore;
+
+    if (!mounted) return;
+
+    // Show QuizResultModal dialog
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogCtx) => _QuizResultModal(
+        score: _correctCount,
+        total: _questions.length,
+        passed: passed,
+        xpReward: _correctCount * 20,
+        onActionPressed: () {
+          // Close dialog
+          Navigator.pop(dialogCtx);
+          
+          if (passed) {
+            // Go back to home or level list
+            Navigator.pop(context);
+          } else {
+            // Restart quiz
+            setState(() {
+              _currentIndex = 0;
+              _pickedIndex = null;
+              _submitted = false;
+              _correctCount = 0;
+              _answers.clear();
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  void _showExitDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Colors.black, width: 2.0),
         ),
+        title: Text('Keluar dari Misi Quiz?', style: GoogleFonts.bricolageGrotesque(fontWeight: FontWeight.w900)),
+        content: Text(
+          'Progress Misi Quiz akan hilang jika kamu keluar sekarang.',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Lanjutkan', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.black)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: Text('Keluar', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: AppColors.brandDanger)),
+          ),
+        ],
       ),
     );
   }
@@ -129,367 +194,335 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppColors.backgroundGray,
-        body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.brandBlue,
-          ),
-        ),
+        backgroundColor: AppColors.brandBg,
+        body: Center(child: CircularProgressIndicator(color: Colors.black)),
       );
     }
-    if (!_started) return _buildIntroScreen();
-    return _buildQuizScreen();
-  }
 
-  // ── Intro Screen ──────────────────────────────────────────────────────────
+    if (_questions.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.brandBg,
+        appBar: BrutalAppBar(title: 'Misi Quiz', onBackPressed: () => Navigator.pop(context)),
+        body: const Center(child: Text('Materi soal belum siap.')),
+      );
+    }
 
-  Widget _buildIntroScreen() {
+    final q = _questions[_currentIndex];
+    final progress = (_currentIndex + (_submitted ? 1 : 0)) / _questions.length;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
+      backgroundColor: AppColors.brandBg,
+      appBar: BrutalAppBar(
+        title: 'Misi Quiz',
+        subtitle: 'Soal ${_currentIndex + 1} dari ${_questions.length}',
+        onBackPressed: _showExitDialog,
+      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
-              // Icon
-              Container(
-                width: 100,
-                height: 100,
-                margin: const EdgeInsets.only(bottom: 32),
-                decoration: BoxDecoration(
-                  color: AppColors.lensGold.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(Icons.quiz_rounded, size: 52, color: AppColors.lensGold),
-                ),
-              ),
-              Text(
-                widget.config.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.bodyText,
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (!widget.isPrePostTest) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.coralRed.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.coralRed.withValues(alpha: 0.3)),
-                  ),
-                  child: Text(
-                    'Kamu harus mendapat skor minimal ${widget.config.passingScore}/100 untuk lanjut ke level berikutnya.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.coralRed,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              _InfoRow(icon: Icons.help_outline_rounded, label: '${_questions.length} soal pilihan ganda'),
-              const SizedBox(height: 8),
-              _InfoRow(icon: Icons.star_rounded, label: 'Setiap soal bernilai ${100 ~/ _questions.length} poin'),
-              const SizedBox(height: 8),
-              _InfoRow(icon: Icons.image_rounded, label: 'Beberapa soal disertai gambar'),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => setState(() => _started = true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.lensGold,
-                  foregroundColor: AppColors.surfaceWhite,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Mulai Quiz',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
-                  'Kembali',
-                  style: TextStyle(color: AppColors.secondaryText, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Quiz Screen ───────────────────────────────────────────────────────────
-
-  Widget _buildQuizScreen() {
-    final question = _questions[_currentIndex];
-    final selected = _selectedAnswers[_currentIndex];
-    final progress = (_currentIndex + 1) / _questions.length;
-
-    return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
-      appBar: AppBar(
-        backgroundColor: AppColors.surfaceWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppColors.bodyText),
-          onPressed: () => _showExitDialog(),
-        ),
-        title: Text(
-          'Soal ${_currentIndex + 1} / ${_questions.length}',
-          style: const TextStyle(
-            color: AppColors.bodyText,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(4),
-          child: LinearProgressIndicator(
-            value: progress,
-            backgroundColor: AppColors.cardBorder,
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.lensGold),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // TASK-M07: Gambar soal (jika ada — bisa asset atau network URL)
-                  if (question.imagePath != null && question.imagePath!.isNotEmpty) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: _buildQuestionImage(question.imagePath!, height: 200),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                  // TASK-M07: Teks pertanyaan — gunakan displayText (questionText ?? question)
-                  if (question.displayText.isNotEmpty)
-                    Text(
-                      question.displayText,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.bodyText,
-                        height: 1.5,
-                      ),
-                    )
-                  else
-                    const Text(
-                      'Soal tidak tersedia',
-                      style: TextStyle(color: AppColors.secondaryText, fontSize: 16),
-                    ),
-                  const SizedBox(height: 24),
-                  // Pilihan jawaban
-                  ...List.generate(question.options.length, (i) {
-                    return _OptionCard(
-                      text: question.options[i],
-                      index: i,
-                      selected: selected,
-                      correctIndex: question.correctIndex,
-                      onTap: selected == null ? () => _selectAnswer(i) : null,
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-          // Tombol Next
-          if (selected != null)
+        child: Column(
+          children: [
+            // Linear Progress Indicator
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: ElevatedButton(
-                onPressed: _nextQuestion,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandBlue,
-                  foregroundColor: AppColors.surfaceWhite,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: BrutalProgressBar(value: progress, height: 10),
+            ),
+
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Question index pill
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandPrimary,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.black, width: 2.0),
+                            boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                          ),
+                          child: Text(
+                            'SOAL ${_currentIndex + 1}',
+                            style: GoogleFonts.bricolageGrotesque(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Question image (if any)
+                    if (q.imagePath != null && q.imagePath!.isNotEmpty) ...[
+                      BrutalCard(
+                        padding: EdgeInsets.zero,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: _buildQuestionImage(q.imagePath!),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Question Text
+                    Text(
+                      q.displayText,
+                      style: AppTextStyles.heading.copyWith(fontSize: 20, height: 1.4),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Options List
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: q.options.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, idx) {
+                        final letter = String.fromCharCode(65 + idx);
+                        final isPicked = _pickedIndex == idx;
+                        final isCorrect = _submitted && idx == q.correctIndex;
+                        final isWrong = _submitted && isPicked && idx != q.correctIndex;
+
+                        Color bg = Colors.white;
+                        Color textCol = Colors.black;
+                        Color borderCol = Colors.black;
+                        Offset shadow = const Offset(2, 2);
+                        Widget trailing = const SizedBox.shrink();
+
+                        if (isCorrect) {
+                          bg = const Color(0xFFD1FAE5); // bg-emerald-100
+                          textCol = const Color(0xFF065F46); // text-emerald-800
+                          borderCol = const Color(0xFF059669); // border-emerald-600
+                          shadow = const Offset(4, 4);
+                          trailing = const Icon(Icons.check_circle_rounded, color: Color(0xFF059669), size: 20);
+                        } else if (isWrong) {
+                          bg = const Color(0xFFFEE2E2); // bg-red-100
+                          textCol = const Color(0xFF991B1B); // text-red-800
+                          borderCol = const Color(0xFFDC2626); // border-red-600
+                          shadow = const Offset(4, 4);
+                          trailing = const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 20);
+                        } else if (isPicked) {
+                          bg = AppColors.brandAccent;
+                          shadow = const Offset(4, 4);
+                        }
+
+                        return GestureDetector(
+                          onTap: _submitted ? null : () => setState(() => _pickedIndex = idx),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Transform.translate(
+                              offset: -shadow,
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: bg,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: borderCol, width: 2.0),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Circular letter container
+                                    Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: isCorrect
+                                            ? const Color(0xFF10B981)
+                                            : isWrong
+                                                ? const Color(0xFFEF4444)
+                                                : Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.black, width: 2.0),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        letter,
+                                        style: GoogleFonts.bricolageGrotesque(
+                                          color: (isCorrect || isWrong) ? Colors.white : Colors.black,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        q.options[idx],
+                                        style: GoogleFonts.inter(
+                                          color: textCol,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    trailing,
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
+              ),
+            ),
+
+            // Shutter Submission Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: BrutalButton(
+                fullWidth: true,
+                onPressed: _pickedIndex == null ? null : _handleAnswer,
+                variant: _submitted ? BrutalButtonVariant.accent : BrutalButtonVariant.primary,
                 child: Text(
-                  _currentIndex < _questions.length - 1 ? 'Soal Berikutnya' : 'Lihat Hasil',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  _submitted
+                      ? (_currentIndex == _questions.length - 1 ? 'LIHAT HASIL' : 'LANJUT')
+                      : 'JAWAB',
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  void _showExitDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Keluar dari Quiz?', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('Progress quiz akan hilang jika kamu keluar sekarang.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Lanjutkan Quiz'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Keluar', style: TextStyle(color: AppColors.coralRed)),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Helper Widgets ────────────────────────────────────────────────────────
-
-/// Render gambar soal: network jika URL dimulai 'http', asset jika tidak.
-Widget _buildQuestionImage(String url, {double height = 200}) {
-  if (url.startsWith('http')) {
-    return Image.network(
-      url,
-      height: height,
-      fit: BoxFit.cover,
-      loadingBuilder: (_, child, progress) => progress == null
-          ? child
-          : SizedBox(
-              height: height,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.brandBlue,
-                  strokeWidth: 2,
-                ),
-              ),
-            ),
-      errorBuilder: (_, __, ___) => Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.cardBorder,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(
-          child: Icon(Icons.image_not_supported_rounded,
-              size: 48, color: AppColors.disabled),
+          ],
         ),
       ),
     );
   }
-  return Image.asset(
-    url,
-    height: height,
-    fit: BoxFit.cover,
-    errorBuilder: (_, __, ___) => Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.cardBorder,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Center(
-        child: Icon(Icons.image_not_supported_rounded,
-            size: 48, color: AppColors.disabled),
-      ),
-    ),
-  );
-}
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _InfoRow({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.secondaryText),
-        const SizedBox(width: 12),
-        Text(label, style: const TextStyle(fontSize: 15, color: AppColors.secondaryText, fontWeight: FontWeight.w500)),
-      ],
-    );
+  Widget _buildQuestionImage(String url) {
+    if (url.startsWith('http')) {
+      return Image.network(url, height: 180, width: double.infinity, fit: BoxFit.cover);
+    }
+    return Image.asset(url, height: 180, width: double.infinity, fit: BoxFit.cover);
   }
 }
 
-class _OptionCard extends StatelessWidget {
-  final String text;
-  final int index;
-  final int? selected;
-  final int correctIndex;
-  final VoidCallback? onTap;
+// ── Quiz Result Modal Dialog ────────────────────────────────────────────────
 
-  const _OptionCard({
-    required this.text,
-    required this.index,
-    required this.selected,
-    required this.correctIndex,
-    this.onTap,
+class _QuizResultModal extends StatelessWidget {
+  final int score;
+  final int total;
+  final bool passed;
+  final int xpReward;
+  final VoidCallback onActionPressed;
+
+  const _QuizResultModal({
+    required this.score,
+    required this.total,
+    required this.passed,
+    required this.xpReward,
+    required this.onActionPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color borderColor = AppColors.cardBorder;
-    Color bgColor = AppColors.surfaceWhite;
-    Color textColor = AppColors.bodyText;
-
-    if (selected != null) {
-      if (index == correctIndex) {
-        borderColor = AppColors.forestGreen;
-        bgColor = AppColors.forestGreen.withValues(alpha: 0.08);
-        textColor = AppColors.forestGreen;
-      } else if (index == selected) {
-        borderColor = AppColors.coralRed;
-        bgColor = AppColors.coralRed.withValues(alpha: 0.08);
-        textColor = AppColors.coralRed;
-      }
-    }
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: borderColor, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
-                  height: 1.4,
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.black, width: 2.0),
+              boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(6, 6))],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 64, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  passed ? 'Misi Quiz Selesai!' : 'Coba Lagi!',
+                  style: AppTextStyles.display.copyWith(fontSize: 24),
+                  textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 6),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: 'Skor kamu: ',
+                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.secondaryText, fontWeight: FontWeight.w500),
+                    children: [
+                      TextSpan(
+                        text: '$score/$total',
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // XP Reward Card (if passed)
+                if (passed) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.black, width: 2.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⭐', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 8),
+                        Text(
+                          '+$xpReward XP',
+                          style: GoogleFonts.bricolageGrotesque(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // Action button
+                BrutalButton(
+                  fullWidth: true,
+                  onPressed: onActionPressed,
+                  variant: BrutalButtonVariant.primary,
+                  child: Text(passed ? 'LANJUT' : 'ULANGI'),
+                ),
+              ],
+            ),
+          ),
+
+          // Floating Emoji Icon on top
+          Positioned(
+            top: -40,
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: passed ? const Color(0xFF34D399) : const Color(0xFFF87171), // emerald-400 or red-400
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.black, width: 2.0),
+                boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                passed ? '🎉' : '💪',
+                style: const TextStyle(fontSize: 32),
               ),
             ),
-            if (selected != null && index == correctIndex)
-              const Icon(Icons.check_circle_rounded, color: AppColors.forestGreen, size: 22),
-            if (selected != null && index == selected && index != correctIndex)
-              const Icon(Icons.cancel_rounded, color: AppColors.coralRed, size: 22),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

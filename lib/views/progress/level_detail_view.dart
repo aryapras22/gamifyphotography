@@ -1,13 +1,14 @@
-// lib/views/progress/level_detail_view.dart
-// TASK-04 (original) + TASK-M05 (multi-foto) + TASK-M06 (howToUseImage)
-
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // TASK-SVG-01
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_text_styles.dart';
 import '../../models/level_model.dart';
 import '../../view_models/level_view_model.dart';
-import '../quiz/pretest_view.dart';
+import '../../view_models/challenge_view_model.dart';
+import '../widgets/brutal_widgets.dart';
+import '../mission/custom_camera_view.dart';
 
 class LevelDetailView extends ConsumerStatefulWidget {
   final LevelConfig config;
@@ -21,11 +22,16 @@ class LevelDetailView extends ConsumerStatefulWidget {
 class _LevelDetailViewState extends ConsumerState<LevelDetailView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _activeTabIdx = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) return;
+      setState(() => _activeTabIdx = _tabController.index);
+    });
   }
 
   @override
@@ -34,9 +40,7 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
     super.dispose();
   }
 
-  /// Resolve MateriContent: prefer Firestore data, fallback to hardcoded
   MateriContent get _content {
-    // BUG-04: gunakan watch agar konten diperbarui saat state Firestore berubah
     final fsLevel = ref.watch(levelViewModelProvider.notifier)
         .getLevelContent(widget.config.levelNumber);
     if (fsLevel != null) {
@@ -47,154 +51,153 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
   }
 
   Future<void> _onComplete() async {
+    // 1. Mark completed
     await ref
         .read(levelViewModelProvider.notifier)
         .completeMaterialLevel(widget.config.levelNumber);
 
     if (!mounted) return;
 
-    final lvState = ref.read(levelViewModelProvider);
-    if (lvState.showPretest) {
-      ref.read(levelViewModelProvider.notifier).clearShowPretest();
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const PretestView()),
-      );
-    } else {
-      Navigator.of(context).pop();
-    }
+    // 2. Resolve moduleId
+    String moduleId = 'M${widget.config.levelNumber.toString().padLeft(2, '0')}';
+    final fsLevels = ref.read(levelViewModelProvider).firestoreLevels;
+    try {
+      final matched = fsLevels.firstWhere((l) => l.levelNumber == widget.config.levelNumber);
+      moduleId = matched.id;
+    } catch (_) {}
+
+    // 3. Show Level Complete success modal
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogCtx) => _LevelCompleteModal(
+        levelTitle: widget.config.title,
+        onActionPressed: () async {
+          // Close dialog
+          Navigator.pop(dialogCtx);
+          
+          // Pop detail page
+          if (mounted) Navigator.pop(context);
+
+          // Load challenge state and navigate to camera screen
+          await ref.read(challengeViewModelProvider.notifier).loadChallenge(moduleId);
+          if (mounted) {
+            context.push('/mission/challenge');
+          }
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final content = _content;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
-      appBar: AppBar(
-        backgroundColor: AppColors.surfaceWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.bodyText),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: AppColors.brandBg,
+      appBar: BrutalAppBar(
+        title: widget.config.title,
+        subtitle: 'Misi ${widget.config.levelNumber}',
+        onBackPressed: () => Navigator.of(context).pop(),
+      ),
+      body: SafeArea(
+        child: Column(
           children: [
-            Text(
-              'Level ${widget.config.levelNumber}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.secondaryText,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              widget.config.title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: AppColors.bodyText,
-              ),
-            ),
-          ],
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.brandBlue,
-          unselectedLabelColor: AppColors.secondaryText,
-          indicatorColor: AppColors.brandBlue,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-          tabs: const [
-            Tab(text: 'Pengertian'),
-            Tab(text: 'Cara Pakai'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _Page1(content: content),
-          _Page2(content: content, onComplete: _onComplete),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Shared image helper (TASK-M05) ────────────────────────────────────────
-
-/// Render satu gambar: network jika URL dimulai 'http', asset jika tidak.
-Widget buildLevelImage(String url, {double height = 220}) {
-  final bool isSvg =
-      url.toLowerCase().endsWith('.svg') || url.contains('.svg?');
-
-  if (url.startsWith('http')) {
-    if (isSvg) {
-      return SvgPicture.network(
-        url,
-        height: height,
-        fit: BoxFit.contain, // contain agar grid guide tidak terpotong
-        placeholderBuilder: (_) => SizedBox(
-          height: height,
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: AppColors.brandBlue,
-              strokeWidth: 2,
-            ),
-          ),
-        ),
-      );
-    }
-    return Image.network(
-      url,
-      height: height,
-      fit: BoxFit.cover,
-      loadingBuilder: (_, child, progress) => progress == null
-          ? child
-          : SizedBox(
-              height: height,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.brandBlue,
-                  strokeWidth: 2,
+            // Custom Neo-brutalist Tab Switcher
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.black, width: 2.0),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(2, 2))],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          _tabController.animateTo(0);
+                          setState(() => _activeTabIdx = 0);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _activeTabIdx == 0 ? Colors.black : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'PENGERTIAN',
+                            style: GoogleFonts.bricolageGrotesque(
+                              color: _activeTabIdx == 0 ? Colors.white : const Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          _tabController.animateTo(1);
+                          setState(() => _activeTabIdx = 1);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _activeTabIdx == 1 ? Colors.black : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            'CARA PAKAI',
+                            style: GoogleFonts.bricolageGrotesque(
+                              color: _activeTabIdx == 1 ? Colors.white : const Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-      errorBuilder: (_, __, ___) => _imagePlaceholder(height),
-    );
-  }
 
-  // Asset local
-  if (isSvg) {
-    return SvgPicture.asset(
-      url,
-      height: height,
-      fit: BoxFit.contain,
+            // Tab Pages Content
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _Page1(content: content),
+                  _Page2(
+                    content: content,
+                    levelNumber: widget.config.levelNumber,
+                    onComplete: _onComplete,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
-  return Image.asset(
-    url,
-    height: height,
-    fit: BoxFit.cover,
-    errorBuilder: (_, __, ___) => _imagePlaceholder(height),
-  );
 }
 
-Widget _imagePlaceholder(double height) => Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.cardBorder,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Center(
-        child: Icon(Icons.photo_library_rounded, size: 48, color: AppColors.disabled),
-      ),
-    );
-
-// ── Page 1: Pengertian + Referensi Foto (TASK-M05: multi-foto carousel) ──
+// ── Page 1: Pengertian ──────────────────────────────────────────────────────
 
 class _Page1 extends StatefulWidget {
   final MateriContent content;
+
   const _Page1({required this.content});
 
   @override
@@ -202,7 +205,7 @@ class _Page1 extends StatefulWidget {
 }
 
 class _Page1State extends State<_Page1> {
-  int _photoIndex = 0;
+  int _photoIdx = 0;
   late PageController _pageController;
 
   @override
@@ -222,261 +225,512 @@ class _Page1State extends State<_Page1> {
     final imageUrls = widget.content.allImageUrls;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Foto referensi (carousel jika > 1) ──
+          // Reference Image Carousel Card
           if (imageUrls.isNotEmpty) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: imageUrls.length == 1
-                  ? buildLevelImage(imageUrls.first)
-                  : SizedBox(
-                      height: 220,
+            BrutalCard(
+              padding: EdgeInsets.zero,
+              shadowColor: Colors.black,
+              child: Column(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                    child: SizedBox(
+                      height: 200,
                       child: PageView.builder(
                         controller: _pageController,
                         itemCount: imageUrls.length,
-                        onPageChanged: (i) => setState(() => _photoIndex = i),
-                        itemBuilder: (_, i) => buildLevelImage(imageUrls[i]),
+                        onPageChanged: (idx) => setState(() => _photoIdx = idx),
+                        itemBuilder: (context, idx) {
+                          final url = imageUrls[idx];
+                          if (url.startsWith('http')) {
+                            return Image.network(url, fit: BoxFit.cover);
+                          } else {
+                            return Image.asset(url, fit: BoxFit.cover);
+                          }
+                        },
                       ),
                     ),
-            ),
-            // Dot indicator (hanya jika > 1 foto)
-            if (imageUrls.length > 1) ...[
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(imageUrls.length, (i) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: _photoIndex == i ? 20 : 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: _photoIndex == i
-                          ? AppColors.brandBlue
-                          : AppColors.cardBorder,
-                      borderRadius: BorderRadius.circular(4),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(top: BorderSide(color: Colors.black, width: 2.0)),
                     ),
-                  );
-                }),
-              ),
-            ],
-            const SizedBox(height: 8),
-            Text(
-              'Foto referensi: ${widget.content.page1Title}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Foto referensi: ${widget.content.page1Title}',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: AppColors.secondaryText,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        if (imageUrls.length > 1)
+                          Row(
+                            children: List.generate(imageUrls.length, (idx) {
+                              final active = idx == _photoIdx;
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                                width: active ? 18 : 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: active ? Colors.black : const Color(0xFFCBD5E1),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                              );
+                            }),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
           ],
-          // Judul
-          Text(
-            widget.content.page1Title,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: AppColors.bodyText,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Deskripsi
-          Container(
+
+          // Title & Description
+          BrutalCard(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceWhite,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.cardBorder, width: 1.5),
-            ),
-            child: Text(
-              widget.content.page1Description,
-              style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.bodyText,
-                height: 1.7,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Text(
-                'Geser ke tab "Cara Pakai" untuk melanjutkan',
-                style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
-              ),
-              SizedBox(width: 4),
-              Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.secondaryText),
-            ],
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-}
-
-// ── Page 2: Kapan & Cara Menggunakan (TASK-M06: howToUseImage) ────────────
-
-class _Page2 extends StatelessWidget {
-  final MateriContent content;
-  final VoidCallback onComplete;
-
-  const _Page2({required this.content, required this.onComplete});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _SectionCard(
-            icon: Icons.calendar_today_rounded,
-            iconColor: AppColors.brandBlue,
-            title: 'Kapan Digunakan',
-            content: content.page2WhenToUse,
-          ),
-          const SizedBox(height: 16),
-          _SectionCard(
-            icon: Icons.tips_and_updates_rounded,
-            iconColor: AppColors.lensGold,
-            title: 'Cara Menggunakan',
-            content: content.page2HowToUse,
-            // TASK-M06: foto cara penggunaan dari Firestore
-            imageUrl: content.page2HowToUseImageUrl,
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton(
-            onPressed: onComplete,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.forestGreen,
-              foregroundColor: AppColors.surfaceWhite,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 0,
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.check_circle_rounded, size: 22),
-                SizedBox(width: 8),
                 Text(
-                  'Selesai & Lanjutkan',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  widget.content.page1Title,
+                  style: AppTextStyles.heading,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  widget.content.page1Description,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: AppColors.brandInk,
+                    height: 1.6,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+
+          // Slide Swipe Help Pill
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF9C3), // light yellow
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black, width: 2.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Geser ke tab Cara Pakai untuk melanjutkan ',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.black),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _SectionCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String content;
-  final String? imageUrl; // TASK-M06
+// ── Page 2: Cara Pakai ──────────────────────────────────────────────────────
 
-  const _SectionCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
+class _Page2 extends ConsumerWidget {
+  final MateriContent content;
+  final int levelNumber;
+  final VoidCallback onComplete;
+
+  const _Page2({
     required this.content,
-    this.imageUrl,
+    required this.levelNumber,
+    required this.onComplete,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cardBorder, width: 1.5),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Resolve moduleId
+    String moduleId = 'M${levelNumber.toString().padLeft(2, '0')}';
+    final fsLevels = ref.watch(levelViewModelProvider).firestoreLevels;
+    try {
+      final matched = fsLevels.firstWhere((l) => l.levelNumber == levelNumber);
+      moduleId = matched.id;
+    } catch (_) {}
+
+    final visualGuideUrl = content.page2HowToUseImageUrl;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          // InfoCard: Kapan Digunakan
+          _InfoCard(
+            title: 'Kapan Digunakan',
+            body: content.page2WhenToUse,
+            icon: Icons.calendar_today_rounded,
+            tint: const Color(0xFFF3E8FF), // bg-purple-100
+          ),
+          const SizedBox(height: 16),
+
+          // InfoCard: Cara Menggunakan
+          _InfoCard(
+            title: 'Cara Menggunakan',
+            body: content.page2HowToUse,
+            icon: Icons.tips_and_updates_rounded,
+            tint: const Color(0xFFFEF9C3), // bg-yellow-100
+          ),
+          const SizedBox(height: 24),
+
+          // Custom Camera visual guide box
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, size: 20, color: iconColor),
-              ),
-              const SizedBox(width: 12),
               Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.bodyText,
+                'PANDUAN KAMERA',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.secondaryText,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => CustomCameraView(
+                        moduleId: moduleId,
+                        visualGuideUrl: visualGuideUrl,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.black, width: 2.0),
+                    boxShadow: const [BoxShadow(color: AppColors.brandAccent, offset: Offset(4, 4))],
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: AspectRatio(
+                    aspectRatio: 9 / 16,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.black, width: 2.0),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFED7AA), Color(0xFFF472B6)], // orange-200 to pink-400
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          // Viewfinder 3x3 Grid Vector Overlay
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: _GuideGridPainter(),
+                            ),
+                          ),
+                          // Phone status bar icon
+                          const Positioned(
+                            top: 10,
+                            right: 10,
+                            child: Icon(Icons.smartphone_rounded, color: Colors.white60, size: 20),
+                          ),
+                          // Tap to practice helper overlay in the center
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.75),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white, width: 1.5),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.camera_alt_rounded, color: AppColors.brandAccent, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'TAP UNTUK MENCOBA',
+                                    style: GoogleFonts.bricolageGrotesque(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            content,
-            style: const TextStyle(
-              fontSize: 15,
-              color: AppColors.bodyText,
-              height: 1.7,
+          const SizedBox(height: 32),
+
+          // Finish Button
+          BrutalButton(
+            fullWidth: true,
+            onPressed: onComplete,
+            variant: BrutalButtonVariant.accent,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text('SELESAI & LANJUTKAN MISI '),
+                Icon(Icons.check_rounded, color: Colors.black, size: 16),
+              ],
             ),
           ),
-          // TASK-M06: tampilkan foto cara penggunaan jika ada, placeholder jika tidak
-          if (imageUrl != null && imageUrl!.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: buildLevelImage(imageUrl!, height: 200), // BUG-04: height 200
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final String body;
+  final IconData icon;
+  final Color tint;
+
+  const _InfoCard({
+    required this.title,
+    required this.body,
+    required this.icon,
+    required this.tint,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BrutalCard(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: tint,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.black, width: 2.0),
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Visual Guide Kamera',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.secondaryText,
-                fontStyle: FontStyle.italic,
-              ),
+            alignment: Alignment.center,
+            child: Icon(icon, color: Colors.black, size: 18),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.title.copyWith(fontSize: 15),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  body,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.brandInk,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
-          ] else ...[
-            // BUG-04: Placeholder jika SVG belum diupload admin
-            const SizedBox(height: 16),
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                color: AppColors.backgroundGray,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.image_not_supported_rounded, color: AppColors.disabled, size: 32),
-                    SizedBox(height: 8),
-                    Text('Visual guide belum tersedia',
-                        style: TextStyle(fontSize: 12, color: AppColors.secondaryText)),
-                  ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GuideGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = Colors.white.withOpacity(0.8)
+      ..strokeWidth = 1.0;
+
+    final circlePaint = Paint()
+      ..color = AppColors.brandAccent
+      ..style = PaintingStyle.fill;
+
+    final circleStroke = Paint()
+      ..color = Colors.black
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    final w = size.width;
+    final h = size.height;
+
+    // Draw 3x3 Grid
+    canvas.drawLine(Offset(w / 3, 0), Offset(w / 3, h), linePaint);
+    canvas.drawLine(Offset(w * 2 / 3, 0), Offset(w * 2 / 3, h), linePaint);
+    canvas.drawLine(Offset(0, h * 0.33), Offset(w, h * 0.33), linePaint);
+    canvas.drawLine(Offset(0, h * 0.67), Offset(w, h * 0.67), linePaint);
+
+    // Draw yellow dots at intersections
+    final points = [
+      Offset(w / 3, h * 0.33),
+      Offset(w * 2 / 3, h * 0.33),
+      Offset(w / 3, h * 0.67),
+      Offset(w * 2 / 3, h * 0.67),
+    ];
+
+    for (final pt in points) {
+      canvas.drawCircle(pt, 5.0, circlePaint);
+      canvas.drawCircle(pt, 5.0, circleStroke);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ── Success Dialog Modal ────────────────────────────────────────────────────
+
+class _LevelCompleteModal extends StatelessWidget {
+  final String levelTitle;
+  final VoidCallback onActionPressed;
+
+  const _LevelCompleteModal({
+    required this.levelTitle,
+    required this.onActionPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          // Main Container card
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: Colors.black, width: 2.0),
+              boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(6, 6))],
+            ),
+            padding: const EdgeInsets.fromLTRB(24, 64, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Misi Selesai!',
+                  style: AppTextStyles.display.copyWith(fontSize: 24),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    text: 'Kamu menguasai teknik ',
+                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.secondaryText),
+                    children: [
+                      TextSpan(
+                        text: levelTitle,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const TextSpan(text: '.'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // XP Reward Card
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandBg,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.black, width: 2.0),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⭐', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Text(
+                        '+100 XP',
+                        style: GoogleFonts.bricolageGrotesque(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Action button
+                BrutalButton(
+                  fullWidth: true,
+                  onPressed: onActionPressed,
+                  variant: BrutalButtonVariant.primary,
+                  child: const Text('PRAKTIK SEKARANG →'),
+                ),
+              ],
+            ),
+          ),
+
+          // Floating Trophy Icon on top
+          Positioned(
+            top: -40,
+            child: Transform.rotate(
+              angle: -0.1,
+              child: Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.brandAccent,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.black, width: 2.0),
+                  boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  Icons.emoji_events_rounded,
+                  color: Colors.black,
+                  size: 36,
                 ),
               ),
             ),
-          ],
+          ),
         ],
       ),
     );

@@ -184,7 +184,7 @@ class _QuizResultViewState extends ConsumerState<QuizResultView>
                 ),
                 child: Text(
                   _passed
-                      ? 'Level berikutnya sudah terbuka. Terus semangat belajar!'
+                      ? 'Misi berikutnya sudah terbuka. Terus semangat menyelesaikan misi!'
                       : 'Kamu perlu skor minimal ${widget.config.passingScore} untuk melanjutkan. Pelajari lagi materinya dan coba lagi!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -211,7 +211,7 @@ class _QuizResultViewState extends ConsumerState<QuizResultView>
                     elevation: 0,
                   ),
                   child: const Text(
-                    'Lanjut ke Level Berikutnya',
+                    'Lanjut ke Misi Berikutnya',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   ),
                 )
@@ -237,7 +237,7 @@ class _QuizResultViewState extends ConsumerState<QuizResultView>
                 TextButton(
                   onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
                   child: const Text(
-                    'Kembali ke Daftar Level',
+                    'Kembali ke Daftar Misi',
                     style: TextStyle(color: AppColors.secondaryText, fontWeight: FontWeight.w600),
                   ),
                 ),

@@ -1,14 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
+import '../widgets/brutal_widgets.dart';
 
 class CustomCameraView extends StatefulWidget {
   final String moduleId;
-  /// URL visual guide SVG dari Firestore (page2.howToUseImageUrl).
-  /// Jika null, fallback ke asset hardcoded.
   final String? visualGuideUrl;
 
   const CustomCameraView({
@@ -25,16 +26,18 @@ class _CustomCameraViewState extends State<CustomCameraView> {
   CameraController? _controller;
   List<CameraDescription>? cameras;
   bool _isInitialized = false;
+  int _selectedCameraIdx = 0;
+
+  // Temp captured state for redesign UX confirmation overlay
+  XFile? _tempCapturedFile;
 
   @override
   void initState() {
     super.initState();
-    // Set light status bar while in camera
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
     _initCamera();
   }
 
-  /// Fallback: hardcoded asset path jika Firestore URL tidak tersedia.
   String _getVisualGuideAsset(String moduleId) {
     switch (moduleId) {
       case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
@@ -51,18 +54,15 @@ class _CustomCameraViewState extends State<CustomCameraView> {
     }
   }
 
-  /// Build SVG overlay widget — prioritas: Firestore URL → asset lokal.
   Widget _buildVisualGuide() {
     final url = widget.visualGuideUrl;
     if (url != null && url.isNotEmpty && url.startsWith('http')) {
-      // Dari Firebase Storage
       return SvgPicture.network(
         url,
         fit: BoxFit.fill,
         placeholderBuilder: (_) => const SizedBox.shrink(),
       );
     }
-    // Fallback ke asset lokal
     return SvgPicture.asset(
       _getVisualGuideAsset(widget.moduleId),
       fit: BoxFit.fill,
@@ -74,7 +74,7 @@ class _CustomCameraViewState extends State<CustomCameraView> {
       cameras = await availableCameras();
       if (cameras != null && cameras!.isNotEmpty) {
         _controller = CameraController(
-          cameras![0],
+          cameras![_selectedCameraIdx],
           ResolutionPreset.high,
           enableAudio: false,
         );
@@ -88,9 +88,18 @@ class _CustomCameraViewState extends State<CustomCameraView> {
     }
   }
 
+  Future<void> _flipCamera() async {
+    if (cameras == null || cameras!.length < 2) return;
+    setState(() {
+      _isInitialized = false;
+      _selectedCameraIdx = (_selectedCameraIdx + 1) % cameras!.length;
+    });
+    _controller?.dispose();
+    await _initCamera();
+  }
+
   @override
   void dispose() {
-    // Restore dark status bar on exit
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     _controller?.dispose();
     super.dispose();
@@ -105,104 +114,251 @@ class _CustomCameraViewState extends State<CustomCameraView> {
       );
     }
 
-    final moduleName = widget.moduleId.toUpperCase();
+    final String moduleLabel = widget.moduleId == 'M03' ? 'Rule of Thirds' : widget.moduleId;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // ── Camera Preview ────────────────────────────────────
+          // ── Viewfinder Area ───────────────────────────────────
           Positioned.fill(
-            child: CameraPreview(_controller!),
+            child: _tempCapturedFile == null
+                ? CameraPreview(_controller!)
+                : Image.file(
+                    File(_tempCapturedFile!.path),
+                    fit: BoxFit.cover,
+                  ),
           ),
 
-          // ── SVG Overlay — dari Firestore atau fallback asset ──
-          Positioned.fill(
-            child: IgnorePointer(
-              child: AnimatedOpacity(
-                opacity: _isInitialized ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 600),
+          // ── Visual Grid overlay (only active during capture) ──
+          if (_tempCapturedFile == null)
+            Positioned.fill(
+              child: IgnorePointer(
                 child: Opacity(
                   opacity: 0.35,
                   child: _buildVisualGuide(),
                 ),
               ),
             ),
-          ),
 
-          // ── Floating Close Button (top-left) ──────────────────
+          // ── Top HUD bar ───────────────────────────────────────
           Positioned(
-            top: 48,
+            top: MediaQuery.of(context).padding.top + 8,
             left: 16,
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(null),
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Icon(Icons.close, color: Colors.white, size: 24),
-              ),
-            ),
-          ),
-
-          // ── Bottom HUD — Teknik label + Shutter ──────────────
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Column(
+            right: 16,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Technique name label
-                Text(
-                  moduleName,
-                  style: AppTextStyles.caption.copyWith(
-                    color: Colors.white70,
-                    letterSpacing: 1.2,
+                // Back button
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(null),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
                   ),
                 ),
-                const SizedBox(height: 16),
 
-                // Shutter button (≥72dp diameter)
-                Center(
-                  child: GestureDetector(
-                    onTap: () async {
-                      if (!_controller!.value.isTakingPicture) {
-                        try {
-                          final XFile file = await _controller!.takePicture();
-                          if (context.mounted) {
-                            Navigator.of(context).pop(file);
-                          }
-                        } catch (e) {
-                          debugPrint('Error taking picture: $e');
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.surfaceWhite,
-                        border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black45,
-                            blurRadius: 12,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                // Active Mission label pill
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 1.5),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'MISI',
+                        style: GoogleFonts.inter(
+                          fontSize: 8,
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
+                      const SizedBox(height: 2),
+                      Text(
+                        moduleLabel,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Visual guide mode label
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.brandAccent,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black, width: 2.0),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '3×3',
+                    style: GoogleFonts.bricolageGrotesque(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
                     ),
                   ),
                 ),
               ],
             ),
           ),
+
+          // ── Bottom HUD panel ──────────────────────────────────
+          if (_tempCapturedFile == null)
+            Positioned(
+              bottom: 40,
+              left: 32,
+              right: 32,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Dummy preview of last photos in gallery
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Colors.tealAccent, Colors.blueAccent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Shutter Button
+                  GestureDetector(
+                    onTap: () async {
+                      if (_controller!.value.isTakingPicture) return;
+                      try {
+                        final file = await _controller!.takePicture();
+                        setState(() => _tempCapturedFile = file);
+                      } catch (e) {
+                        debugPrint('Error taking picture: $e');
+                      }
+                    },
+                    child: Container(
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4.0),
+                      ),
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 62,
+                        height: 62,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Camera flip button
+                  GestureDetector(
+                    onTap: _flipCamera,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.4), width: 1.5),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.refresh_rounded, color: Colors.white, size: 24),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // Confirmation Card Overlay
+            Positioned(
+              bottom: 24,
+              left: 20,
+              right: 20,
+              child: BrutalCard(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'PREVIEW',
+                      style: GoogleFonts.inter(
+                        fontSize: 9,
+                        color: AppColors.secondaryText,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Foto Tersimpan!',
+                      style: AppTextStyles.heading,
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: BrutalButton(
+                            onPressed: () => setState(() => _tempCapturedFile = null),
+                            variant: BrutalButtonVariant.secondary,
+                            height: 44,
+                            child: const Text('AMBIL ULANG'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: BrutalButton(
+                            onPressed: () => Navigator.of(context).pop(_tempCapturedFile),
+                            variant: BrutalButtonVariant.accent,
+                            height: 44,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Icon(Icons.check_rounded, color: Colors.black, size: 16),
+                                SizedBox(width: 4),
+                                Text('GUNAKAN'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
-

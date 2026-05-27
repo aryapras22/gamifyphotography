@@ -7,8 +7,6 @@ import '../models/level_model.dart';
 import '../models/user_model.dart';
 import '../services/level_service.dart';
 import '../services/firestore_level_content_service.dart';
-// ignore: deprecated_member_use
-import '../core/level_content_data.dart';
 import '../providers/service_providers.dart';
 import 'auth_view_model.dart';
 
@@ -197,32 +195,21 @@ class LevelViewModel extends StateNotifier<LevelState> {
   /// Resolve konfigurasi level: merge Firestore data ke LevelConfig hardcoded.
   /// Firestore data digunakan untuk konten (page1/page2), hardcoded untuk struktur.
   List<LevelConfig> _resolveConfigs() {
-    // ignore: deprecated_member_use
-    final hardcoded = LevelContentData.levels;
-    if (state.firestoreLevels.isEmpty) return hardcoded;
-
-    return hardcoded.map((config) {
-      final fsLevel = getLevelContent(config.levelNumber);
-      if (fsLevel == null) return config;
-
-      // Merge: gunakan title dan passingScore dari Firestore jika tersedia
-      if (config.isMateri) {
-        final mergedContent = fsLevel.toMateriContent() ??
-            config.materiContent;
+    return state.firestoreLevels.map((fsLevel) {
+      if (fsLevel.isMateri) {
         return LevelConfig(
-          levelNumber: config.levelNumber,
-          title: fsLevel.title.isNotEmpty ? fsLevel.title : config.title,
-          type: config.type,
-          materiContent: mergedContent,
-          passingScore: config.passingScore,
+          levelNumber: fsLevel.levelNumber,
+          title: fsLevel.title,
+          type: fsLevel.type,
+          materiContent: fsLevel.toMateriContent(),
+          passingScore: fsLevel.passingScore,
         );
       }
-      // Quiz: title dari Firestore, soal tetap dari hardcoded (soal di-load terpisah)
       return LevelConfig(
-        levelNumber: config.levelNumber,
-        title: fsLevel.title.isNotEmpty ? fsLevel.title : config.title,
-        type: config.type,
-        questions: config.questions,
+        levelNumber: fsLevel.levelNumber,
+        title: fsLevel.title,
+        type: fsLevel.type,
+        questions: const [],
         passingScore: fsLevel.passingScore,
       );
     }).toList();
@@ -243,10 +230,7 @@ class LevelViewModel extends StateNotifier<LevelState> {
       final quizScore = quizScores[quizLevel.toString()] ?? 0;
       // Cek passingScore dari Firestore jika tersedia
       final fsLevel = getLevelContent(quizLevel);
-      final passingScore = fsLevel?.passingScore ??
-          // ignore: deprecated_member_use
-          LevelContentData.getLevel(quizLevel)?.passingScore ??
-          70;
+      final passingScore = fsLevel?.passingScore ?? 70;
       return quizScore >= passingScore;
     }
 
@@ -296,10 +280,7 @@ class LevelViewModel extends StateNotifier<LevelState> {
 
     // Cek passingScore dari Firestore atau fallback hardcoded
     final fsLevel = getLevelContent(levelNumber);
-    final passingScore = fsLevel?.passingScore ??
-        // ignore: deprecated_member_use
-        LevelContentData.getLevel(levelNumber)?.passingScore ??
-        70;
+    final passingScore = fsLevel?.passingScore ?? 70;
     final passed = score >= passingScore;
 
     state = state.copyWith(isLoading: true);

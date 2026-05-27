@@ -1,15 +1,17 @@
-// lib/views/home/main_layout_view.dart
-// Sprint UI — 3 tab layout: Home, Peringkat, Profil
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../home/home_view.dart';
 import '../crafting/crafting_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_progress_view.dart';
 import '../../view_models/auth_view_model.dart';
+import '../../view_models/mission_view_model.dart';
+import '../../view_models/challenge_view_model.dart';
 import '../../core/app_colors.dart';
 import '../../providers/submission_providers.dart';
+import '../../providers/service_providers.dart';
 import 'daily_login_view.dart';
 
 class MainLayoutView extends ConsumerStatefulWidget {
@@ -20,8 +22,6 @@ class MainLayoutView extends ConsumerStatefulWidget {
 }
 
 class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
-  int _currentIndex = 0;
-
   final List<Widget> _pages = [
     const HomeView(),
     const CraftingView(),
@@ -48,57 +48,189 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
     }
   }
 
+  Future<void> _launchCamera() async {
+    final missionState = ref.read(missionViewModelProvider);
+    String? activeModuleId;
+    try {
+      final active = missionState.activeModule ??
+          missionState.modules.firstWhere((m) => !m.isCompleted);
+      activeModuleId = active.id;
+    } catch (_) {
+      if (missionState.modules.isNotEmpty) {
+        activeModuleId = missionState.modules.first.id;
+      } else {
+        activeModuleId = 'M01';
+      }
+    }
+
+    // Load challenge and navigate to camera screen
+    await ref.read(challengeViewModelProvider.notifier).loadChallenge(activeModuleId);
+    if (mounted) {
+      context.push('/mission/challenge');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Keep the approval watcher alive across all tabs
     ref.watch(submissionApprovalWatcherProvider);
+    final currentIndex = ref.watch(mainLayoutIndexProvider);
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surfaceWhite,
-          border: Border(
-            top: BorderSide(color: AppColors.cardBorder, width: 1),
+      backgroundColor: AppColors.brandBg,
+      body: Stack(
+        children: [
+          // Content Stack with padding at the bottom so it's not hidden by BottomNav
+          Padding(
+            padding: const EdgeInsets.only(bottom: 76),
+            child: IndexedStack(
+              index: currentIndex,
+              children: _pages,
+            ),
           ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          selectedItemColor: AppColors.brandBlue,
-          unselectedItemColor: AppColors.disabled,
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          elevation: 0,
-          backgroundColor: AppColors.surfaceWhite,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded, size: 28),
-              label: 'Home',
+
+          // Floating Bottom Navigation Bar Overlay
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 16,
+            child: Center(
+              child: Container(
+                width: 342,
+                height: 64,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.black, width: 2.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Tab 1: Beranda (Home)
+                    Expanded(
+                      child: _TabItem(
+                        icon: Icons.home_filled,
+                        label: 'Beranda',
+                        isActive: currentIndex == 0,
+                        onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 0,
+                      ),
+                    ),
+                    // Tab 2: Kreasi (Crafting)
+                    Expanded(
+                      child: _TabItem(
+                        icon: Icons.handyman_rounded,
+                        label: 'Kreasi',
+                        isActive: currentIndex == 1,
+                        onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 1,
+                      ),
+                    ),
+
+                    // Camera Floating Raised Button
+                    GestureDetector(
+                      onTap: _launchCamera,
+                      child: Transform.translate(
+                        offset: const Offset(0, -16),
+                        child: Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AppColors.brandAccent,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white, width: 2.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.brandAccent.withOpacity(0.5),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.black,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 3: Peringkat (Leaderboard)
+                    Expanded(
+                      child: _TabItem(
+                        icon: Icons.emoji_events_rounded,
+                        label: 'Peringkat',
+                        isActive: currentIndex == 2,
+                        onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 2,
+                      ),
+                    ),
+                    // Tab 4: Profil (Profile)
+                    Expanded(
+                      child: _TabItem(
+                        icon: Icons.person_rounded,
+                        label: 'Profil',
+                        isActive: currentIndex == 3,
+                        onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.handyman_rounded, size: 28),
-              label: 'Crafting',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.emoji_events_rounded, size: 28),
-              label: 'Peringkat',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_rounded, size: 28),
-              label: 'Profil',
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
+class _TabItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _TabItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isActive ? AppColors.brandAccent : const Color(0xFF94A3B8); // slate-400
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 22,
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label.toUpperCase(),
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 8,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

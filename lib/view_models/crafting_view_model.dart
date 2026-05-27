@@ -56,9 +56,15 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
 
   void loadCraftingStatus() {
     final user = _ref.read(authViewModelProvider).currentUser;
+    final progress = user?.bridgeProgress ?? 0;
+    const itemCosts = [200, 150, 350, 500, 800, 1200];
+    final cost = progress < itemCosts.length ? itemCosts[progress] : 0;
     state = state.copyWith(
       currentPoints: user?.points ?? 0,
-      bridgeProgress: user?.bridgeProgress ?? 0,
+      bridgeProgress: progress,
+      maxBridgeSegments: itemCosts.length,
+      requiredPoints: cost,
+      craftingDone: progress >= itemCosts.length,
     );
   }
 
@@ -87,10 +93,15 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
         final currentUser = _ref.read(authViewModelProvider).currentUser;
         final needPosttest = justFinished && (currentUser?.posttestDone == false);
 
+        // Update the next required points
+        const itemCosts = [200, 150, 350, 500, 800, 1200];
+        final nextCost = newProgress < itemCosts.length ? itemCosts[newProgress] : 0;
+
         state = state.copyWith(
           craftingDone: justFinished,
           currentPoints: state.currentPoints - pointCost,
           bridgeProgress: newProgress,
+          requiredPoints: nextCost,
           isLoading: false,
           triggerPosttest: needPosttest,
         );

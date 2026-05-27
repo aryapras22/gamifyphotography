@@ -151,7 +151,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      _badge('Level ${module.order}'),
+                      _badge('Misi ${module.order}'),
                     ],
                   ),
                   _badge(

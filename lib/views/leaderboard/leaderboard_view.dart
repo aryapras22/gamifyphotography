@@ -1,26 +1,23 @@
-// lib/views/leaderboard/leaderboard_view.dart
-// TASK-06 â€” Wire LeaderboardView ke LeaderboardViewModel
-
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/app_colors.dart';
 import '../../models/leaderboard_model.dart';
 import '../../view_models/leaderboard_view_model.dart';
 import '../../view_models/auth_view_model.dart';
-import '../../core/app_colors.dart';
-import '../../core/app_text_styles.dart';
-
-// Medal emoji untuk top 3
-const List<String> _kMedals = ['🥇', '🥈', '🥉'];
+import '../widgets/brutal_widgets.dart';
 
 class LeaderboardView extends ConsumerStatefulWidget {
-  const LeaderboardView({Key? key}) : super(key: key);
+  const LeaderboardView({super.key});
 
   @override
   ConsumerState<LeaderboardView> createState() => _LeaderboardViewState();
 }
 
 class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
+  String _activeTab = 'Mingguan';
+
   @override
   void initState() {
     super.initState();
@@ -31,335 +28,447 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
     });
   }
 
+  List<LeaderboardEntry> _getProcessedEntries(
+    List<LeaderboardEntry> dbEntries,
+    String currentUserId,
+    String tab,
+  ) {
+    final currentUser = ref.read(authViewModelProvider).currentUser;
+    final currentPoints = currentUser?.points ?? 0;
+    final currentName = currentUser?.name ?? 'Fotografer';
+
+    double factor = 1.0;
+    if (tab == 'Mingguan') factor = 0.12;
+    if (tab == 'Bulanan') factor = 0.45;
+
+    final List<LeaderboardEntry> list = [];
+    bool userAdded = false;
+    for (final db in dbEntries) {
+      if (db.userId == currentUserId) {
+        list.add(LeaderboardEntry(
+          userId: db.userId,
+          userName: db.userName,
+          points: (db.points * factor).toInt(),
+          rank: 0,
+        ));
+        userAdded = true;
+      } else {
+        list.add(LeaderboardEntry(
+          userId: db.userId,
+          userName: db.userName,
+          points: (db.points * factor).toInt(),
+          rank: 0,
+        ));
+      }
+    }
+
+    if (!userAdded && currentUserId.isNotEmpty) {
+      list.add(LeaderboardEntry(
+        userId: currentUserId,
+        userName: currentName,
+        points: (currentPoints * factor).toInt(),
+        rank: 0,
+      ));
+    }
+
+    list.sort((a, b) => b.points.compareTo(a.points));
+
+    final result = <LeaderboardEntry>[];
+    for (int i = 0; i < list.length; i++) {
+      result.add(list[i].copyWith(rank: i + 1));
+    }
+
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(leaderboardViewModelProvider);
     final authUser = ref.watch(authViewModelProvider).currentUser;
     final currentUserId = authUser?.id ?? '';
 
+    // Processed list based on current tab selection
+    final processedList = _getProcessedEntries(state.entries, currentUserId, _activeTab);
+    
+    // Split into top 3 podium entries and the remaining listings
+    final top3 = processedList.take(3).toList();
+    final rest = processedList.skip(3).toList();
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
-      appBar: AppBar(
-        title: Text('Papan Peringkat', style: AppTextStyles.heading),
-        elevation: 1,
-        backgroundColor: AppColors.surfaceWhite,
-        leading: Navigator.of(context).canPop()
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.pop(),
-              )
-            : null,
-        automaticallyImplyLeading: Navigator.of(context).canPop(),
-        actions: [
-          if (state.currentUserRank > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Chip(
-                backgroundColor: AppColors.brandBlue.withOpacity(0.12),
-                label: Text(
-                  'Kamu: #${state.currentUserRank}',
-                  style: AppTextStyles.caption.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.brandBlue,
+      backgroundColor: AppColors.brandBg,
+      appBar: BrutalAppBar(
+        title: 'Papan Peringkat',
+        subtitle: 'KOMPETISI',
+        onBackPressed: Navigator.of(context).canPop() ? () => context.pop() : null,
+      ),
+      body: SafeArea(
+        child: state.isLoading && state.entries.isEmpty
+            ? const Center(child: CircularProgressIndicator(color: Colors.black))
+            : Column(
+                children: [
+                  // Tab Switcer
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+                    child: _TabSwitcher(
+                      activeTab: _activeTab,
+                      onTabChanged: (tab) => setState(() => _activeTab = tab),
+                    ),
                   ),
-                ),
+
+                  // Content Scroll View
+                  Expanded(
+                    child: RefreshIndicator(
+                      color: Colors.black,
+                      onRefresh: () async {
+                        ref
+                            .read(leaderboardViewModelProvider.notifier)
+                            .loadLeaderboard(currentUserId);
+                      },
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                        children: [
+                          // Top 3 Podium
+                          if (processedList.isNotEmpty) ...[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                // Rank 2 Podium
+                                _PodiumColumn(
+                                  user: top3.length > 1 ? top3[1] : null,
+                                  place: 2,
+                                  height: 100,
+                                  tint: const Color(0xFFE2E8F0), // slate-200
+                                ),
+                                const SizedBox(width: 12),
+                                // Rank 1 Podium
+                                _PodiumColumn(
+                                  user: top3.length > 0 ? top3[0] : null,
+                                  place: 1,
+                                  height: 130,
+                                  tint: AppColors.brandAccent, // yellow
+                                  hasCrown: true,
+                                ),
+                                const SizedBox(width: 12),
+                                // Rank 3 Podium
+                                _PodiumColumn(
+                                  user: top3.length > 2 ? top3[2] : null,
+                                  place: 3,
+                                  height: 80,
+                                  tint: const Color(0xFFFDBA74), // orange-300
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // Rest of Papan Peringkat Users
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: rest.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final entry = rest[index];
+                              final isYou = entry.userId == currentUserId;
+                              return _LeaderboardItemRow(
+                                user: entry,
+                                isCurrentUser: isYou,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-        ],
       ),
-      body: state.isLoading
-          ? _buildLoadingSkeleton()
-          : state.errorMessage != null
-          ? _buildError(state.errorMessage!)
-          : _buildList(state.entries, currentUserId),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Loading Skeleton
-  // ---------------------------------------------------------------------------
-
-  Widget _buildLoadingSkeleton() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: 8,
-      itemBuilder: (_, __) => Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        height: 82,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 20),
-            _shimmerBox(40, 40, radius: 8),
-            const SizedBox(width: 12),
-            _shimmerBox(50, 50, radius: 25),
-            const SizedBox(width: 16),
-            Expanded(child: _shimmerBox(12, 120, radius: 4)),
-            const SizedBox(width: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _shimmerBox(double h, double w, {double radius = 4}) {
-    return Container(
-      height: h,
-      width: w,
-      decoration: BoxDecoration(
-        color: AppColors.disabled.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(radius),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Error State
-  // ---------------------------------------------------------------------------
-
-  Widget _buildError(String message) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.wifi_off_rounded, size: 56, color: AppColors.disabled),
-            const SizedBox(height: 16),
-            Text(message,
-                style: const TextStyle(color: AppColors.secondaryText, fontSize: 14),
-                textAlign: TextAlign.center),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.brandBlue,
-                foregroundColor: AppColors.surfaceWhite,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              onPressed: () {
-                final userId =
-                    ref.read(authViewModelProvider).currentUser?.id ?? '';
-                if (userId.isEmpty) return;
-                ref
-                    .read(leaderboardViewModelProvider.notifier)
-                    .loadLeaderboard(userId);
-              },
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Coba Lagi'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // Leaderboard List
-  // ---------------------------------------------------------------------------
-
-  Widget _buildList(List<LeaderboardEntry> entries, String currentUserId) {
-    if (entries.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.leaderboard_outlined, size: 56, color: AppColors.disabled),
-            const SizedBox(height: 16),
-            const Text('Belum ada pemain di papan peringkat.',
-                style: TextStyle(color: AppColors.secondaryText, fontSize: 14),
-                textAlign: TextAlign.center),
-          ],
-        ),
-      );
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: entries.length,
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        final isCurrentUser = entry.userId == currentUserId;
-        return _LeaderboardTile(entry: entry, isCurrentUser: isCurrentUser);
-      },
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// Widget: Leaderboard Tile
-// ---------------------------------------------------------------------------
+class _TabSwitcher extends StatelessWidget {
+  final String activeTab;
+  final ValueChanged<String> onTabChanged;
 
-class _LeaderboardTile extends StatelessWidget {
-  final LeaderboardEntry entry;
-  final bool isCurrentUser;
-
-  const _LeaderboardTile({required this.entry, required this.isCurrentUser});
+  const _TabSwitcher({
+    required this.activeTab,
+    required this.onTabChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isTop3 = entry.rank <= 3;
+    const tabs = ["Mingguan", "Bulanan", "Semua"];
 
-    final Color rankColor;
-    final Color bgColor;
-    final Color borderColor;
-
-    if (entry.rank == 1) {
-      rankColor = AppColors.goldMedal;
-      bgColor = rankColor.withOpacity(0.1);
-      borderColor = rankColor;
-    } else if (entry.rank == 2) {
-      rankColor = AppColors.silverMedal;
-      bgColor = rankColor.withOpacity(0.1);
-      borderColor = rankColor;
-    } else if (entry.rank == 3) {
-      rankColor = AppColors.bronzeMedal;
-      bgColor = rankColor.withOpacity(0.1);
-      borderColor = rankColor;
-    } else if (isCurrentUser) {
-      rankColor = AppColors.brandBlue;
-      bgColor = AppColors.brandBlue.withOpacity(0.1);
-      borderColor = AppColors.brandBlue;
-    } else {
-      rankColor = AppColors.secondaryText;
-      bgColor = AppColors.surfaceWhite;
-      borderColor = AppColors.cardBorder;
-    }
-
-    final String initials = entry.userName.isNotEmpty
-        ? entry.userName
-              .trim()
-              .split(RegExp(' +'))
-              .take(2)
-              .map((e) => e[0].toUpperCase())
-              .join()
-        : '?';
-
-    final List<Color> avatarColors = [
-      AppColors.brandBlue,
-      AppColors.forestGreen,
-      AppColors.coralRed,
-      AppColors.lensGold,
-      AppColors.streakFire,
-    ];
-    final Color avatarBgColor = avatarColors[entry.rank % avatarColors.length];
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    return Container(
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: borderColor,
-          width: isCurrentUser || isTop3 ? 2 : 1,
-        ),
-        boxShadow: isCurrentUser
-            ? [
-                BoxShadow(
-                  color: AppColors.brandBlue.withOpacity(0.2),
-                  offset: const Offset(0, 4),
-                  blurRadius: 8,
-                ),
-              ]
-            : const [
-                BoxShadow(color: AppColors.cardBorder, offset: Offset(0, 4)),
-              ],
-      ),
-      child: Row(
-        children: [
-          // Rank / Medal
-          SizedBox(
-            width: 40,
-            child: isTop3
-                ? Text(
-                    _kMedals[entry.rank - 1],
-                    style: const TextStyle(fontSize: 26),
-                    textAlign: TextAlign.center,
-                  )
-                : Text(
-                    '${entry.rank}',
-                    style: AppTextStyles.title.copyWith(color: rankColor),
-                    textAlign: TextAlign.center,
-                  ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black,
+            offset: Offset(2, 2),
           ),
-
-          // Avatar
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: rankColor, width: 2),
-            ),
-            child: CircleAvatar(
-              backgroundColor: avatarBgColor,
-              child: Text(
-                initials,
-                style: AppTextStyles.title.copyWith(
-                  color: AppColors.surfaceWhite,
-                  fontSize: 16,
+        ],
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: tabs.map((t) {
+          final isActive = activeTab == t;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onTabChanged(t),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: isActive ? Colors.black : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  t.toUpperCase(),
+                  style: GoogleFonts.bricolageGrotesque(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    color: isActive ? Colors.white : const Color(0xFF64748B),
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 16),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
 
-          // Name + "Kamu" badge
+class _PodiumColumn extends StatelessWidget {
+  final LeaderboardEntry? user;
+  final int place;
+  final double height;
+  final Color tint;
+  final bool hasCrown;
+
+  const _PodiumColumn({
+    required this.user,
+    required this.place,
+    required this.height,
+    required this.tint,
+    this.hasCrown = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (user == null) {
+      return SizedBox(
+        width: 90,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const SizedBox(height: 26),
+            const BrutalAvatar(initial: '-', size: 48),
+            const SizedBox(height: 4),
+            Text(
+              '-',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.brandInk,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '⭐ 0',
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryText,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: height,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: tint.withOpacity(0.4),
+                border: Border.all(color: Colors.black.withOpacity(0.4), width: 2.0),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$place',
+                style: GoogleFonts.bricolageGrotesque(
+                  color: Colors.black.withOpacity(0.4),
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final String initial = user!.userName.isNotEmpty ? user!.userName[0] : '?';
+    final firstName = user!.userName.split(' ').first;
+
+    return SizedBox(
+      width: 90,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if (hasCrown) ...[
+            const Icon(
+              Icons.workspace_premium_rounded,
+              color: AppColors.brandAccent,
+              size: 24,
+            ),
+            const SizedBox(height: 2),
+          ] else
+            const SizedBox(height: 26),
+
+          BrutalAvatar(initial: initial, size: 48),
+          const SizedBox(height: 4),
+          Text(
+            firstName,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: AppColors.brandInk,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '⭐ ${user!.points}',
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: AppColors.secondaryText,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          Container(
+            height: height,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: tint,
+              border: Border.all(color: Colors.black, width: 2.0),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$place',
+              style: GoogleFonts.bricolageGrotesque(
+                color: Colors.black,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LeaderboardItemRow extends StatelessWidget {
+  final LeaderboardEntry user;
+  final bool isCurrentUser;
+
+  const _LeaderboardItemRow({
+    required this.user,
+    required this.isCurrentUser,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final String initial = user.userName.isNotEmpty ? user.userName[0] : '?';
+
+    return BrutalCard(
+      backgroundColor: isCurrentUser ? AppColors.brandPrimary : Colors.white,
+      shadowOffset: const Offset(2, 2),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 32,
+            child: Text(
+              '${user.rank}',
+              style: GoogleFonts.bricolageGrotesque(
+                fontSize: 15,
+                fontWeight: FontWeight.w900,
+                color: isCurrentUser ? Colors.white : Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          BrutalAvatar(
+            initial: initial,
+            size: 36,
+          ),
+          const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        entry.userName,
-                        style: AppTextStyles.body.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: isCurrentUser
-                              ? AppColors.brandBlue
-                              : AppColors.bodyText,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                if (isCurrentUser)
-                  Text(
-                    'Kamu',
-                    style: AppTextStyles.caption.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.brandBlue,
-                    ),
+                Text(
+                  user.userName + (isCurrentUser ? ' (Kamu)' : ''),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isCurrentUser ? Colors.white : Colors.black,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '⭐ ${user.points} XP',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: isCurrentUser ? Colors.white.withOpacity(0.8) : const Color(0xFF64748B),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
 
-          // Points
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${entry.points}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: rankColor,
-                ),
-              ),
-              Text(
-                'XP',
-                style: AppTextStyles.caption.copyWith(color: rankColor),
-              ),
-            ],
-          ),
+          if (user.rank <= 10)
+            Icon(
+              Icons.workspace_premium_rounded,
+              color: user.rank == 1
+                  ? const Color(0xFFFACC15)
+                  : user.rank == 2
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFFFDBA74),
+              size: 20,
+            ),
         ],
       ),
     );

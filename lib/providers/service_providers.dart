@@ -20,3 +20,5 @@ final levelServiceProvider = Provider<LevelService>((ref) => LevelService());
 final firestoreLevelContentServiceProvider =
     Provider<FirestoreLevelContentService>((ref) => FirestoreLevelContentService());
 
+final mainLayoutIndexProvider = StateProvider<int>((ref) => 0);
+final profileTabSubIndexProvider = StateProvider<int>((ref) => 0);

@@ -40,7 +40,7 @@ class _PretestViewState extends ConsumerState<PretestView> {
       widget.testType == TestType.pretest ? 'Pre-Test Fotografi' : 'Post-Test Fotografi';
 
   String get _subtitle => widget.testType == TestType.pretest
-      ? 'Tes awal untuk mengukur pengetahuan fotografi kamu sebelum belajar.'
+      ? 'Tes awal untuk mengukur pengetahuan fotografi kamu sebelum memulai misi.'
       : 'Tes akhir untuk mengukur perkembangan pengetahuan fotografi kamu.';
 
   @override
@@ -449,8 +449,8 @@ class _TestResultDialog extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             testType == TestType.pretest
-                ? 'Terima kasih! Hasil pre-test tersimpan. Sekarang kamu bisa melanjutkan belajar.'
-                : 'Terima kasih! Hasil post-test tersimpan. Perjalanan belajarmu sudah selesai!',
+                ? 'Terima kasih! Hasil pre-test tersimpan. Sekarang kamu bisa melanjutkan misi.'
+                : 'Terima kasih! Hasil post-test tersimpan. Perjalanan misimu sudah selesai!',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 14,

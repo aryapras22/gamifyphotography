@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../view_models/challenge_view_model.dart';
 import '../../view_models/mission_view_model.dart';
-import '../../view_models/level_view_model.dart'; // visual guide dari Firestore
+import '../../view_models/level_view_model.dart';
 import '../../providers/submission_providers.dart';
-import '../widgets/animated_3d_button.dart';
+import '../widgets/brutal_widgets.dart';
 import 'custom_camera_view.dart';
 import 'submission_status_view.dart';
 import 'dart:io';
@@ -30,7 +31,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
-            backgroundColor: AppColors.coralRed,
+            backgroundColor: AppColors.brandDanger,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -45,11 +46,10 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
         if (mounted) context.go('/home');
       });
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: AppColors.brandBlue)),
+        body: Center(child: CircularProgressIndicator(color: Colors.black)),
       );
     }
 
-    // Watch submission status to block camera when pending
     final submissionAsync = ref.watch(
       submissionStatusProvider(challenge.moduleId),
     );
@@ -61,7 +61,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
         challenge.uploadedPhotoUrl!.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundGray,
+      backgroundColor: AppColors.brandBg,
       body: SafeArea(
         child: Column(
           children: [
@@ -75,7 +75,7 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     child: const Icon(
                       Icons.close_rounded,
                       size: 32,
-                      color: AppColors.bodyText,
+                      color: AppColors.brandInk,
                     ),
                   ),
                   Expanded(
@@ -83,66 +83,55 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                       height: 16,
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: AppColors.cardBorder,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black, width: 2.0),
                       ),
                       child: FractionallySizedBox(
                         alignment: Alignment.centerLeft,
                         widthFactor: hasPhoto ? 1.0 : 0.5,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: AppColors.forestGreen,
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppColors.brandSuccess,
+                            borderRadius: BorderRadius.circular(6),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 32), // Balance
+                  const SizedBox(width: 32),
                 ],
               ),
             ),
+            
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: AppColors.cardBorder,
-                          width: 2,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.cardBorder,
-                            offset: Offset(0, 6),
-                          ),
-                        ],
-                      ),
+                    // Instruction Card
+                    BrutalCard(
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          const Text(
+                          Text(
                             'MISI KAMU:',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: AppColors.brandBlue,
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppColors.brandPrimary,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.2,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 8),
                           Text(
                             challenge.instruction,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 24,
+                            style: GoogleFonts.bricolageGrotesque(
+                              fontSize: 22,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.bodyText,
+                              color: AppColors.brandInk,
                             ),
                           ),
                         ],
@@ -152,13 +141,12 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
 
                     if (hasPhoto)
                       // ── DISPLAY DESIGN NOTE (SPR-011) ─────────────────────────────────────
-                      // User submissions are portrait photos (9:16). We display them at their
-                      // native ratio so the student and admin can assess the full composition:
-                      // horizon placement, subject framing, depth gradient to the edges.
-                      // BoxFit.cover and fixed heights are banned — they silently hide evidence.
-                      // ClipRRect removed — rounded corners misrepresent the photographic frame.
-                      // ─────────────────────────────────────────────────────────────────────
-                      SizedBox(
+                      // Native 9:16 aspect ratio box - BoxFit.contain - no clip - raw border
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2.0),
+                          boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                        ),
                         width: double.infinity,
                         child: AspectRatio(
                           aspectRatio: 9 / 16,
@@ -170,14 +158,8 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                                     if (progress == null) return child;
                                     return Container(
                                       color: AppColors.backgroundGray,
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          value: progress.expectedTotalBytes != null
-                                              ? progress.cumulativeBytesLoaded /
-                                                  progress.expectedTotalBytes!
-                                              : null,
-                                          color: AppColors.brandBlue,
-                                        ),
+                                      child: const Center(
+                                        child: CircularProgressIndicator(color: Colors.black),
                                       ),
                                     );
                                   },
@@ -197,7 +179,6 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                         onTap: isPending
                             ? null
                             : () async {
-                                // Cari visual guide URL dari Firestore
                                 final firestoreLevels = ref.read(levelViewModelProvider).firestoreLevels;
                                 String? visualGuideUrl;
                                 try {
@@ -206,7 +187,6 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                                   );
                                   visualGuideUrl = fsLevel.page2?.howToUseImageUrl;
                                 } catch (_) {
-                                  // Tidak ditemukan di state — fetch langsung dari Firestore (fallback)
                                   try {
                                     final doc = await FirebaseFirestore.instance.collection('modules').doc(challenge.moduleId).get();
                                     if (doc.exists) {
@@ -235,44 +215,31 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                                       .uploadPhoto(xfile);
                                 }
                               },
-                        child: Container(
-                          width: double.infinity,
-                          height: 250,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: AppColors.cardBorder,
-                              width: 2,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: AppColors.cardBorder,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
+                        child: BrutalCard(
+                          backgroundColor: Colors.white,
+                          height: 240,
                           child: isPending
                               ? Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     const Icon(Icons.hourglass_top_rounded,
-                                        size: 64, color: AppColors.lensGold),
-                                    const SizedBox(height: 16),
-                                    const Text(
+                                        size: 52, color: AppColors.brandAccent),
+                                    const SizedBox(height: 12),
+                                    Text(
                                       'MENUNGGU PENILAIAN',
-                                      style: TextStyle(
-                                        color: AppColors.lensGold,
+                                      style: GoogleFonts.bricolageGrotesque(
+                                        color: AppColors.brandAccent,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    const Text(
+                                    const SizedBox(height: 6),
+                                    Text(
                                       'Fotomu sedang ditinjau admin.',
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         color: AppColors.secondaryText,
-                                        fontSize: 13,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
@@ -282,13 +249,13 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     const Icon(Icons.camera_alt_rounded,
-                                        size: 80, color: AppColors.brandBlue),
-                                    const SizedBox(height: 16),
-                                    const Text(
+                                        size: 64, color: AppColors.brandPrimary),
+                                    const SizedBox(height: 12),
+                                    Text(
                                       'AMBIL FOTO',
-                                      style: TextStyle(
-                                        color: AppColors.brandBlue,
-                                        fontSize: 20,
+                                      style: GoogleFonts.bricolageGrotesque(
+                                        color: AppColors.brandPrimary,
+                                        fontSize: 18,
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
@@ -300,9 +267,8 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                     const SizedBox(height: 40),
 
                     if (isPending)
-                      Animated3DButton(
-                        color: AppColors.lensGold,
-                        shadowColor: const Color(0xFFB8860B),
+                      BrutalButton(
+                        variant: BrutalButtonVariant.accent,
                         onPressed: () {
                           final moduleTitle = ref
                                   .read(missionViewModelProvider)
@@ -319,42 +285,23 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                             ),
                           );
                         },
-                        child: const Text(
-                          'LIHAT STATUS FOTO →',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
+                        child: const Text('LIHAT STATUS FOTO →'),
                       )
                     else
-                      Animated3DButton(
-                        color: hasPhoto
-                            ? AppColors.forestGreen
-                            : AppColors.cardBorder,
-                        shadowColor: hasPhoto
-                            ? const Color(0xFF2D8A00)
-                            : const Color(0xFFC4C4C4),
+                      BrutalButton(
+                        variant: hasPhoto ? BrutalButtonVariant.accent : BrutalButtonVariant.secondary,
                         onPressed: hasPhoto && !state.isUploading
                             ? () {
                                 if (mounted) context.push('/mission/feedback');
                               }
                             : () {},
                         child: state.isUploading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : Text(
-                                'CEK HASIL',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w900,
-                                  color: hasPhoto
-                                      ? Colors.white
-                                      : AppColors.disabled,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.0),
+                              )
+                            : const Text('CEK HASIL'),
                       ),
                     const SizedBox(height: 40),
                   ],
@@ -383,13 +330,13 @@ class _PhotoErrorPlaceholder extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.broken_image_rounded,
-              size: 64, color: AppColors.disabled),
-          SizedBox(height: 12),
+              size: 56, color: AppColors.disabled),
+          SizedBox(height: 10),
           Text(
             'Gagal memuat foto',
             style: TextStyle(
               color: AppColors.secondaryText,
-              fontSize: 14,
+              fontSize: 13,
             ),
           ),
         ],
