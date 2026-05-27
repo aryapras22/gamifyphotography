@@ -49,7 +49,7 @@ class ChallengeService {
     final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
     final ref = FirebaseStorage.instance
         .ref()
-        .child('challenge_photos')
+        .child('photo_submissions')
         .child(uid)
         .child(fileName);
 

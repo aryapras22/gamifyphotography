@@ -59,4 +59,5 @@ class DefaultFirebaseOptions {
     projectId: 'gamify-photography',
     storageBucket: 'gamify-photography.firebasestorage.app',
   );
+
 }
