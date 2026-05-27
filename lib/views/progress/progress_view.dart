@@ -53,7 +53,7 @@ class _ProgressTabState extends ConsumerState<ProgressTab> {
       appBar: BrutalAppBar(
         title: 'Daftar Misi',
         subtitle: 'Petualangan Misi',
-        onBackPressed: () => ref.read(profileTabSubIndexProvider.notifier).state = 0,
+        onBackPressed: () => Navigator.of(context).pop(),
       ),
       body: SafeArea(
         child: lvState.isLoading && lvState.entries.isEmpty

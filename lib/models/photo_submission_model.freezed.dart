@@ -31,7 +31,10 @@ mixin _$PhotoSubmissionModel {
   String? get adminNote => throw _privateConstructorUsedError;
   int? get adminScore => throw _privateConstructorUsedError;
   DateTime get submittedAt => throw _privateConstructorUsedError;
-  DateTime? get reviewedAt => throw _privateConstructorUsedError;
+  DateTime? get reviewedAt =>
+      throw _privateConstructorUsedError; // Fields written by admin during review
+  String? get reviewedByUserId => throw _privateConstructorUsedError;
+  String? get reviewedByName => throw _privateConstructorUsedError;
 
   /// Serializes this PhotoSubmissionModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -62,6 +65,8 @@ abstract class $PhotoSubmissionModelCopyWith<$Res> {
     int? adminScore,
     DateTime submittedAt,
     DateTime? reviewedAt,
+    String? reviewedByUserId,
+    String? reviewedByName,
   });
 }
 
@@ -94,6 +99,8 @@ class _$PhotoSubmissionModelCopyWithImpl<
     Object? adminScore = freezed,
     Object? submittedAt = null,
     Object? reviewedAt = freezed,
+    Object? reviewedByUserId = freezed,
+    Object? reviewedByName = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -141,6 +148,14 @@ class _$PhotoSubmissionModelCopyWithImpl<
                 ? _value.reviewedAt
                 : reviewedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
+            reviewedByUserId: freezed == reviewedByUserId
+                ? _value.reviewedByUserId
+                : reviewedByUserId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            reviewedByName: freezed == reviewedByName
+                ? _value.reviewedByName
+                : reviewedByName // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -168,6 +183,8 @@ abstract class _$$PhotoSubmissionModelImplCopyWith<$Res>
     int? adminScore,
     DateTime submittedAt,
     DateTime? reviewedAt,
+    String? reviewedByUserId,
+    String? reviewedByName,
   });
 }
 
@@ -196,6 +213,8 @@ class __$$PhotoSubmissionModelImplCopyWithImpl<$Res>
     Object? adminScore = freezed,
     Object? submittedAt = null,
     Object? reviewedAt = freezed,
+    Object? reviewedByUserId = freezed,
+    Object? reviewedByName = freezed,
   }) {
     return _then(
       _$PhotoSubmissionModelImpl(
@@ -243,6 +262,14 @@ class __$$PhotoSubmissionModelImplCopyWithImpl<$Res>
             ? _value.reviewedAt
             : reviewedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
+        reviewedByUserId: freezed == reviewedByUserId
+            ? _value.reviewedByUserId
+            : reviewedByUserId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        reviewedByName: freezed == reviewedByName
+            ? _value.reviewedByName
+            : reviewedByName // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -263,6 +290,8 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
     this.adminScore,
     required this.submittedAt,
     this.reviewedAt,
+    this.reviewedByUserId,
+    this.reviewedByName,
   });
 
   factory _$PhotoSubmissionModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -291,10 +320,15 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
   final DateTime submittedAt;
   @override
   final DateTime? reviewedAt;
+  // Fields written by admin during review
+  @override
+  final String? reviewedByUserId;
+  @override
+  final String? reviewedByName;
 
   @override
   String toString() {
-    return 'PhotoSubmissionModel(id: $id, userId: $userId, userName: $userName, moduleId: $moduleId, moduleTitle: $moduleTitle, photoUrl: $photoUrl, status: $status, adminNote: $adminNote, adminScore: $adminScore, submittedAt: $submittedAt, reviewedAt: $reviewedAt)';
+    return 'PhotoSubmissionModel(id: $id, userId: $userId, userName: $userName, moduleId: $moduleId, moduleTitle: $moduleTitle, photoUrl: $photoUrl, status: $status, adminNote: $adminNote, adminScore: $adminScore, submittedAt: $submittedAt, reviewedAt: $reviewedAt, reviewedByUserId: $reviewedByUserId, reviewedByName: $reviewedByName)';
   }
 
   @override
@@ -320,7 +354,11 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
             (identical(other.submittedAt, submittedAt) ||
                 other.submittedAt == submittedAt) &&
             (identical(other.reviewedAt, reviewedAt) ||
-                other.reviewedAt == reviewedAt));
+                other.reviewedAt == reviewedAt) &&
+            (identical(other.reviewedByUserId, reviewedByUserId) ||
+                other.reviewedByUserId == reviewedByUserId) &&
+            (identical(other.reviewedByName, reviewedByName) ||
+                other.reviewedByName == reviewedByName));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -338,6 +376,8 @@ class _$PhotoSubmissionModelImpl implements _PhotoSubmissionModel {
     adminScore,
     submittedAt,
     reviewedAt,
+    reviewedByUserId,
+    reviewedByName,
   );
 
   /// Create a copy of PhotoSubmissionModel
@@ -371,6 +411,8 @@ abstract class _PhotoSubmissionModel implements PhotoSubmissionModel {
     final int? adminScore,
     required final DateTime submittedAt,
     final DateTime? reviewedAt,
+    final String? reviewedByUserId,
+    final String? reviewedByName,
   }) = _$PhotoSubmissionModelImpl;
 
   factory _PhotoSubmissionModel.fromJson(Map<String, dynamic> json) =
@@ -397,7 +439,11 @@ abstract class _PhotoSubmissionModel implements PhotoSubmissionModel {
   @override
   DateTime get submittedAt;
   @override
-  DateTime? get reviewedAt;
+  DateTime? get reviewedAt; // Fields written by admin during review
+  @override
+  String? get reviewedByUserId;
+  @override
+  String? get reviewedByName;
 
   /// Create a copy of PhotoSubmissionModel
   /// with the given fields replaced by the non-null parameter values.

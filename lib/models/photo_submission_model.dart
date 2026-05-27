@@ -17,6 +17,9 @@ class PhotoSubmissionModel with _$PhotoSubmissionModel {
     int? adminScore,
     required DateTime submittedAt,
     DateTime? reviewedAt,
+    // Fields written by admin during review
+    String? reviewedByUserId,
+    String? reviewedByName,
   }) = _PhotoSubmissionModel;
 
   factory PhotoSubmissionModel.fromJson(Map<String, dynamic> json) =>

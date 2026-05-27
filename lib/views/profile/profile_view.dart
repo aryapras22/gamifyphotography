@@ -8,7 +8,9 @@ import '../../core/app_text_styles.dart';
 import '../../view_models/profile_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../models/badge_model.dart';
+import '../../models/photo_submission_model.dart';
 import '../../providers/service_providers.dart';
+import '../../providers/submission_providers.dart';
 import '../widgets/brutal_widgets.dart';
 
 class ProfileTab extends ConsumerStatefulWidget {
@@ -433,6 +435,20 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                 ),
                 const SizedBox(height: 36),
 
+                // Submission History Section
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Riwayat Submisi',
+                      style: AppTextStyles.title.copyWith(fontSize: 18),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const _SubmissionHistoryList(),
+                const SizedBox(height: 36),
+
                 // Logout button
                 BrutalButton(
                   fullWidth: true,
@@ -503,6 +519,219 @@ class _ProfileStatBlock extends StatelessWidget {
               fontSize: 9,
               color: textColor.withOpacity(0.7),
               fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Submission History List ──────────────────────────────────────────────────
+
+class _SubmissionHistoryList extends ConsumerWidget {
+  const _SubmissionHistoryList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(submissionHistoryProvider);
+
+    return historyAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2)),
+      ),
+      error: (_, __) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: Text(
+            'Gagal memuat riwayat submisi.',
+            style: GoogleFonts.inter(fontSize: 12, color: AppColors.secondaryText),
+          ),
+        ),
+      ),
+      data: (submissions) {
+        if (submissions.isEmpty) {
+          return BrutalCard(
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+            child: Column(
+              children: [
+                const Icon(Icons.camera_alt_outlined, size: 40, color: Color(0xFFCBD5E1)),
+                const SizedBox(height: 10),
+                Text(
+                  'Belum ada submisi foto.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.secondaryText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Selesaikan misi dan kirim fotomu!',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: const Color(0xFF94A3B8),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: submissions.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          itemBuilder: (context, index) {
+            final sub = submissions[index];
+            return _SubmissionHistoryCard(submission: sub);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _SubmissionHistoryCard extends StatelessWidget {
+  final PhotoSubmissionModel submission;
+
+  const _SubmissionHistoryCard({required this.submission});
+
+  Color get _statusColor {
+    switch (submission.status) {
+      case 'approved':
+        return AppColors.brandSuccess;
+      case 'rejected':
+        return AppColors.brandDanger;
+      default:
+        return AppColors.brandAccent;
+    }
+  }
+
+  IconData get _statusIcon {
+    switch (submission.status) {
+      case 'approved':
+        return Icons.check_circle_rounded;
+      case 'rejected':
+        return Icons.cancel_rounded;
+      default:
+        return Icons.hourglass_top_rounded;
+    }
+  }
+
+  String get _statusLabel {
+    switch (submission.status) {
+      case 'approved':
+        return 'Disetujui';
+      case 'rejected':
+        return 'Ditolak';
+      default:
+        return 'Menunggu';
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BrutalCard(
+      padding: EdgeInsets.zero,
+      child: Row(
+        children: [
+          // Thumbnail
+          ClipRRect(
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(14),
+              bottomLeft: Radius.circular(14),
+            ),
+            child: SizedBox(
+              width: 72,
+              height: 72,
+              child: Image.network(
+                submission.photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFFF1F5F9),
+                  child: const Icon(Icons.broken_image_rounded, color: Color(0xFFCBD5E1), size: 28),
+                ),
+              ),
+            ),
+          ),
+          // Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    submission.moduleTitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatDate(submission.submittedAt),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: AppColors.secondaryText,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Status + Score
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: _statusColor, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_statusIcon, size: 12, color: _statusColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        _statusLabel,
+                        style: GoogleFonts.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: _statusColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (submission.adminScore != null && submission.status == 'approved') ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Skor: ${submission.adminScore}',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.brandPrimary,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

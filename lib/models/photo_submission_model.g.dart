@@ -22,6 +22,8 @@ _$PhotoSubmissionModelImpl _$$PhotoSubmissionModelImplFromJson(
   reviewedAt: json['reviewedAt'] == null
       ? null
       : DateTime.parse(json['reviewedAt'] as String),
+  reviewedByUserId: json['reviewedByUserId'] as String?,
+  reviewedByName: json['reviewedByName'] as String?,
 );
 
 Map<String, dynamic> _$$PhotoSubmissionModelImplToJson(
@@ -38,4 +40,6 @@ Map<String, dynamic> _$$PhotoSubmissionModelImplToJson(
   'adminScore': instance.adminScore,
   'submittedAt': instance.submittedAt.toIso8601String(),
   'reviewedAt': instance.reviewedAt?.toIso8601String(),
+  'reviewedByUserId': instance.reviewedByUserId,
+  'reviewedByName': instance.reviewedByName,
 };

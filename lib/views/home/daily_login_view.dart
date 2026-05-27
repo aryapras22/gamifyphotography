@@ -7,7 +7,7 @@ import '../../view_models/daily_login_view_model.dart';
 import '../../services/daily_login_service.dart';
 import '../widgets/brutal_widgets.dart';
 
-const List<String> _kDays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+const List<String> _kDays = ['1', '2', '3', '4', '5', '6', '7'];
 
 Future<void> showDailyLoginSheet(
   BuildContext context,
@@ -36,13 +36,6 @@ class _DailyCheckInSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dailyLoginViewModelProvider);
-
-    // Calculate active day index:
-    // If hasClaimed is true, active day index is currentStreak - 1. But sheet only opens if NOT claimed today.
-    // So today index is exactly currentStreak.
-    final todayIdx = state.hasClaimed
-        ? (state.currentStreak - 1).clamp(0, 6)
-        : state.currentStreak.clamp(0, 6);
 
     return Container(
       decoration: const BoxDecoration(
@@ -108,12 +101,15 @@ class _DailyCheckInSheet extends ConsumerWidget {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: List.generate(7, (i) {
-                        final isClaimed = i < state.weekHistory.length && state.weekHistory[i];
-                        final isToday = i == todayIdx;
+                        // Days 0..currentStreak-1 are completed (checkmark)
+                        // Day at index currentStreak is "today" (star) if not yet claimed
+                        final dayNumber = i + 1;
+                        final isClaimed = dayNumber <= state.currentStreak;
+                        final isToday = !state.hasClaimed && dayNumber == state.currentStreak + 1;
 
                         Color boxBg = const Color(0xFFF8FAFC);
                         Widget boxChild = Text(
-                          '${i + 1}',
+                          '${dayNumber}',
                           style: GoogleFonts.bricolageGrotesque(
                             color: const Color(0xFF94A3B8), // slate-400
                             fontSize: 12,
@@ -132,9 +128,9 @@ class _DailyCheckInSheet extends ConsumerWidget {
                         return Column(
                           children: [
                             Text(
-                              _kDays[i].toUpperCase(),
+                              'HARI ${_kDays[i]}',
                               style: GoogleFonts.inter(
-                                fontSize: 9,
+                                fontSize: 8,
                                 fontWeight: FontWeight.w900,
                                 color: AppColors.secondaryText,
                               ),

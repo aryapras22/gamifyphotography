@@ -87,26 +87,29 @@ class DailyLoginService {
     return List<bool>.from(data['weekHistory']);
   }
 
-  /// BUG-02: Update loginStreak berdasarkan hari kalender.
-  /// Menyimpan `loginStreak` (int) dan `lastLoginDate` (string "YYYY-MM-DD").
-  /// - Hari yang sama: skip (tidak update)
+  /// Update streakCount berdasarkan hari kalender saat login.
+  /// Canonical field: `streakCount` (int) + `lastLoginAt` (Timestamp).
+  /// - Hari yang sama : skip (tidak update)
   /// - Hari berikutnya: streak + 1
   /// - Lebih dari 1 hari absen: streak reset ke 1
+  ///
+  /// Note: field lama `loginStreak` dan `lastLoginDate` tidak lagi ditulis.
+  /// Firestore rules memperbolehkan owner mengupdate `streakCount` dan `lastLoginAt`.
   Future<void> updateLoginStreak(String userId) async {
     final doc = await _userRef(userId).get() as DocumentSnapshot<Map<String, dynamic>>;
     final data = doc.data() ?? {};
 
     final today = DateTime.now();
-    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
 
-    final lastLoginDate = data['lastLoginDate'] as String?;
-    int currentStreak = (data['loginStreak'] as num?)?.toInt() ?? 0;
+    // Baca dari lastLoginAt (Timestamp) — satu-satunya sumber kebenaran
+    final lastTs = data['lastLoginAt'];
+    int currentStreak = (data['streakCount'] as num?)?.toInt() ?? 0;
 
-    if (lastLoginDate == null) {
+    if (lastTs == null) {
       // Login pertama kali
       currentStreak = 1;
     } else {
-      final last = DateTime.parse(lastLoginDate);
+      final last = (lastTs as Timestamp).toDate();
       final diffDays = today.difference(DateTime(last.year, last.month, last.day)).inDays;
 
       if (diffDays == 0) {
@@ -122,8 +125,8 @@ class DailyLoginService {
     }
 
     await _userRef(userId).update({
-      'loginStreak': currentStreak,
-      'lastLoginDate': todayStr,
+      'streakCount': currentStreak,
+      'lastLoginAt': Timestamp.fromDate(today),
     });
   }
 

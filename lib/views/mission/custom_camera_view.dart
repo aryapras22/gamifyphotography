@@ -11,11 +11,15 @@ import '../widgets/brutal_widgets.dart';
 class CustomCameraView extends StatefulWidget {
   final String moduleId;
   final String? visualGuideUrl;
+  /// When true, the camera is in practice mode — photos are saved to gallery
+  /// and not returned for mission submission.
+  final bool isPracticeMode;
 
   const CustomCameraView({
     super.key,
     required this.moduleId,
     this.visualGuideUrl,
+    this.isPracticeMode = false,
   });
 
   @override
@@ -30,6 +34,22 @@ class _CustomCameraViewState extends State<CustomCameraView> {
 
   // Temp captured state for redesign UX confirmation overlay
   XFile? _tempCapturedFile;
+
+  // Practice mode: index for switching between SVG templates
+  int _currentGuideIndex = 0;
+
+  static const _practiceGuides = [
+    ('Rule of Thirds', 'assets/images/visual_guides/01_rule_of_thirds.svg'),
+    ('Leading Lines', 'assets/images/visual_guides/02_leading_lines.svg'),
+    ('Framing', 'assets/images/visual_guides/03_framing.svg'),
+    ('Symmetry', 'assets/images/visual_guides/04_symmetry.svg'),
+    ('Golden Triangle', 'assets/images/visual_guides/05_golden_triangle.svg'),
+    ('Negative Space', 'assets/images/visual_guides/06_negative_space.svg'),
+    ('Rule of Odds', 'assets/images/visual_guides/07_rule_of_odds.svg'),
+    ('Depth of Field', 'assets/images/visual_guides/08_depth_of_field.svg'),
+    ('Point of View', 'assets/images/visual_guides/09_point_of_view.svg'),
+    ('Center Dominance', 'assets/images/visual_guides/10_center_dominance.svg'),
+  ];
 
   @override
   void initState() {
@@ -55,6 +75,12 @@ class _CustomCameraViewState extends State<CustomCameraView> {
   }
 
   Widget _buildVisualGuide() {
+    // In practice mode, use the switchable template
+    if (widget.isPracticeMode) {
+      final (_, assetPath) = _practiceGuides[_currentGuideIndex];
+      return SvgPicture.asset(assetPath, fit: BoxFit.fill);
+    }
+
     final url = widget.visualGuideUrl;
     if (url != null && url.isNotEmpty && url.startsWith('http')) {
       return SvgPicture.network(
@@ -114,7 +140,9 @@ class _CustomCameraViewState extends State<CustomCameraView> {
       );
     }
 
-    final String moduleLabel = widget.moduleId == 'M03' ? 'Rule of Thirds' : widget.moduleId;
+    final String moduleLabel = widget.isPracticeMode
+        ? _practiceGuides[_currentGuideIndex].$1
+        : (widget.moduleId == 'M03' ? 'Rule of Thirds' : widget.moduleId);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -197,23 +225,34 @@ class _CustomCameraViewState extends State<CustomCameraView> {
                   ),
                 ),
 
-                // Visual guide mode label
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.brandAccent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.black, width: 2.0),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    '3×3',
-                    style: GoogleFonts.bricolageGrotesque(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.black,
+                // Visual guide mode label / template switcher
+                GestureDetector(
+                  onTap: widget.isPracticeMode
+                      ? () {
+                          setState(() {
+                            _currentGuideIndex = (_currentGuideIndex + 1) % _practiceGuides.length;
+                          });
+                        }
+                      : null,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.brandAccent,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black, width: 2.0),
                     ),
+                    alignment: Alignment.center,
+                    child: widget.isPracticeMode
+                        ? const Icon(Icons.swap_horiz_rounded, color: Colors.black, size: 20)
+                        : Text(
+                            '3×3',
+                            style: GoogleFonts.bricolageGrotesque(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -338,15 +377,30 @@ class _CustomCameraViewState extends State<CustomCameraView> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: BrutalButton(
-                            onPressed: () => Navigator.of(context).pop(_tempCapturedFile),
+                            onPressed: () {
+                              if (widget.isPracticeMode) {
+                                // Practice mode: photo stays on device, show success
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Foto tersimpan di perangkat! 📸'),
+                                    backgroundColor: AppColors.brandSuccess,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                                setState(() => _tempCapturedFile = null);
+                              } else {
+                                // Mission mode: return XFile for submission
+                                Navigator.of(context).pop(_tempCapturedFile);
+                              }
+                            },
                             variant: BrutalButtonVariant.accent,
                             height: 44,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Icon(Icons.check_rounded, color: Colors.black, size: 16),
-                                SizedBox(width: 4),
-                                Text('GUNAKAN'),
+                              children: [
+                                const Icon(Icons.check_rounded, color: Colors.black, size: 16),
+                                const SizedBox(width: 4),
+                                Text(widget.isPracticeMode ? 'SIMPAN' : 'GUNAKAN'),
                               ],
                             ),
                           ),

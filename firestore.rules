@@ -2,47 +2,121 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAuthenticated() { return request.auth != null; }
-    function isOwner(uid) { return request.auth.uid == uid; }
-    function isAdmin() {
-      return isAuthenticated() &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    // ── Helper functions ────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function callerRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && callerRole() == 'admin';
+    }
+
+    // Jury can read submissions and users but cannot write game data
+    function isJury() {
+      return isAuthenticated() && callerRole() == 'jury';
+    }
+
+    function isAdminOrJury() {
+      return isAdmin() || isJury();
+    }
+
+    // ── Users ───────────────────────────────────────────────────────────────
+
     match /users/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
+      // Any authenticated user can read user docs (needed for leaderboard)
+      allow read: if isAuthenticated();
+
+      // New user doc created at registration — role must be 'user'
       allow create: if isAuthenticated() && isOwner(uid)
         && request.resource.data.role == 'user';
+
+      // Owner can update own game-progress fields; cannot change role or email
       allow update: if isOwner(uid)
         && !request.resource.data.diff(resource.data)
             .affectedKeys().hasAny(['role', 'email']);
+
+      // Admin can update role field only
+      allow update: if isAdmin();
+
       allow delete: if false;
+
+      // ── Badges subcollection ─────────────────────────────────────────────
+      // Written by Flutter (BadgeService.persistNewBadges) and read by admin.
+      match /badges/{badgeId} {
+        allow read: if isOwner(uid) || isAdminOrJury();
+        allow write: if isOwner(uid);
+      }
+
+      // ── Daily logins subcollection ───────────────────────────────────────
+      match /daily_logins/{loginId} {
+        allow read: if isOwner(uid) || isAdminOrJury();
+        allow write: if isOwner(uid);
+      }
     }
 
+    // ── Modules (levels) ────────────────────────────────────────────────────
+    // Read-only for authenticated users; write restricted to admin.
+
+    match /modules/{moduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+
+      match /questions/{questionId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin();
+      }
+    }
+
+    // ── Pretest questions ────────────────────────────────────────────────────
+
+    match /pretest_questions/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ── Photo submissions ────────────────────────────────────────────────────
+
     match /photo_submissions/{id} {
+      // Owner or admin/jury can read
       allow read: if isAuthenticated()
-        && (resource.data.userId == request.auth.uid || isAdmin());
+        && (resource.data.userId == request.auth.uid || isAdminOrJury());
+
+      // User submits their own photo with status 'pending'
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == 'pending';
-      allow update: if isAdmin()
+
+      // Admin or jury can update review fields only
+      allow update: if isAdminOrJury()
         && request.resource.data.diff(resource.data)
-            .affectedKeys().hasOnly(['status', 'adminNote', 'reviewedAt', 'adminScore',
-                                     'reviewedByUserId', 'reviewedByName']);
+            .affectedKeys().hasOnly([
+              'status', 'adminNote', 'reviewedAt', 'adminScore',
+              'reviewedByUserId', 'reviewedByName'
+            ]);
+
       allow delete: if false;
     }
 
-    // TASK-10 — Quiz Results (pretest, posttest, quiz evaluasi)
+    // ── Quiz results ─────────────────────────────────────────────────────────
+
     match /quiz_results/{docId} {
-      // User bisa write data miliknya sendiri
+      // User writes their own result
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid;
 
-      // User bisa read hasil quiz miliknya; admin bisa read semua
+      // User reads own results; admin/jury reads all
       allow read: if isAuthenticated()
-        && (resource.data.userId == request.auth.uid || isAdmin());
+        && (resource.data.userId == request.auth.uid || isAdminOrJury());
 
-      // Tidak ada update/delete
       allow update: if false;
       allow delete: if false;
     }

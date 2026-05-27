@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../home/home_view.dart';
 import '../crafting/crafting_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_progress_view.dart';
+import '../mission/custom_camera_view.dart';
 import '../../view_models/auth_view_model.dart';
-import '../../view_models/mission_view_model.dart';
-import '../../view_models/challenge_view_model.dart';
 import '../../core/app_colors.dart';
 import '../../providers/submission_providers.dart';
 import '../../providers/service_providers.dart';
@@ -49,25 +47,18 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   }
 
   Future<void> _launchCamera() async {
-    final missionState = ref.read(missionViewModelProvider);
-    String? activeModuleId;
-    try {
-      final active = missionState.activeModule ??
-          missionState.modules.firstWhere((m) => !m.isCompleted);
-      activeModuleId = active.id;
-    } catch (_) {
-      if (missionState.modules.isNotEmpty) {
-        activeModuleId = missionState.modules.first.id;
-      } else {
-        activeModuleId = 'M01';
-      }
-    }
-
-    // Load challenge and navigate to camera screen
-    await ref.read(challengeViewModelProvider.notifier).loadChallenge(activeModuleId);
-    if (mounted) {
-      context.push('/mission/challenge');
-    }
+    // Practice camera — not tied to any mission submission.
+    // Opens camera with visual guide overlay for learning purposes.
+    // Photos are saved to the user's personal gallery only.
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const CustomCameraView(
+          moduleId: 'practice',
+          visualGuideUrl: null,
+          isPracticeMode: true,
+        ),
+      ),
+    );
   }
 
   @override

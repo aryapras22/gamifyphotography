@@ -1,6 +1,7 @@
 // lib/services/badge_service.dart
-// TASK-03 — BadgeService (Mock)
+// TASK-03 — BadgeService
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/badge_model.dart';
 
 class BadgeService {
@@ -98,6 +99,49 @@ class BadgeService {
     }
 
     return newBadges;
+  }
+
+  /// Persist badge yang baru di-unlock ke Firestore.
+  ///
+  /// Menulis ke DUA tempat secara atomik (batch):
+  ///   1. `users/{uid}.earnedBadgeIds` — array field (dibaca Flutter)
+  ///   2. `users/{uid}/badges/{badgeId}` — subcollection (dibaca admin)
+  ///
+  /// Idempotent: aman dipanggil berkali-kali untuk badge yang sama.
+  Future<void> persistNewBadges({
+    required String userId,
+    required List<BadgeModel> newBadges,
+  }) async {
+    if (newBadges.isEmpty) return;
+
+    final db = FirebaseFirestore.instance;
+    final userRef = db.collection('users').doc(userId);
+    final batch = db.batch();
+
+    // 1. Append badge IDs to the earnedBadgeIds array on the user doc
+    batch.update(userRef, {
+      'earnedBadgeIds': FieldValue.arrayUnion(
+        newBadges.map((b) => b.id).toList(),
+      ),
+    });
+
+    // 2. Write each badge as a document in the badges subcollection
+    for (final badge in newBadges) {
+      final badgeRef = userRef.collection('badges').doc(badge.id);
+      batch.set(
+        badgeRef,
+        {
+          'id': badge.id,
+          'title': badge.title,
+          'description': badge.description,
+          'iconPath': badge.iconPath,
+          'earnedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true), // idempotent — won't overwrite earnedAt if already set
+      );
+    }
+
+    await batch.commit();
   }
 
   // ---------------------------------------------------------------------------

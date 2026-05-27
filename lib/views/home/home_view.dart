@@ -13,6 +13,7 @@ import '../../providers/submission_providers.dart';
 import '../../providers/service_providers.dart';
 import '../widgets/brutal_widgets.dart';
 import '../progress/level_detail_view.dart';
+import '../progress/progress_view.dart';
 import '../quiz/quiz_level_view.dart';
 import 'daily_login_view.dart';
 
@@ -349,8 +350,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      ref.read(profileTabSubIndexProvider.notifier).state = 1;
-                      ref.read(mainLayoutIndexProvider.notifier).state = 3;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ProgressTab()),
+                      ).then((_) => ref.read(levelViewModelProvider.notifier).loadAll());
                     },
                     child: Text(
                       'Lihat Semua',
@@ -391,8 +393,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
               // Level map link
               GestureDetector(
                 onTap: () {
-                  ref.read(profileTabSubIndexProvider.notifier).state = 1;
-                  ref.read(mainLayoutIndexProvider.notifier).state = 3;
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const ProgressTab()),
+                  ).then((_) => ref.read(levelViewModelProvider.notifier).loadAll());
                 },
                 child: Text(
                   'Lihat Semua Misi →',

@@ -8,6 +8,8 @@ import '../models/user_model.dart';
 import '../services/level_service.dart';
 import '../services/firestore_level_content_service.dart';
 import '../providers/service_providers.dart';
+// ignore: deprecated_member_use_from_same_package
+import '../core/level_content_data.dart';
 import 'auth_view_model.dart';
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -194,25 +196,76 @@ class LevelViewModel extends StateNotifier<LevelState> {
 
   /// Resolve konfigurasi level: merge Firestore data ke LevelConfig hardcoded.
   /// Firestore data digunakan untuk konten (page1/page2), hardcoded untuk struktur.
+  /// Falls back to LevelContentData.levels if Firestore is empty.
+  /// If Firestore has partial data, merges with hardcoded to ensure all levels exist.
   List<LevelConfig> _resolveConfigs() {
-    return state.firestoreLevels.map((fsLevel) {
-      if (fsLevel.isMateri) {
-        return LevelConfig(
-          levelNumber: fsLevel.levelNumber,
-          title: fsLevel.title,
-          type: fsLevel.type,
-          materiContent: fsLevel.toMateriContent(),
-          passingScore: fsLevel.passingScore,
-        );
+    if (state.firestoreLevels.isEmpty) {
+      // ignore: deprecated_member_use_from_same_package
+      return LevelContentData.levels;
+    }
+
+    // Build a map of Firestore levels by levelNumber for quick lookup
+    final fsMap = <int, FirestoreLevel>{};
+    for (final fs in state.firestoreLevels) {
+      fsMap[fs.levelNumber] = fs;
+    }
+
+    // ignore: deprecated_member_use_from_same_package
+    final hardcoded = LevelContentData.levels;
+
+    // Merge: use Firestore data when available, fallback to hardcoded
+    final result = <LevelConfig>[];
+    for (final hc in hardcoded) {
+      final fs = fsMap[hc.levelNumber];
+      if (fs != null) {
+        if (fs.isMateri) {
+          result.add(LevelConfig(
+            levelNumber: fs.levelNumber,
+            title: fs.title,
+            type: fs.type,
+            materiContent: fs.toMateriContent(),
+            passingScore: fs.passingScore,
+          ));
+        } else {
+          result.add(LevelConfig(
+            levelNumber: fs.levelNumber,
+            title: fs.title,
+            type: fs.type,
+            questions: const [],
+            passingScore: fs.passingScore,
+          ));
+        }
+      } else {
+        // Use hardcoded config for levels not yet in Firestore
+        result.add(hc);
       }
-      return LevelConfig(
-        levelNumber: fsLevel.levelNumber,
-        title: fsLevel.title,
-        type: fsLevel.type,
-        questions: const [],
-        passingScore: fsLevel.passingScore,
-      );
-    }).toList();
+    }
+
+    // Also add any Firestore levels beyond hardcoded range
+    for (final fs in state.firestoreLevels) {
+      if (!hardcoded.any((hc) => hc.levelNumber == fs.levelNumber)) {
+        if (fs.isMateri) {
+          result.add(LevelConfig(
+            levelNumber: fs.levelNumber,
+            title: fs.title,
+            type: fs.type,
+            materiContent: fs.toMateriContent(),
+            passingScore: fs.passingScore,
+          ));
+        } else {
+          result.add(LevelConfig(
+            levelNumber: fs.levelNumber,
+            title: fs.title,
+            type: fs.type,
+            questions: const [],
+            passingScore: fs.passingScore,
+          ));
+        }
+      }
+    }
+
+    result.sort((a, b) => a.levelNumber.compareTo(b.levelNumber));
+    return result;
   }
 
   bool _isUnlocked(

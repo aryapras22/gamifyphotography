@@ -78,8 +78,7 @@ class AuthService {
       earnedBadgeIds: List<String>.from(data['earnedBadgeIds'] ?? []),
       completedPhotoUrls: List<String>.from(data['completedPhotoUrls'] ?? []),
       completedModuleIds: List<String>.from(data['completedModuleIds'] ?? []),
-      // TASK-M11: fallback untuk field lama 'loginStreak' (deprecated di admin FIX-05)
-      streakCount: (data['streakCount'] ?? data['loginStreak'] ?? 0) as int,
+      streakCount: (data['streakCount'] ?? 0) as int,
       lastLoginDate: lastLoginAt,
       weekHistory: data['weekHistory'] != null
           ? List<bool>.from(
