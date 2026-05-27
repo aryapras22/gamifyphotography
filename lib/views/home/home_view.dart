@@ -8,6 +8,10 @@ import '../../view_models/daily_login_view_model.dart';
 import '../../view_models/mission_view_model.dart';
 import '../widgets/bouncing_node.dart';
 import '../../providers/submission_providers.dart';
+import '../../models/level_model.dart';
+import '../../view_models/level_view_model.dart';
+import '../../core/level_content_data.dart';
+import '../quiz/quiz_level_view.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -28,6 +32,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
       if (currentState.modules.isEmpty && !currentState.isLoading) {
         ref.read(missionViewModelProvider.notifier).fetchModules();
       }
+      // Load levels & Firestore levels configs to support quiz routing & data consistency
+      ref.read(levelViewModelProvider.notifier).loadAll();
       // ─────────────────────────────────────────────────────────────────────────
     });
 
@@ -197,10 +203,30 @@ class _HomeViewState extends ConsumerState<HomeView> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ref.read(missionViewModelProvider.notifier).selectModule(module.id);
-                  context.push('/mission/detail');
+                  if (module.type == 'quiz') {
+                    LevelConfig? config;
+                    try {
+                      final entries = ref.read(levelViewModelProvider).entries;
+                      config = entries.firstWhere((e) => e.config.levelNumber == module.order).config;
+                    } catch (_) {
+                      config = LevelContentData.getLevel(module.order);
+                    }
+
+                    if (config != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => QuizLevelView(config: config!)),
+                      ).then((_) => ref.read(levelViewModelProvider.notifier).loadAll());
+                    } else {
+                      // Fallback
+                      ref.read(missionViewModelProvider.notifier).selectModule(module.id);
+                      context.push('/mission/detail');
+                    }
+                  } else {
+                    ref.read(missionViewModelProvider.notifier).selectModule(module.id);
+                    context.push('/mission/detail');
+                  }
                 },
-                child: Text('MULAI MISI', style: AppTextStyles.button),
+                child: Text(module.type == 'quiz' ? 'MULAI QUIZ' : 'MULAI MISI', style: AppTextStyles.button),
               ),
               const SizedBox(height: 20),
             ],

@@ -30,7 +30,13 @@ mixin _$ModuleModel {
   bool get isCompleted => throw _privateConstructorUsedError;
   int get levelCount =>
       throw _privateConstructorUsedError; // jumlah level dalam modul (untuk tampilan UI)
-  List<String> get referenceImageUrls => throw _privateConstructorUsedError;
+  List<String> get referenceImageUrls =>
+      throw _privateConstructorUsedError; // foto contoh dari firebase
+  String get howToUse =>
+      throw _privateConstructorUsedError; // cara penggunaan dari firebase (page2.howToUse)
+  String? get howToUseImageUrl =>
+      throw _privateConstructorUsedError; // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+  String get type => throw _privateConstructorUsedError;
 
   /// Serializes this ModuleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -58,6 +64,9 @@ abstract class $ModuleModelCopyWith<$Res> {
     bool isCompleted,
     int levelCount,
     List<String> referenceImageUrls,
+    String howToUse,
+    String? howToUseImageUrl,
+    String type,
   });
 }
 
@@ -84,6 +93,9 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
     Object? isCompleted = null,
     Object? levelCount = null,
     Object? referenceImageUrls = null,
+    Object? howToUse = null,
+    Object? howToUseImageUrl = freezed,
+    Object? type = null,
   }) {
     return _then(
       _value.copyWith(
@@ -119,6 +131,18 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
                 ? _value.referenceImageUrls
                 : referenceImageUrls // ignore: cast_nullable_to_non_nullable
                       as List<String>,
+            howToUse: null == howToUse
+                ? _value.howToUse
+                : howToUse // ignore: cast_nullable_to_non_nullable
+                      as String,
+            howToUseImageUrl: freezed == howToUseImageUrl
+                ? _value.howToUseImageUrl
+                : howToUseImageUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            type: null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -143,6 +167,9 @@ abstract class _$$ModuleModelImplCopyWith<$Res>
     bool isCompleted,
     int levelCount,
     List<String> referenceImageUrls,
+    String howToUse,
+    String? howToUseImageUrl,
+    String type,
   });
 }
 
@@ -168,6 +195,9 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
     Object? isCompleted = null,
     Object? levelCount = null,
     Object? referenceImageUrls = null,
+    Object? howToUse = null,
+    Object? howToUseImageUrl = freezed,
+    Object? type = null,
   }) {
     return _then(
       _$ModuleModelImpl(
@@ -203,6 +233,18 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
             ? _value._referenceImageUrls
             : referenceImageUrls // ignore: cast_nullable_to_non_nullable
                   as List<String>,
+        howToUse: null == howToUse
+            ? _value.howToUse
+            : howToUse // ignore: cast_nullable_to_non_nullable
+                  as String,
+        howToUseImageUrl: freezed == howToUseImageUrl
+            ? _value.howToUseImageUrl
+            : howToUseImageUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        type: null == type
+            ? _value.type
+            : type // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -220,6 +262,9 @@ class _$ModuleModelImpl implements _ModuleModel {
     this.isCompleted = false,
     this.levelCount = 0,
     final List<String> referenceImageUrls = const [],
+    this.howToUse = '',
+    this.howToUseImageUrl,
+    this.type = 'materi',
   }) : _referenceImageUrls = referenceImageUrls;
 
   factory _$ModuleModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -256,9 +301,21 @@ class _$ModuleModelImpl implements _ModuleModel {
     return EqualUnmodifiableListView(_referenceImageUrls);
   }
 
+  // foto contoh dari firebase
+  @override
+  @JsonKey()
+  final String howToUse;
+  // cara penggunaan dari firebase (page2.howToUse)
+  @override
+  final String? howToUseImageUrl;
+  // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+  @override
+  @JsonKey()
+  final String type;
+
   @override
   String toString() {
-    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount, referenceImageUrls: $referenceImageUrls)';
+    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount, referenceImageUrls: $referenceImageUrls, howToUse: $howToUse, howToUseImageUrl: $howToUseImageUrl, type: $type)';
   }
 
   @override
@@ -280,7 +337,12 @@ class _$ModuleModelImpl implements _ModuleModel {
             const DeepCollectionEquality().equals(
               other._referenceImageUrls,
               _referenceImageUrls,
-            ));
+            ) &&
+            (identical(other.howToUse, howToUse) ||
+                other.howToUse == howToUse) &&
+            (identical(other.howToUseImageUrl, howToUseImageUrl) ||
+                other.howToUseImageUrl == howToUseImageUrl) &&
+            (identical(other.type, type) || other.type == type));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -295,6 +357,9 @@ class _$ModuleModelImpl implements _ModuleModel {
     isCompleted,
     levelCount,
     const DeepCollectionEquality().hash(_referenceImageUrls),
+    howToUse,
+    howToUseImageUrl,
+    type,
   );
 
   /// Create a copy of ModuleModel
@@ -321,6 +386,9 @@ abstract class _ModuleModel implements ModuleModel {
     final bool isCompleted,
     final int levelCount,
     final List<String> referenceImageUrls,
+    final String howToUse,
+    final String? howToUseImageUrl,
+    final String type,
   }) = _$ModuleModelImpl;
 
   factory _ModuleModel.fromJson(Map<String, dynamic> json) =
@@ -341,7 +409,13 @@ abstract class _ModuleModel implements ModuleModel {
   @override
   int get levelCount; // jumlah level dalam modul (untuk tampilan UI)
   @override
-  List<String> get referenceImageUrls;
+  List<String> get referenceImageUrls; // foto contoh dari firebase
+  @override
+  String get howToUse; // cara penggunaan dari firebase (page2.howToUse)
+  @override
+  String? get howToUseImageUrl; // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+  @override
+  String get type;
 
   /// Create a copy of ModuleModel
   /// with the given fields replaced by the non-null parameter values.

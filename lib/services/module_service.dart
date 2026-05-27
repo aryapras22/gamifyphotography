@@ -32,9 +32,21 @@ class ModuleService {
             data['materialContent'] = (page1 is Map ? page1['description'] : null) ?? '';
           }
 
+          // Extract howToUse and howToUseImageUrl from page2
+          if (!data.containsKey('howToUse') || data['howToUse'] == null || data['howToUse'] == '') {
+            final page2 = raw['page2'];
+            data['howToUse'] = (page2 is Map ? page2['howToUse'] : null) ?? '';
+          }
+
+          if (!data.containsKey('howToUseImageUrl') || data['howToUseImageUrl'] == null) {
+            final page2 = raw['page2'];
+            data['howToUseImageUrl'] = (page2 is Map ? page2['howToUseImageUrl'] : null);
+          }
+
           // Firestore tidak menyimpan isCompleted — default false
           data.putIfAbsent('isCompleted', () => false);
           data.putIfAbsent('levelCount', () => 0);
+          data.putIfAbsent('type', () => 'materi');
 
           if (!data.containsKey('referenceImageUrls') || data['referenceImageUrls'] == null) {
             final page1 = raw['page1'];
@@ -57,6 +69,7 @@ class ModuleService {
           id: 'M01',
           title: 'Rule of Thirds (Aturan Sepertiga)',
           description: 'Letakkan subjek di titik potong garis sepertiga',
+          howToUse: 'Letakkan subjek di titik potong garis sepertiga',
           materialContent:
               'Teknik yang paling dasar namun sangat ampuh. Bayangkan bidang foto dibagi menjadi 9 kotak dengan 2 garis horizontal dan 2 garis vertikal. Letakkan subjek utama di titik potong atau di sepanjang garis tersebut agar foto terlihat lebih seimbang dan natural.',
           order: 1,
@@ -65,6 +78,7 @@ class ModuleService {
           id: 'M02',
           title: 'Leading Lines (Garis Penuntun)',
           description: 'Gunakan garis untuk mengarahkan mata ke subjek',
+          howToUse: 'Gunakan garis untuk mengarahkan mata ke subjek',
           materialContent:
               'Gunakan garis-garis yang ada di sekitar (seperti jalan, pagar, jembatan, atau bayangan) untuk mengarahkan mata penonton menuju subjek utama.',
           order: 2,
@@ -73,6 +87,7 @@ class ModuleService {
           id: 'M03',
           title: 'Framing within a Frame (Bingkai dalam Bingkai)',
           description: 'Gunakan elemen alami sebagai bingkai subjek',
+          howToUse: 'Gunakan elemen alami sebagai bingkai subjek',
           materialContent:
               'Mencari "bingkai" alami di dalam lokasi pemotretan, seperti jendela, pintu, dedaunan, atau lubang bangunan untuk mengelilingi subjek.',
           order: 3,
@@ -81,6 +96,7 @@ class ModuleService {
           id: 'M04',
           title: 'Symmetry and Patterns (Simetri dan Pola)',
           description: 'Temukan simetri atau pola berulang',
+          howToUse: 'Temukan simetri atau pola berulang',
           materialContent:
               'Simetri menciptakan rasa harmoni dan keseimbangan yang sempurna.',
           order: 4,
@@ -89,6 +105,7 @@ class ModuleService {
           id: 'M05',
           title: 'Golden Triangle (Segitiga Emas)',
           description: 'Bagi frame diagonal menjadi segitiga',
+          howToUse: 'Bagi frame diagonal menjadi segitiga',
           materialContent:
               'Mirip dengan Rule of Thirds, namun menggunakan garis diagonal.',
           order: 5,
@@ -97,6 +114,7 @@ class ModuleService {
           id: 'M06',
           title: 'Negative Space (Ruang Kosong)',
           description: 'Ruang kosong di sekitar subjek',
+          howToUse: 'Ruang kosong di sekitar subjek',
           materialContent:
               'Memberikan banyak ruang kosong di sekitar subjek untuk kesan minimalis.',
           order: 6,
@@ -105,6 +123,7 @@ class ModuleService {
           id: 'M07',
           title: 'Rule of Odds (Aturan Ganjil)',
           description: 'Foto dengan subjek berjumlah ganjil (3 atau 5)',
+          howToUse: 'Foto dengan subjek berjumlah ganjil (3 atau 5)',
           materialContent:
               'Mata manusia cenderung lebih nyaman melihat jumlah subjek yang ganjil.',
           order: 7,
@@ -113,6 +132,7 @@ class ModuleService {
           id: 'M08',
           title: 'Depth of Field (Kedalaman Bidang)',
           description: 'Pemisahan foreground-subjek-background (bokeh)',
+          howToUse: 'Pemisahan foreground-subjek-background (bokeh)',
           materialContent:
               'Menciptakan pemisahan antara latar depan, subjek, dan latar belakang.',
           order: 8,
@@ -121,6 +141,7 @@ class ModuleService {
           id: 'M09',
           title: 'Point of View (Sudut Pandang)',
           description: 'Sudut tidak biasa: bird\'s eye atau frog\'s eye',
+          howToUse: 'Sudut tidak biasa: bird\'s eye atau frog\'s eye',
           materialContent:
               'Jangan hanya memotret dari ketinggian mata (eye-level).',
           order: 9,
@@ -129,6 +150,7 @@ class ModuleService {
           id: 'M10',
           title: 'Center Dominance (Simetri Tengah)',
           description: 'Subjek tepat di tengah',
+          howToUse: 'Subjek tepat di tengah',
           materialContent:
               'Menempatkan subjek tepat di tengah frame sangat efektif untuk potret wajah.',
           order: 10,

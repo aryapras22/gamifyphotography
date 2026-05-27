@@ -36,7 +36,8 @@ class _LevelDetailViewState extends ConsumerState<LevelDetailView>
 
   /// Resolve MateriContent: prefer Firestore data, fallback to hardcoded
   MateriContent get _content {
-    final fsLevel = ref.read(levelViewModelProvider.notifier)
+    // BUG-04: gunakan watch agar konten diperbarui saat state Firestore berubah
+    final fsLevel = ref.watch(levelViewModelProvider.notifier)
         .getLevelContent(widget.config.levelNumber);
     if (fsLevel != null) {
       final merged = fsLevel.toMateriContent();
@@ -436,12 +437,44 @@ class _SectionCard extends StatelessWidget {
               height: 1.7,
             ),
           ),
-          // TASK-M06: tampilkan foto cara penggunaan jika ada
+          // TASK-M06: tampilkan foto cara penggunaan jika ada, placeholder jika tidak
           if (imageUrl != null && imageUrl!.isNotEmpty) ...[
             const SizedBox(height: 16),
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: buildLevelImage(imageUrl!, height: 180),
+              child: buildLevelImage(imageUrl!, height: 200), // BUG-04: height 200
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Visual Guide Kamera',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.secondaryText,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ] else ...[
+            // BUG-04: Placeholder jika SVG belum diupload admin
+            const SizedBox(height: 16),
+            Container(
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.backgroundGray,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.image_not_supported_rounded, color: AppColors.disabled, size: 32),
+                    SizedBox(height: 8),
+                    Text('Visual guide belum tersedia',
+                        style: TextStyle(fontSize: 12, color: AppColors.secondaryText)),
+                  ],
+                ),
+              ),
             ),
           ],
         ],

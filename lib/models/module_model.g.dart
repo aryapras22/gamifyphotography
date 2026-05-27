@@ -20,6 +20,9 @@ _$ModuleModelImpl _$$ModuleModelImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
+      howToUse: json['howToUse'] as String? ?? '',
+      howToUseImageUrl: json['howToUseImageUrl'] as String?,
+      type: json['type'] as String? ?? 'materi',
     );
 
 Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
@@ -32,4 +35,7 @@ Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
       'isCompleted': instance.isCompleted,
       'levelCount': instance.levelCount,
       'referenceImageUrls': instance.referenceImageUrls,
+      'howToUse': instance.howToUse,
+      'howToUseImageUrl': instance.howToUseImageUrl,
+      'type': instance.type,
     };

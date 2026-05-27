@@ -14,6 +14,9 @@ class ModuleModel with _$ModuleModel {
     @Default(false) bool isCompleted,
     @Default(0) int levelCount,          // jumlah level dalam modul (untuk tampilan UI)
     @Default([]) List<String> referenceImageUrls, // foto contoh dari firebase
+    @Default('') String howToUse,        // cara penggunaan dari firebase (page2.howToUse)
+    String? howToUseImageUrl,            // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+    @Default('materi') String type,      // tipe modul: 'materi' atau 'quiz'
   }) = _ModuleModel;
 
   factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);

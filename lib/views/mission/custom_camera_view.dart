@@ -7,8 +7,15 @@ import '../../core/app_text_styles.dart';
 
 class CustomCameraView extends StatefulWidget {
   final String moduleId;
+  /// URL visual guide SVG dari Firestore (page2.howToUseImageUrl).
+  /// Jika null, fallback ke asset hardcoded.
+  final String? visualGuideUrl;
 
-  const CustomCameraView({super.key, required this.moduleId});
+  const CustomCameraView({
+    super.key,
+    required this.moduleId,
+    this.visualGuideUrl,
+  });
 
   @override
   State<CustomCameraView> createState() => _CustomCameraViewState();
@@ -27,6 +34,7 @@ class _CustomCameraViewState extends State<CustomCameraView> {
     _initCamera();
   }
 
+  /// Fallback: hardcoded asset path jika Firestore URL tidak tersedia.
   String _getVisualGuideAsset(String moduleId) {
     switch (moduleId) {
       case 'M01': return 'assets/images/visual_guides/01_rule_of_thirds.svg';
@@ -41,6 +49,24 @@ class _CustomCameraViewState extends State<CustomCameraView> {
       case 'M10': return 'assets/images/visual_guides/10_center_dominance.svg';
       default:    return 'assets/images/visual_guides/01_rule_of_thirds.svg';
     }
+  }
+
+  /// Build SVG overlay widget — prioritas: Firestore URL → asset lokal.
+  Widget _buildVisualGuide() {
+    final url = widget.visualGuideUrl;
+    if (url != null && url.isNotEmpty && url.startsWith('http')) {
+      // Dari Firebase Storage
+      return SvgPicture.network(
+        url,
+        fit: BoxFit.fill,
+        placeholderBuilder: (_) => const SizedBox.shrink(),
+      );
+    }
+    // Fallback ke asset lokal
+    return SvgPicture.asset(
+      _getVisualGuideAsset(widget.moduleId),
+      fit: BoxFit.fill,
+    );
   }
 
   Future<void> _initCamera() async {
@@ -90,7 +116,7 @@ class _CustomCameraViewState extends State<CustomCameraView> {
             child: CameraPreview(_controller!),
           ),
 
-          // ── SVG Overlay — fade in after camera ready ──────────
+          // ── SVG Overlay — dari Firestore atau fallback asset ──
           Positioned.fill(
             child: IgnorePointer(
               child: AnimatedOpacity(
@@ -98,10 +124,7 @@ class _CustomCameraViewState extends State<CustomCameraView> {
                 duration: const Duration(milliseconds: 600),
                 child: Opacity(
                   opacity: 0.35,
-                  child: SvgPicture.asset(
-                    _getVisualGuideAsset(widget.moduleId),
-                    fit: BoxFit.fill,
-                  ),
+                  child: _buildVisualGuide(),
                 ),
               ),
             ),
@@ -182,3 +205,4 @@ class _CustomCameraViewState extends State<CustomCameraView> {
     );
   }
 }
+

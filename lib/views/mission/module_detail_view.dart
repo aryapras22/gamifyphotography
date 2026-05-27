@@ -271,6 +271,51 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     );
   }
 
+  Widget _buildVisualGuideImage(ModuleModel module) {
+    final url = module.howToUseImageUrl;
+    if (url != null && url.isNotEmpty && url.startsWith('http')) {
+      final bool isSvg = url.toLowerCase().endsWith('.svg') || url.contains('.svg?');
+      if (isSvg) {
+        return SvgPicture.network(
+          url,
+          fit: BoxFit.contain,
+          placeholderBuilder: (_) => const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.brandBlue,
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      } else {
+        return Image.network(
+          url,
+          fit: BoxFit.contain,
+          loadingBuilder: (_, child, progress) => progress == null
+              ? child
+              : const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.brandBlue,
+                    strokeWidth: 2,
+                  ),
+                ),
+          errorBuilder: (_, __, ___) => _guidePlaceholder(),
+        );
+      }
+    }
+
+    // Fallback to local asset
+    return SvgPicture.asset(
+      _getVisualGuideAsset(module.id),
+      fit: BoxFit.contain,
+    );
+  }
+
+  Widget _guidePlaceholder() {
+    return const Center(
+      child: Icon(Icons.broken_image_rounded, size: 48, color: AppColors.disabled),
+    );
+  }
+
   Widget _buildVisualGuidePage(ModuleModel module, WidgetRef ref, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -291,7 +336,7 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  module.description,
+                  module.howToUse.isNotEmpty ? module.howToUse : module.description,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
@@ -325,14 +370,11 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
                           borderRadius: BorderRadius.circular(21),
                           child: Stack(
                             children: [
-                              // The SVG image acting as visual guide
+                              // The SVG image acting as visual guide (from Firebase with local asset fallback)
                               Positioned.fill(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: SvgPicture.asset(
-                                    _getVisualGuideAsset(module.id),
-                                    fit: BoxFit.contain,
-                                  ),
+                                  child: _buildVisualGuideImage(module),
                                 ),
                               ),
                               // Top speaker wireframe to make it look like a phone

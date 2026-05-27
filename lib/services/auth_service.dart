@@ -2,10 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import '../core/level_utils.dart';
+import 'daily_login_service.dart'; // BUG-02
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final DailyLoginService _dailyLoginService = DailyLoginService(); // BUG-02
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -14,6 +16,12 @@ class AuthService {
       final cred = await _auth.signInWithEmailAndPassword(
         email: email.trim(), password: password,
       );
+      // BUG-02: update login streak saat login berhasil
+      try {
+        await _dailyLoginService.updateLoginStreak(cred.user!.uid);
+      } catch (_) {
+        // Jangan gagal login hanya karena streak update error
+      }
       return await fetchUser(cred.user!.uid);
     } on FirebaseAuthException catch (e) {
       throw Exception(_mapError(e));

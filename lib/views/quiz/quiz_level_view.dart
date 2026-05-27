@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_colors.dart';
 import '../../models/level_model.dart';
 import 'quiz_result_view.dart';
+import '../../providers/service_providers.dart';
+import '../../view_models/level_view_model.dart';
 
 class QuizLevelView extends ConsumerStatefulWidget {
   final LevelConfig config;
@@ -29,13 +31,57 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
   int _currentIndex = 0;
   final List<int?> _selectedAnswers = [];
   bool _started = false;
-
-  List<QuizQuestion> get _questions => widget.config.questions ?? [];
+  List<QuizQuestion> _questions = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _selectedAnswers.addAll(List.filled(_questions.length, null));
+    _loadQuestions();
+  }
+
+  Future<void> _loadQuestions() async {
+    try {
+      final service = ref.read(firestoreLevelContentServiceProvider);
+      String? levelId;
+
+      // 1. Cari dari state provider
+      final fsLevels = ref.read(levelViewModelProvider).firestoreLevels;
+      try {
+        final matched = fsLevels.firstWhere(
+          (l) => l.levelNumber == widget.config.levelNumber,
+        );
+        levelId = matched.id;
+      } catch (_) {}
+
+      // 2. Fallback: query Firestore langsung jika levelId belum ketemu
+      if (levelId == null) {
+        final fsLevel = await service.getLevelByNumber(widget.config.levelNumber);
+        levelId = fsLevel?.id;
+      }
+
+      if (levelId != null) {
+        final fsQuestions = await service.getQuizQuestions(levelId);
+        if (fsQuestions.isNotEmpty) {
+          setState(() {
+            _questions = fsQuestions;
+            _selectedAnswers.addAll(List.filled(_questions.length, null));
+            _isLoading = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat soal dari Firestore: $e');
+    }
+
+    // Fallback ke hardcoded
+    setState(() {
+      _questions = widget.config.questions ?? [];
+      _selectedAnswers.clear();
+      _selectedAnswers.addAll(List.filled(_questions.length, null));
+      _isLoading = false;
+    });
   }
 
   void _selectAnswer(int optionIndex) {
@@ -81,6 +127,16 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: AppColors.backgroundGray,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.brandBlue,
+          ),
+        ),
+      );
+    }
     if (!_started) return _buildIntroScreen();
     return _buildQuizScreen();
   }

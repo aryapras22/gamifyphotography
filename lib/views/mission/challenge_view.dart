@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../view_models/challenge_view_model.dart';
 import '../../view_models/mission_view_model.dart';
+import '../../view_models/level_view_model.dart'; // visual guide dari Firestore
 import '../../providers/submission_providers.dart';
 import '../widgets/animated_3d_button.dart';
 import 'custom_camera_view.dart';
@@ -195,11 +197,35 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                         onTap: isPending
                             ? null
                             : () async {
+                                // Cari visual guide URL dari Firestore
+                                final firestoreLevels = ref.read(levelViewModelProvider).firestoreLevels;
+                                String? visualGuideUrl;
+                                try {
+                                  final fsLevel = firestoreLevels.firstWhere(
+                                    (l) => l.id == challenge.moduleId,
+                                  );
+                                  visualGuideUrl = fsLevel.page2?.howToUseImageUrl;
+                                } catch (_) {
+                                  // Tidak ditemukan di state — fetch langsung dari Firestore (fallback)
+                                  try {
+                                    final doc = await FirebaseFirestore.instance.collection('modules').doc(challenge.moduleId).get();
+                                    if (doc.exists) {
+                                      final data = doc.data();
+                                      if (data != null && data['page2'] is Map) {
+                                        visualGuideUrl = data['page2']['howToUseImageUrl'] as String?;
+                                      }
+                                    }
+                                  } catch (e) {
+                                    debugPrint('Gagal fetch visual guide: $e');
+                                  }
+                                }
+
                                 final XFile? xfile =
                                     await Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => CustomCameraView(
                                       moduleId: challenge.moduleId,
+                                      visualGuideUrl: visualGuideUrl,
                                     ),
                                   ),
                                 );

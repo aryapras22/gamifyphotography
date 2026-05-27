@@ -87,6 +87,46 @@ class DailyLoginService {
     return List<bool>.from(data['weekHistory']);
   }
 
+  /// BUG-02: Update loginStreak berdasarkan hari kalender.
+  /// Menyimpan `loginStreak` (int) dan `lastLoginDate` (string "YYYY-MM-DD").
+  /// - Hari yang sama: skip (tidak update)
+  /// - Hari berikutnya: streak + 1
+  /// - Lebih dari 1 hari absen: streak reset ke 1
+  Future<void> updateLoginStreak(String userId) async {
+    final doc = await _userRef(userId).get() as DocumentSnapshot<Map<String, dynamic>>;
+    final data = doc.data() ?? {};
+
+    final today = DateTime.now();
+    final todayStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+
+    final lastLoginDate = data['lastLoginDate'] as String?;
+    int currentStreak = (data['loginStreak'] as num?)?.toInt() ?? 0;
+
+    if (lastLoginDate == null) {
+      // Login pertama kali
+      currentStreak = 1;
+    } else {
+      final last = DateTime.parse(lastLoginDate);
+      final diffDays = today.difference(DateTime(last.year, last.month, last.day)).inDays;
+
+      if (diffDays == 0) {
+        // Sudah login hari ini, tidak perlu update
+        return;
+      } else if (diffDays == 1) {
+        // Login hari berikutnya — streak lanjut
+        currentStreak += 1;
+      } else {
+        // Lebih dari 1 hari absen — streak reset
+        currentStreak = 1;
+      }
+    }
+
+    await _userRef(userId).update({
+      'loginStreak': currentStreak,
+      'lastLoginDate': todayStr,
+    });
+  }
+
   /// Ambil riwayat login 30 hari terakhir dari subcollection `daily_logins`.
   /// Digunakan untuk menampilkan streak calendar di Profile.
   Future<List<DateTime>> getDailyLoginHistory(String userId) async {

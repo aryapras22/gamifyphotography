@@ -103,7 +103,7 @@ class _LevelListTab extends ConsumerWidget {
       itemCount: lvState.entries.length,
       itemBuilder: (context, index) {
         final entry = lvState.entries[index];
-        return _LevelCard(entry: entry);
+        return _LevelCard(entry: entry, index: index + 1); // BUG-05: gunakan index urutan tampil
       },
     );
   }
@@ -113,7 +113,8 @@ class _LevelListTab extends ConsumerWidget {
 
 class _LevelCard extends ConsumerWidget {
   final LevelEntry entry;
-  const _LevelCard({required this.entry});
+  final int index; // BUG-05: nomor urutan tampil
+  const _LevelCard({required this.entry, required this.index});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -135,6 +136,9 @@ class _LevelCard extends ConsumerWidget {
     }
     if (status == LevelStatus.completedPass) {
       borderColor = AppColors.forestGreen.withValues(alpha: 0.5);
+      cardBg = AppColors.forestGreen.withValues(alpha: 0.04); // BUG-01: bg hijau muda tipis
+      numberBg = AppColors.forestGreen.withValues(alpha: 0.12); // BUG-01: badge nomor hijau
+      numberColor = AppColors.forestGreen;                       // BUG-01: angka hijau
     }
     if (status == LevelStatus.completedFail) {
       borderColor = AppColors.coralRed.withValues(alpha: 0.5);
@@ -179,7 +183,7 @@ class _LevelCard extends ConsumerWidget {
                   child: isLocked
                       ? const Icon(Icons.lock_rounded, size: 22, color: AppColors.disabled)
                       : Text(
-                          '${config.levelNumber}',
+                          '$index', // BUG-05: tampilkan urutan tampil bukan levelNumber
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
