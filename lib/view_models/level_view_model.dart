@@ -307,6 +307,10 @@ class LevelViewModel extends StateNotifier<LevelState> {
       final updatedUser = user.copyWith(completedLevels: updatedCompleted);
       _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
 
+      // Auto-check badge after level completion
+      final badgeService = _ref.read(badgeServiceProvider);
+      await badgeService.checkAndAwardBadges(updatedUser);
+
       final entries = _buildEntries(updatedUser);
       final showPretest = levelNumber == 1 && !user.pretestDone;
 

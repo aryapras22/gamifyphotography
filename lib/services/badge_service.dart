@@ -1,107 +1,77 @@
 // lib/services/badge_service.dart
-// TASK-03 — BadgeService
+// Firestore-driven badge service with auto-award logic
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/badge_model.dart';
+import '../models/user_model.dart';
 
 class BadgeService {
-  // ---------------------------------------------------------------------------
-  // Konstanta ID Badge
-  // ---------------------------------------------------------------------------
-
-  static const kBadgeStarterId = 'badge_starter';
-  static const kBadgeRookieId = 'badge_rookie';
-  static const kBadgeVeteranId = 'badge_veteran';
-  static const kBadgeSpecialMissionId = 'badge_special_mission';
-  static const kBadgeSurvivorId = 'badge_survivor';
-
-  // ---------------------------------------------------------------------------
-  // Catalog badge (5 badge sesuai dokumen produk)
-  // ---------------------------------------------------------------------------
-
-  static final List<BadgeModel> _allBadges = [
-    BadgeModel(
-      id: kBadgeStarterId,
-      title: 'Starter',
-      description: 'Selesaikan misi pertama dan mulai perjalananmu!',
-      iconPath: 'assets/images/badges/01_starter.svg',
-      requiredPoints: 0,
-    ),
-    BadgeModel(
-      id: kBadgeRookieId,
-      title: 'Rookie',
-      description: 'Capai level 15 — kamu sudah serius belajar fotografi!',
-      iconPath: 'assets/images/badges/02_rookie.svg',
-      requiredPoints: 0,
-    ),
-    BadgeModel(
-      id: kBadgeVeteranId,
-      title: 'Veteran',
-      description: 'Capai level 30 — fotografer berpengalaman!',
-      iconPath: 'assets/images/badges/03_veteran.svg',
-      requiredPoints: 0,
-    ),
-    BadgeModel(
-      id: kBadgeSpecialMissionId,
-      title: 'Special Mission',
-      description: 'Selesaikan special mission pertama (level 10).',
-      iconPath: 'assets/images/badges/04_special_mission.svg',
-      requiredPoints: 0,
-    ),
-    BadgeModel(
-      id: kBadgeSurvivorId,
-      title: 'Survivor',
-      description: 'Login 7 hari berturut-turut — komitmen luar biasa!',
-      iconPath: 'assets/images/badges/08_survivor.svg',
-      requiredPoints: 0,
-    ),
-  ];
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // ---------------------------------------------------------------------------
   // Public API
   // ---------------------------------------------------------------------------
 
-  /// Kembalikan semua 5 badge yang tersedia.
+  /// Fetch all active badges from Firestore.
   Future<List<BadgeModel>> getAllBadges() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return List.unmodifiable(_allBadges);
-  }
-
-  /// Kembalikan badge yang sudah dimiliki user berdasarkan [earnedBadgeIds].
-  Future<List<BadgeModel>> getEarnedBadges(List<String> earnedBadgeIds) async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    return _allBadges
-        .where((b) => earnedBadgeIds.contains(b.id))
+    final snap = await _db
+        .collection('badges')
+        .where('isActive', isEqualTo: true)
+        .get();
+    return snap.docs
+        .map((d) => BadgeModel.fromJson({...d.data(), 'id': d.id}))
         .toList();
   }
 
-  /// Cek badge baru yang layak di-unlock, return list badge yang BARU saja
-  /// unlock (belum ada di [earnedBadgeIds]).
-  Future<List<BadgeModel>> checkNewBadges({
-    required int level,
-    required int streak,
-    required List<String> earnedBadgeIds,
-    required bool completedFirstMission,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 100));
+  /// Fetch badges that the user has earned.
+  Future<List<BadgeModel>> getEarnedBadges(List<String> earnedBadgeIds) async {
+    if (earnedBadgeIds.isEmpty) return [];
+    final all = await getAllBadges();
+    return all.where((b) => earnedBadgeIds.contains(b.id)).toList();
+  }
+
+  /// Check and auto-award badges based on user progress.
+  /// Returns list of newly awarded badge IDs.
+  Future<List<BadgeModel>> checkAndAwardBadges(UserModel user) async {
+    final snap = await _db
+        .collection('badges')
+        .where('isActive', isEqualTo: true)
+        .get();
+
+    final badges = snap.docs
+        .map((d) => BadgeModel.fromJson({...d.data(), 'id': d.id}))
+        .toList();
+
     final newBadges = <BadgeModel>[];
 
-    for (final badge in _allBadges) {
-      if (earnedBadgeIds.contains(badge.id)) continue;
+    for (final badge in badges) {
+      if (user.earnedBadgeIds.contains(badge.id)) continue; // already earned
 
-      final earned = _isEligible(
-        badgeId: badge.id,
-        level: level,
-        streak: streak,
-        completedFirstMission: completedFirstMission,
-      );
+      bool earned = false;
+      switch (badge.badgeType) {
+        case 'points':
+          earned = user.points >= badge.requiredPoints;
+          break;
+        case 'completed_levels':
+          earned = user.completedLevels.length >= badge.requiredLevels;
+          break;
+        case 'streak':
+          earned = user.streakCount >= badge.requiredStreak;
+          break;
+      }
+
       if (earned) newBadges.add(badge);
     }
+
+    if (newBadges.isEmpty) return [];
+
+    // Persist to Firestore
+    await persistNewBadges(userId: user.id, newBadges: newBadges);
 
     return newBadges;
   }
 
-  /// Persist badge yang baru di-unlock ke Firestore.
+  /// Persist badge that baru di-unlock ke Firestore.
   ///
   /// Menulis ke DUA tempat secara atomik (batch):
   ///   1. `users/{uid}.earnedBadgeIds` — array field (dibaca Flutter)
@@ -114,9 +84,8 @@ class BadgeService {
   }) async {
     if (newBadges.isEmpty) return;
 
-    final db = FirebaseFirestore.instance;
-    final userRef = db.collection('users').doc(userId);
-    final batch = db.batch();
+    final userRef = _db.collection('users').doc(userId);
+    final batch = _db.batch();
 
     // 1. Append badge IDs to the earnedBadgeIds array on the user doc
     batch.update(userRef, {
@@ -137,36 +106,43 @@ class BadgeService {
           'iconPath': badge.iconPath,
           'earnedAt': FieldValue.serverTimestamp(),
         },
-        SetOptions(merge: true), // idempotent — won't overwrite earnedAt if already set
+        SetOptions(merge: true),
       );
     }
 
     await batch.commit();
   }
 
-  // ---------------------------------------------------------------------------
-  // Private helpers
-  // ---------------------------------------------------------------------------
-
-  bool _isEligible({
-    required String badgeId,
+  /// Legacy compatibility: check new badges based on level/streak (for existing callers).
+  Future<List<BadgeModel>> checkNewBadges({
     required int level,
     required int streak,
+    required List<String> earnedBadgeIds,
     required bool completedFirstMission,
-  }) {
-    switch (badgeId) {
-      case kBadgeStarterId:
-        return completedFirstMission;
-      case kBadgeRookieId:
-        return level >= 15;
-      case kBadgeVeteranId:
-        return level >= 30;
-      case kBadgeSpecialMissionId:
-        return level >= 10;
-      case kBadgeSurvivorId:
-        return streak >= 7;
-      default:
-        return false;
+  }) async {
+    final all = await getAllBadges();
+    final newBadges = <BadgeModel>[];
+
+    for (final badge in all) {
+      if (earnedBadgeIds.contains(badge.id)) continue;
+
+      bool earned = false;
+      switch (badge.badgeType) {
+        case 'points':
+          // For legacy compatibility, use level * 100 as approximate points
+          earned = (level * 100) >= badge.requiredPoints;
+          break;
+        case 'completed_levels':
+          earned = level >= badge.requiredLevels;
+          break;
+        case 'streak':
+          earned = streak >= badge.requiredStreak;
+          break;
+      }
+
+      if (earned) newBadges.add(badge);
     }
+
+    return newBadges;
   }
 }

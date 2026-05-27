@@ -73,6 +73,7 @@ class AuthService {
       email: data['email'] ?? '',
       role: data['role'] ?? 'user',
       points: data['points'] ?? 0,
+      craftingBalance: data['craftingBalance'] ?? 0,
       level: data['level'] ?? 1,
       bridgeProgress: data['bridgeProgress'] ?? 0,
       earnedBadgeIds: List<String>.from(data['earnedBadgeIds'] ?? []),
@@ -103,6 +104,7 @@ class AuthService {
   Future<void> updateUserProgress(UserModel user) async {
     await _db.collection('users').doc(user.id).update({
       'points': user.points,
+      'craftingBalance': user.craftingBalance,
       'level': user.level,
       'bridgeProgress': user.bridgeProgress,
       'earnedBadgeIds': user.earnedBadgeIds,
@@ -142,6 +144,7 @@ class AuthService {
       tx.update(ref, {
         'completedModuleIds': completedIds,
         'points': newPoints,
+        'craftingBalance': (data['craftingBalance'] as int? ?? 0) + pointsToAdd,
         'level': calculateLevel(newPoints),
         if (newPhotoUrls.isNotEmpty)
           'completedPhotoUrls': FieldValue.arrayUnion(newPhotoUrls),
@@ -170,6 +173,7 @@ class AuthService {
       tx.update(ref, {
         'completedModuleIds': completedIds,
         'points': newPoints,
+        'craftingBalance': (data['craftingBalance'] as int? ?? 0) + adminScore,
         'level': calculateLevel(newPoints),
         if (photoUrl.isNotEmpty)
           'completedPhotoUrls': FieldValue.arrayUnion([photoUrl]),

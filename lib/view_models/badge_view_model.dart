@@ -1,5 +1,5 @@
 // lib/view_models/badge_view_model.dart
-// TASK-04 — BadgeViewModel
+// Firestore-driven badge view model with auto-award
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/badge_model.dart';
@@ -61,7 +61,7 @@ class BadgeViewModel extends StateNotifier<BadgeState> {
 
   BadgeViewModel(this._badgeService) : super(const BadgeState());
 
-  /// Load semua badge dan tandai mana yang sudah earned oleh [user].
+  /// Load semua badge dari Firestore dan tandai mana yang sudah earned oleh [user].
   Future<void> loadBadges(UserModel user) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -79,16 +79,11 @@ class BadgeViewModel extends StateNotifier<BadgeState> {
     }
   }
 
-  /// Cek kondisi unlock badge baru. Jika ada yang baru, simpan di
-  /// [newlyUnlocked] untuk ditampilkan sebagai notifikasi.
-  Future<void> checkAndUnlockBadges(UserModel user, int streak) async {
+  /// Check and auto-award badges based on user progress.
+  /// Updates state with newly unlocked badges for notification display.
+  Future<void> refreshBadges(UserModel user) async {
     try {
-      final newBadges = await _badgeService.checkNewBadges(
-        level: user.level,
-        streak: streak,
-        earnedBadgeIds: user.earnedBadgeIds,
-        completedFirstMission: user.level >= 1,
-      );
+      final newBadges = await _badgeService.checkAndAwardBadges(user);
       if (newBadges.isNotEmpty) {
         final updatedIds = [
           ...state.earnedBadgeIds,
@@ -100,8 +95,13 @@ class BadgeViewModel extends StateNotifier<BadgeState> {
         );
       }
     } catch (_) {
-      // Tidak perlu update error state — badge check adalah best-effort
+      // Badge check is best-effort — don't break the flow
     }
+  }
+
+  /// Legacy method — delegates to refreshBadges.
+  Future<void> checkAndUnlockBadges(UserModel user, int streak) async {
+    await refreshBadges(user);
   }
 
   /// Reset daftar badge baru setelah notifikasi ditampilkan.

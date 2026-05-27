@@ -10,8 +10,13 @@ class BadgeModel with _$BadgeModel {
     required String title,
     required String description,
     required String iconPath,
-    required int requiredPoints, // threshold poin untuk unlock
+    @Default('points') String badgeType, // "points" | "completed_levels" | "streak"
+    @Default(0) int requiredPoints,
+    @Default(0) int requiredLevels,
+    @Default(0) int requiredStreak,
+    @Default(true) bool isActive,
   }) = _BadgeModel;
 
-  factory BadgeModel.fromJson(Map<String, dynamic> json) => _$BadgeModelFromJson(json);
+  factory BadgeModel.fromJson(Map<String, dynamic> json) =>
+      _$BadgeModelFromJson(json);
 }

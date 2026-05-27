@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_view_model.dart';
 import '../providers/service_providers.dart';
+import '../providers/crafting_items_provider.dart';
 import '../services/user_service.dart';
 
 class CraftingState {
   final bool craftingDone;
   final int currentPoints;
+  final int craftingBalance;
   final int requiredPoints;
   final int bridgeProgress;
   final int maxBridgeSegments;
@@ -16,6 +18,7 @@ class CraftingState {
   CraftingState({
     this.craftingDone = false,
     this.currentPoints = 0,
+    this.craftingBalance = 0,
     this.requiredPoints = 1000,
     this.bridgeProgress = 0,
     this.maxBridgeSegments = 5,
@@ -26,6 +29,7 @@ class CraftingState {
   CraftingState copyWith({
     bool? craftingDone,
     int? currentPoints,
+    int? craftingBalance,
     int? requiredPoints,
     int? bridgeProgress,
     int? maxBridgeSegments,
@@ -35,6 +39,7 @@ class CraftingState {
     return CraftingState(
       craftingDone: craftingDone ?? this.craftingDone,
       currentPoints: currentPoints ?? this.currentPoints,
+      craftingBalance: craftingBalance ?? this.craftingBalance,
       requiredPoints: requiredPoints ?? this.requiredPoints,
       bridgeProgress: bridgeProgress ?? this.bridgeProgress,
       maxBridgeSegments: maxBridgeSegments ?? this.maxBridgeSegments,
@@ -57,34 +62,47 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
   void loadCraftingStatus() {
     final user = _ref.read(authViewModelProvider).currentUser;
     final progress = user?.bridgeProgress ?? 0;
-    const itemCosts = [200, 150, 350, 500, 800, 1200];
-    final cost = progress < itemCosts.length ? itemCosts[progress] : 0;
+
+    // Get items from provider (Firestore-driven)
+    final itemsAsync = _ref.read(craftingItemsProvider);
+    final items = itemsAsync.valueOrNull ?? [];
+    final maxSegments = items.isNotEmpty ? items.length : 6;
+    final cost = progress < items.length ? items[progress].cost : 0;
+
     state = state.copyWith(
       currentPoints: user?.points ?? 0,
+      craftingBalance: user?.craftingBalance ?? 0,
       bridgeProgress: progress,
-      maxBridgeSegments: itemCosts.length,
+      maxBridgeSegments: maxSegments,
       requiredPoints: cost,
-      craftingDone: progress >= itemCosts.length,
+      craftingDone: progress >= maxSegments,
     );
   }
 
-  bool get hasSufficientPoints => state.currentPoints >= state.requiredPoints;
+  bool get hasSufficientPoints => state.craftingBalance >= state.requiredPoints;
 
   Future<void> doCrafting(int pointCost) async {
     if (state.isLoading || !hasSufficientPoints || state.bridgeProgress >= state.maxBridgeSegments) return;
 
     state = state.copyWith(isLoading: true);
     try {
-      final success = await _userService.doCrafting(pointCost);
+      final user = _ref.read(authViewModelProvider).currentUser;
+      if (user == null) {
+        state = state.copyWith(isLoading: false);
+        return;
+      }
+
+      final success = await _userService.doCrafting(
+        userId: user.id,
+        pointCost: pointCost,
+      );
       if (success) {
-        final user = _ref.read(authViewModelProvider).currentUser;
-        if (user != null) {
-          final updatedUser = user.copyWith(
-            points: user.points - pointCost,
-            bridgeProgress: user.bridgeProgress + 1,
-          );
-          _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
-        }
+        // Update local user state — only craftingBalance decreases, points stays
+        final updatedUser = user.copyWith(
+          craftingBalance: user.craftingBalance - pointCost,
+          bridgeProgress: user.bridgeProgress + 1,
+        );
+        _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
 
         final newProgress = state.bridgeProgress + 1;
         final justFinished = newProgress >= state.maxBridgeSegments;
@@ -93,13 +111,15 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
         final currentUser = _ref.read(authViewModelProvider).currentUser;
         final needPosttest = justFinished && (currentUser?.posttestDone == false);
 
-        // Update the next required points
-        const itemCosts = [200, 150, 350, 500, 800, 1200];
-        final nextCost = newProgress < itemCosts.length ? itemCosts[newProgress] : 0;
+        // Get next cost from Firestore items
+        final itemsAsync = _ref.read(craftingItemsProvider);
+        final items = itemsAsync.valueOrNull ?? [];
+        final nextCost = newProgress < items.length ? items[newProgress].cost : 0;
 
         state = state.copyWith(
           craftingDone: justFinished,
-          currentPoints: state.currentPoints - pointCost,
+          craftingBalance: state.craftingBalance - pointCost,
+          currentPoints: state.currentPoints,
           bridgeProgress: newProgress,
           requiredPoints: nextCost,
           isLoading: false,

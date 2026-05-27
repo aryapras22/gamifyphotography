@@ -25,7 +25,12 @@ mixin _$BadgeModel {
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get iconPath => throw _privateConstructorUsedError;
+  String get badgeType =>
+      throw _privateConstructorUsedError; // "points" | "completed_levels" | "streak"
   int get requiredPoints => throw _privateConstructorUsedError;
+  int get requiredLevels => throw _privateConstructorUsedError;
+  int get requiredStreak => throw _privateConstructorUsedError;
+  bool get isActive => throw _privateConstructorUsedError;
 
   /// Serializes this BadgeModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -49,7 +54,11 @@ abstract class $BadgeModelCopyWith<$Res> {
     String title,
     String description,
     String iconPath,
+    String badgeType,
     int requiredPoints,
+    int requiredLevels,
+    int requiredStreak,
+    bool isActive,
   });
 }
 
@@ -72,7 +81,11 @@ class _$BadgeModelCopyWithImpl<$Res, $Val extends BadgeModel>
     Object? title = null,
     Object? description = null,
     Object? iconPath = null,
+    Object? badgeType = null,
     Object? requiredPoints = null,
+    Object? requiredLevels = null,
+    Object? requiredStreak = null,
+    Object? isActive = null,
   }) {
     return _then(
       _value.copyWith(
@@ -92,10 +105,26 @@ class _$BadgeModelCopyWithImpl<$Res, $Val extends BadgeModel>
                 ? _value.iconPath
                 : iconPath // ignore: cast_nullable_to_non_nullable
                       as String,
+            badgeType: null == badgeType
+                ? _value.badgeType
+                : badgeType // ignore: cast_nullable_to_non_nullable
+                      as String,
             requiredPoints: null == requiredPoints
                 ? _value.requiredPoints
                 : requiredPoints // ignore: cast_nullable_to_non_nullable
                       as int,
+            requiredLevels: null == requiredLevels
+                ? _value.requiredLevels
+                : requiredLevels // ignore: cast_nullable_to_non_nullable
+                      as int,
+            requiredStreak: null == requiredStreak
+                ? _value.requiredStreak
+                : requiredStreak // ignore: cast_nullable_to_non_nullable
+                      as int,
+            isActive: null == isActive
+                ? _value.isActive
+                : isActive // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -116,7 +145,11 @@ abstract class _$$BadgeModelImplCopyWith<$Res>
     String title,
     String description,
     String iconPath,
+    String badgeType,
     int requiredPoints,
+    int requiredLevels,
+    int requiredStreak,
+    bool isActive,
   });
 }
 
@@ -138,7 +171,11 @@ class __$$BadgeModelImplCopyWithImpl<$Res>
     Object? title = null,
     Object? description = null,
     Object? iconPath = null,
+    Object? badgeType = null,
     Object? requiredPoints = null,
+    Object? requiredLevels = null,
+    Object? requiredStreak = null,
+    Object? isActive = null,
   }) {
     return _then(
       _$BadgeModelImpl(
@@ -158,10 +195,26 @@ class __$$BadgeModelImplCopyWithImpl<$Res>
             ? _value.iconPath
             : iconPath // ignore: cast_nullable_to_non_nullable
                   as String,
+        badgeType: null == badgeType
+            ? _value.badgeType
+            : badgeType // ignore: cast_nullable_to_non_nullable
+                  as String,
         requiredPoints: null == requiredPoints
             ? _value.requiredPoints
             : requiredPoints // ignore: cast_nullable_to_non_nullable
                   as int,
+        requiredLevels: null == requiredLevels
+            ? _value.requiredLevels
+            : requiredLevels // ignore: cast_nullable_to_non_nullable
+                  as int,
+        requiredStreak: null == requiredStreak
+            ? _value.requiredStreak
+            : requiredStreak // ignore: cast_nullable_to_non_nullable
+                  as int,
+        isActive: null == isActive
+            ? _value.isActive
+            : isActive // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -175,7 +228,11 @@ class _$BadgeModelImpl implements _BadgeModel {
     required this.title,
     required this.description,
     required this.iconPath,
-    required this.requiredPoints,
+    this.badgeType = 'points',
+    this.requiredPoints = 0,
+    this.requiredLevels = 0,
+    this.requiredStreak = 0,
+    this.isActive = true,
   });
 
   factory _$BadgeModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -190,11 +247,25 @@ class _$BadgeModelImpl implements _BadgeModel {
   @override
   final String iconPath;
   @override
+  @JsonKey()
+  final String badgeType;
+  // "points" | "completed_levels" | "streak"
+  @override
+  @JsonKey()
   final int requiredPoints;
+  @override
+  @JsonKey()
+  final int requiredLevels;
+  @override
+  @JsonKey()
+  final int requiredStreak;
+  @override
+  @JsonKey()
+  final bool isActive;
 
   @override
   String toString() {
-    return 'BadgeModel(id: $id, title: $title, description: $description, iconPath: $iconPath, requiredPoints: $requiredPoints)';
+    return 'BadgeModel(id: $id, title: $title, description: $description, iconPath: $iconPath, badgeType: $badgeType, requiredPoints: $requiredPoints, requiredLevels: $requiredLevels, requiredStreak: $requiredStreak, isActive: $isActive)';
   }
 
   @override
@@ -208,8 +279,16 @@ class _$BadgeModelImpl implements _BadgeModel {
                 other.description == description) &&
             (identical(other.iconPath, iconPath) ||
                 other.iconPath == iconPath) &&
+            (identical(other.badgeType, badgeType) ||
+                other.badgeType == badgeType) &&
             (identical(other.requiredPoints, requiredPoints) ||
-                other.requiredPoints == requiredPoints));
+                other.requiredPoints == requiredPoints) &&
+            (identical(other.requiredLevels, requiredLevels) ||
+                other.requiredLevels == requiredLevels) &&
+            (identical(other.requiredStreak, requiredStreak) ||
+                other.requiredStreak == requiredStreak) &&
+            (identical(other.isActive, isActive) ||
+                other.isActive == isActive));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -220,7 +299,11 @@ class _$BadgeModelImpl implements _BadgeModel {
     title,
     description,
     iconPath,
+    badgeType,
     requiredPoints,
+    requiredLevels,
+    requiredStreak,
+    isActive,
   );
 
   /// Create a copy of BadgeModel
@@ -243,7 +326,11 @@ abstract class _BadgeModel implements BadgeModel {
     required final String title,
     required final String description,
     required final String iconPath,
-    required final int requiredPoints,
+    final String badgeType,
+    final int requiredPoints,
+    final int requiredLevels,
+    final int requiredStreak,
+    final bool isActive,
   }) = _$BadgeModelImpl;
 
   factory _BadgeModel.fromJson(Map<String, dynamic> json) =
@@ -258,7 +345,15 @@ abstract class _BadgeModel implements BadgeModel {
   @override
   String get iconPath;
   @override
+  String get badgeType; // "points" | "completed_levels" | "streak"
+  @override
   int get requiredPoints;
+  @override
+  int get requiredLevels;
+  @override
+  int get requiredStreak;
+  @override
+  bool get isActive;
 
   /// Create a copy of BadgeModel
   /// with the given fields replaced by the non-null parameter values.

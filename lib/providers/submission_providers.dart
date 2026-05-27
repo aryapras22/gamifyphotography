@@ -75,6 +75,10 @@ final submissionApprovalWatcherProvider =
         );
         final updatedUser = await authService.fetchUser(userId);
         authNotifier.updateUser(updatedUser);
+
+        // Auto-check badge after points awarded
+        final badgeService = ref.read(badgeServiceProvider);
+        await badgeService.checkAndAwardBadges(updatedUser);
       } catch (e) {
         debugPrint('[SubmissionWatcher] failed to award points: $e');
         // Remove from in-flight agar bisa di-retry pada snapshot berikutnya

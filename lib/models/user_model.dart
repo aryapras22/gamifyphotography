@@ -11,6 +11,7 @@ class UserModel with _$UserModel {
     required String email,
     @Default('user') String role,
     @Default(0) int points,
+    @Default(0) int craftingBalance,
     @Default(1) int level,
     @Default([]) List<String> earnedBadgeIds,
     @Default([]) List<String> completedPhotoUrls,

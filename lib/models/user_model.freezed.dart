@@ -26,6 +26,7 @@ mixin _$UserModel {
   String get email => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
   int get points => throw _privateConstructorUsedError;
+  int get craftingBalance => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
   List<String> get earnedBadgeIds => throw _privateConstructorUsedError;
   List<String> get completedPhotoUrls => throw _privateConstructorUsedError;
@@ -69,6 +70,7 @@ abstract class $UserModelCopyWith<$Res> {
     String email,
     String role,
     int points,
+    int craftingBalance,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
@@ -105,6 +107,7 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? email = null,
     Object? role = null,
     Object? points = null,
+    Object? craftingBalance = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
@@ -140,6 +143,10 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
             points: null == points
                 ? _value.points
                 : points // ignore: cast_nullable_to_non_nullable
+                      as int,
+            craftingBalance: null == craftingBalance
+                ? _value.craftingBalance
+                : craftingBalance // ignore: cast_nullable_to_non_nullable
                       as int,
             level: null == level
                 ? _value.level
@@ -214,6 +221,7 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String email,
     String role,
     int points,
+    int craftingBalance,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
@@ -249,6 +257,7 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? email = null,
     Object? role = null,
     Object? points = null,
+    Object? craftingBalance = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
@@ -284,6 +293,10 @@ class __$$UserModelImplCopyWithImpl<$Res>
         points: null == points
             ? _value.points
             : points // ignore: cast_nullable_to_non_nullable
+                  as int,
+        craftingBalance: null == craftingBalance
+            ? _value.craftingBalance
+            : craftingBalance // ignore: cast_nullable_to_non_nullable
                   as int,
         level: null == level
             ? _value.level
@@ -351,6 +364,7 @@ class _$UserModelImpl implements _UserModel {
     required this.email,
     this.role = 'user',
     this.points = 0,
+    this.craftingBalance = 0,
     this.level = 1,
     final List<String> earnedBadgeIds = const [],
     final List<String> completedPhotoUrls = const [],
@@ -394,6 +408,9 @@ class _$UserModelImpl implements _UserModel {
   @override
   @JsonKey()
   final int points;
+  @override
+  @JsonKey()
+  final int craftingBalance;
   @override
   @JsonKey()
   final int level;
@@ -482,7 +499,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt, completedLevels: $completedLevels, quizScores: $quizScores, pretestDone: $pretestDone, posttestDone: $posttestDone)';
+    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, craftingBalance: $craftingBalance, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt, completedLevels: $completedLevels, quizScores: $quizScores, pretestDone: $pretestDone, posttestDone: $posttestDone)';
   }
 
   @override
@@ -495,6 +512,8 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.points, points) || other.points == points) &&
+            (identical(other.craftingBalance, craftingBalance) ||
+                other.craftingBalance == craftingBalance) &&
             (identical(other.level, level) || other.level == level) &&
             const DeepCollectionEquality().equals(
               other._earnedBadgeIds,
@@ -536,13 +555,14 @@ class _$UserModelImpl implements _UserModel {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     runtimeType,
     id,
     name,
     email,
     role,
     points,
+    craftingBalance,
     level,
     const DeepCollectionEquality().hash(_earnedBadgeIds),
     const DeepCollectionEquality().hash(_completedPhotoUrls),
@@ -556,7 +576,7 @@ class _$UserModelImpl implements _UserModel {
     const DeepCollectionEquality().hash(_quizScores),
     pretestDone,
     posttestDone,
-  );
+  ]);
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -579,6 +599,7 @@ abstract class _UserModel implements UserModel {
     required final String email,
     final String role,
     final int points,
+    final int craftingBalance,
     final int level,
     final List<String> earnedBadgeIds,
     final List<String> completedPhotoUrls,
@@ -607,6 +628,8 @@ abstract class _UserModel implements UserModel {
   String get role;
   @override
   int get points;
+  @override
+  int get craftingBalance;
   @override
   int get level;
   @override
