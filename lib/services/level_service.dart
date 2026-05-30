@@ -72,6 +72,8 @@ class LevelService {
   /// Simpan hasil quiz ke collection quiz_results (untuk analytics).
   Future<void> saveQuizResult({
     required String userId,
+    required String userName,
+    required String userEmail,
     required int levelNumber,
     required int score,
     required List<int> answers,
@@ -79,6 +81,8 @@ class LevelService {
   }) async {
     await _db.collection('quiz_results').add({
       'userId': userId,
+      'userName': userName,
+      'userEmail': userEmail,
       'type': 'quiz_level_$levelNumber',
       'levelNumber': levelNumber,
       'score': score,

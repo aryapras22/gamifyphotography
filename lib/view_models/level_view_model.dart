@@ -274,6 +274,8 @@ class LevelViewModel extends StateNotifier<LevelState> {
     try {
       await _levelService.saveQuizResult(
         userId: user.id,
+        userName: user.name,
+        userEmail: user.email,
         levelNumber: levelNumber,
         score: score,
         answers: answers,
