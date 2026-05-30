@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/badge_model.dart';
@@ -47,7 +48,18 @@ class _BadgeUnlockContent extends StatelessWidget {
             curve: Curves.elasticOut,
             builder: (_, value, child) =>
                 Transform.scale(scale: value, child: child),
-            child: SvgPicture.asset(badge.iconPath, width: 80, height: 80),
+            child: badge.iconPath.startsWith('http')
+                ? CachedNetworkImage(
+                    imageUrl: badge.iconPath,
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.contain,
+                    placeholder: (context, url) =>
+                        const Icon(Icons.shield, size: 80, color: Colors.amber),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.shield, size: 80, color: Colors.amber),
+                  )
+                : SvgPicture.asset(badge.iconPath, width: 80, height: 80),
           ),
           const SizedBox(height: 16),
 

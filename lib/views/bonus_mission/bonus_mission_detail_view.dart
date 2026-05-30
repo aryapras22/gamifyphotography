@@ -7,8 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/bonus_mission_model.dart';
+import '../../models/photo_submission_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../providers/service_providers.dart';
+import '../../providers/submission_providers.dart';
 import '../widgets/brutal_widgets.dart';
 import '../mission/custom_camera_view.dart';
 
@@ -323,6 +325,13 @@ class _BonusPage2State extends ConsumerState<_BonusPage2> {
 
   String get _moduleId => widget.mission.id;
 
+  /// True when the user already has an accepted (approved) submission for this
+  /// bonus mission, meaning it can no longer be done again.
+  bool _isAccepted(PhotoSubmissionModel? submission) {
+    final status = submission?.status;
+    return status == 'approved' || status == 'reviewed';
+  }
+
   Future<void> _openCamera() async {
     final visualGuideUrl = widget.mission.page2VisualGuideUrl;
     final XFile? xfile = await Navigator.of(context).push<XFile?>(
@@ -340,6 +349,21 @@ class _BonusPage2State extends ConsumerState<_BonusPage2> {
 
   Future<void> _submitPhoto() async {
     if (_capturedPhoto == null || _isUploading) return;
+
+    // Guard: do not allow submitting if the mission was already accepted.
+    final existing = ref.read(submissionStatusProvider(_moduleId)).valueOrNull;
+    if (_isAccepted(existing)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Misi ini sudah diterima dan tidak bisa dikirim lagi.'),
+            backgroundColor: AppColors.brandDanger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
 
     setState(() => _isUploading = true);
 
@@ -398,6 +422,10 @@ class _BonusPage2State extends ConsumerState<_BonusPage2> {
     final visualGuideUrl = widget.mission.page2VisualGuideUrl;
     final hasGuide = visualGuideUrl.isNotEmpty;
 
+    final submissionAsync = ref.watch(submissionStatusProvider(_moduleId));
+    final submission = submissionAsync.valueOrNull;
+    final isAccepted = _isAccepted(submission);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
       child: Column(
@@ -421,10 +449,15 @@ class _BonusPage2State extends ConsumerState<_BonusPage2> {
           ),
           const SizedBox(height: 24),
 
-          // Camera / Photo section
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          // Once a submission has been accepted by the jury/admin, the mission
+          // is locked and can no longer be done again.
+          if (isAccepted)
+            _MissionCompletedCard(xpReward: widget.mission.xpReward)
+          else ...[
+            // Camera / Photo section
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Text(
                 _capturedPhoto != null ? 'FOTO KAMU' : 'PANDUAN KAMERA',
                 style: GoogleFonts.inter(
@@ -576,6 +609,62 @@ class _BonusPage2State extends ConsumerState<_BonusPage2> {
                     ],
                   ),
           ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown in place of the camera/submit section when the user's submission for
+/// this bonus mission has already been accepted by the jury/admin. The mission
+/// is locked and cannot be done again.
+class _MissionCompletedCard extends StatelessWidget {
+  final int xpReward;
+
+  const _MissionCompletedCard({required this.xpReward});
+
+  @override
+  Widget build(BuildContext context) {
+    return BrutalCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: AppColors.brandSuccess,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.black, width: 2.0),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(Icons.verified_rounded, color: Colors.black, size: 30),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'MISI SELESAI',
+            style: GoogleFonts.bricolageGrotesque(
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+              color: Colors.black,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Foto kamu sudah diterima oleh juri. Misi ini tidak bisa dilakukan lagi.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.secondaryText,
+            ),
+          ),
+          if (xpReward > 0) ...[
+            const SizedBox(height: 14),
+            BrutalXPPill(amount: xpReward),
+          ],
         ],
       ),
     );

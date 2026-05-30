@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
@@ -105,11 +106,23 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                   border: Border.all(color: Colors.black, width: 2.0),
                   boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
                 ),
-                padding: const EdgeInsets.all(12),
-                child: SvgPicture.asset(
-                  badge.iconPath,
-                  colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                ),
+                padding: const EdgeInsets.all(14),
+                child: badge.iconPath.startsWith('http')
+                    ? CachedNetworkImage(
+                        imageUrl: badge.iconPath,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) =>
+                            const Icon(Icons.shield, color: Colors.white),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.shield, color: Colors.white),
+                      )
+                    : SvgPicture.asset(
+                        badge.iconPath,
+                        fit: BoxFit.contain,
+                        colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      ),
               ),
             ),
           ],
@@ -388,20 +401,48 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                               Expanded(
                                 child: Container(
                                   width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: tint,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(color: Colors.black, width: 2.0),
                                   ),
                                   alignment: Alignment.center,
-                                  child: SvgPicture.asset(
-                                    badge.iconPath,
-                                    width: 44,
-                                    height: 44,
-                                    colorFilter: isEarned
-                                        ? const ColorFilter.mode(Colors.black, BlendMode.srcIn)
-                                        : const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
-                                  ),
+                                  child: badge.iconPath.startsWith('http')
+                                      ? ColorFiltered(
+                                          colorFilter: isEarned
+                                              ? const ColorFilter.mode(
+                                                  Colors.transparent, BlendMode.multiply)
+                                              : const ColorFilter.matrix(<double>[
+                                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                                  0.2126, 0.7152, 0.0722, 0, 0,
+                                                  0, 0, 0, 1, 0,
+                                                ]),
+                                          child: CachedNetworkImage(
+                                            imageUrl: badge.iconPath,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            fit: BoxFit.contain,
+                                            placeholder: (context, url) => const Icon(
+                                                Icons.shield,
+                                                size: 64,
+                                                color: Colors.black),
+                                            errorWidget: (context, url, error) => const Icon(
+                                                Icons.shield,
+                                                size: 64,
+                                                color: Colors.black),
+                                          ),
+                                        )
+                                      : SvgPicture.asset(
+                                          badge.iconPath,
+                                          width: double.infinity,
+                                          height: double.infinity,
+                                          fit: BoxFit.contain,
+                                          colorFilter: isEarned
+                                              ? const ColorFilter.mode(Colors.black, BlendMode.srcIn)
+                                              : const ColorFilter.mode(Colors.grey, BlendMode.srcIn),
+                                        ),
                                 ),
                               ),
                               const SizedBox(height: 10),
