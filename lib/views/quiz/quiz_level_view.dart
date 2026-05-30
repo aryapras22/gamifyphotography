@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_text_styles.dart';
 import '../../models/level_model.dart';
@@ -34,9 +35,14 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
   final List<int?> _answers = [];
   bool _isLoading = true;
 
+  /// True while showing the pre-quiz WYSIWYG material (before quiz starts).
+  bool _showingPreQuizMaterial = false;
+
   @override
   void initState() {
     super.initState();
+    // Show pre-quiz material first if configured
+    _showingPreQuizMaterial = widget.config.hasPreQuiz;
     _loadQuestions();
   }
 
@@ -195,6 +201,11 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
         backgroundColor: AppColors.brandBg,
         body: Center(child: CircularProgressIndicator(color: Colors.black)),
       );
+    }
+
+    // Show pre-quiz WYSIWYG material before the quiz starts
+    if (_showingPreQuizMaterial) {
+      return _buildPreQuizMaterial(context);
     }
 
     if (_questions.isEmpty) {
@@ -400,6 +411,69 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
       return Image.network(url, height: 180, width: double.infinity, fit: BoxFit.cover);
     }
     return Image.asset(url, height: 180, width: double.infinity, fit: BoxFit.cover);
+  }
+
+  /// Pre-quiz WYSIWYG material screen shown before the quiz begins.
+  Widget _buildPreQuizMaterial(BuildContext context) {
+    final title = widget.config.preQuizTitle.trim().isNotEmpty
+        ? widget.config.preQuizTitle
+        : 'Materi Sebelum Quiz';
+
+    return Scaffold(
+      backgroundColor: AppColors.brandBg,
+      appBar: BrutalAppBar(
+        title: 'Materi Quiz',
+        subtitle: widget.config.title,
+        onBackPressed: () => Navigator.pop(context),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.heading.copyWith(fontSize: 22),
+                    ),
+                    const SizedBox(height: 16),
+                    BrutalCard(
+                      padding: const EdgeInsets.all(16),
+                      child: HtmlWidget(
+                        widget.config.preQuizContent,
+                        textStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          height: 1.6,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: BrutalButton(
+                fullWidth: true,
+                variant: BrutalButtonVariant.primary,
+                onPressed: () => setState(() => _showingPreQuizMaterial = false),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('MULAI QUIZ '),
+                    Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

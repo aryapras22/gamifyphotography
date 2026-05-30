@@ -83,7 +83,7 @@ class MateriContent {
   }
 }
 
-/// Konfigurasi satu level (materi atau quiz) — data hardcoded (fallback offline)
+/// Konfigurasi satu level (materi atau quiz)
 class LevelConfig {
   final int levelNumber;
   final String title;
@@ -92,6 +92,11 @@ class LevelConfig {
   final List<QuizQuestion>? questions;
   final int passingScore;
 
+  // ── Pre-quiz material (untuk quiz dengan materi WYSIWYG sebelumnya) ──────
+  final bool hasPreQuizMaterial;
+  final String preQuizContent;
+  final String preQuizTitle;
+
   const LevelConfig({
     required this.levelNumber,
     required this.title,
@@ -99,10 +104,17 @@ class LevelConfig {
     this.materiContent,
     this.questions,
     this.passingScore = 70,
+    this.hasPreQuizMaterial = false,
+    this.preQuizContent = '',
+    this.preQuizTitle = '',
   });
 
   bool get isMateri => type == LevelType.materi;
   bool get isQuiz => type == LevelType.quiz;
+
+  /// Apakah quiz ini punya materi pra-quiz yang harus ditampilkan dulu.
+  bool get hasPreQuiz =>
+      isQuiz && hasPreQuizMaterial && preQuizContent.trim().isNotEmpty;
 
   static int calculateScore(int correctAnswers, int totalQuestions) {
     if (totalQuestions == 0) return 0;
@@ -173,6 +185,11 @@ class FirestoreLevel {
   final FirestorePage1? page1;
   final FirestorePage2? page2;
 
+  // ── Pre-quiz material (WYSIWYG) ──────────────────────────────────────────
+  final bool hasPreQuizMaterial;
+  final String preQuizContent;
+  final String preQuizTitle;
+
   const FirestoreLevel({
     required this.id,
     required this.levelNumber,
@@ -183,6 +200,9 @@ class FirestoreLevel {
     this.passingScore = 70,
     this.page1,
     this.page2,
+    this.hasPreQuizMaterial = false,
+    this.preQuizContent = '',
+    this.preQuizTitle = '',
   });
 
   bool get isMateri => type == LevelType.materi;
@@ -214,6 +234,9 @@ class FirestoreLevel {
       passingScore: (data['passingScore'] as num?)?.toInt() ?? 70,
       page1: page1,
       page2: page2,
+      hasPreQuizMaterial: data['hasPreQuizMaterial'] as bool? ?? false,
+      preQuizContent: data['preQuizContent'] as String? ?? '',
+      preQuizTitle: data['preQuizTitle'] as String? ?? '',
     );
   }
 

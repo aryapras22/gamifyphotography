@@ -94,8 +94,6 @@ class AuthService {
           ? List<int>.from((data['completedLevels'] as List).map((e) => (e as num).toInt()))
           : [],
       quizScores: quizScores,
-      pretestDone: data['pretestDone'] ?? false,
-      posttestDone: data['posttestDone'] ?? false,
     );
   }
 
@@ -118,8 +116,6 @@ class AuthService {
       // Level system fields
       'completedLevels': user.completedLevels,
       'quizScores': user.quizScores,
-      'pretestDone': user.pretestDone,
-      'posttestDone': user.posttestDone,
     });
   }
 

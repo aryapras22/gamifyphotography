@@ -93,12 +93,14 @@ class _PretestViewState extends ConsumerState<PretestView> {
     final answers = _selectedAnswers.map((a) => a ?? -1).toList();
 
     if (widget.testType == TestType.pretest) {
-      await ref.read(levelViewModelProvider.notifier).submitPretest(
+      await ref.read(levelViewModelProvider.notifier).submitQuizResult(
+        levelNumber: 0,
         score: score,
         answers: answers,
       );
     } else {
-      await ref.read(levelViewModelProvider.notifier).submitPosttest(
+      await ref.read(levelViewModelProvider.notifier).submitQuizResult(
+        levelNumber: 26,
         score: score,
         answers: answers,
       );

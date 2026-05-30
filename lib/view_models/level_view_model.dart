@@ -1,5 +1,5 @@
 // lib/view_models/level_view_model.dart
-// TASK-07 (original) + TASK-M03 (Firestore migration)
+// Module restructure — 3 types, no pretest/posttest flags
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +18,6 @@ class LevelEntry {
   final LevelConfig config;
   final LevelStatus status;
   final int? quizScore;
-  /// Firestore level data
   final FirestoreLevel? firestoreLevel;
 
   const LevelEntry({
@@ -32,12 +31,8 @@ class LevelEntry {
 class LevelState {
   final List<LevelEntry> entries;
   final bool isLoading;
-  /// Loading konten level dari Firestore (terpisah dari isLoading progress)
   final bool isContentLoading;
   final String? errorMessage;
-  final bool showPretest;
-  final bool showPosttest;
-  /// Data konten level dari Firestore (kosong = belum dimuat / fallback)
   final List<FirestoreLevel> firestoreLevels;
 
   const LevelState({
@@ -45,8 +40,6 @@ class LevelState {
     this.isLoading = false,
     this.isContentLoading = false,
     this.errorMessage,
-    this.showPretest = false,
-    this.showPosttest = false,
     this.firestoreLevels = const [],
   });
 
@@ -55,8 +48,6 @@ class LevelState {
     bool? isLoading,
     bool? isContentLoading,
     String? errorMessage,
-    bool? showPretest,
-    bool? showPosttest,
     List<FirestoreLevel>? firestoreLevels,
   }) {
     return LevelState(
@@ -64,8 +55,6 @@ class LevelState {
       isLoading: isLoading ?? this.isLoading,
       isContentLoading: isContentLoading ?? this.isContentLoading,
       errorMessage: errorMessage,
-      showPretest: showPretest ?? this.showPretest,
-      showPosttest: showPosttest ?? this.showPosttest,
       firestoreLevels: firestoreLevels ?? this.firestoreLevels,
     );
   }
@@ -96,7 +85,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
 
   // ── Content Loading ───────────────────────────────────────────────────────
 
-  /// Muat konten level dari Firestore.
   Future<void> loadLevelContent() async {
     state = state.copyWith(isContentLoading: true);
     try {
@@ -115,8 +103,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }
   }
 
-  /// Ambil [FirestoreLevel] berdasarkan levelNumber dari state.
-  /// Return null jika belum dimuat atau tidak ada di Firestore.
   FirestoreLevel? getLevelContent(int levelNumber) {
     try {
       return state.firestoreLevels
@@ -128,8 +114,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
 
   // ── Progress Loading ──────────────────────────────────────────────────────
 
-  /// Muat semua 25 level dengan status lock/unlock berdasarkan progress user.
-  /// Menggunakan firestoreLevels jika tersedia, fallback ke LevelContentData.
   void loadLevels() {
     final user = _user;
     if (user == null) return;
@@ -137,7 +121,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     state = state.copyWith(entries: entries, isLoading: false);
   }
 
-  /// Muat konten Firestore + progress sekaligus (convenience method).
   Future<void> loadAll() async {
     await loadLevelContent();
     loadLevels();
@@ -148,8 +131,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
   List<LevelEntry> _buildEntries(UserModel user) {
     final completed = user.completedLevels;
     final quizScores = user.quizScores;
-
-    // Build entries from Firestore levels
     final configs = _resolveConfigs();
 
     return configs.map((config) {
@@ -188,12 +169,8 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }).toList();
   }
 
-  /// Resolve konfigurasi level dari Firestore data.
-  /// Firestore is the single source of truth — no hardcoded fallback.
   List<LevelConfig> _resolveConfigs() {
-    if (state.firestoreLevels.isEmpty) {
-      return [];
-    }
+    if (state.firestoreLevels.isEmpty) return [];
 
     final result = <LevelConfig>[];
     for (final fs in state.firestoreLevels) {
@@ -212,6 +189,9 @@ class LevelViewModel extends StateNotifier<LevelState> {
           type: fs.type,
           questions: const [],
           passingScore: fs.passingScore,
+          hasPreQuizMaterial: fs.hasPreQuizMaterial,
+          preQuizContent: fs.preQuizContent,
+          preQuizTitle: fs.preQuizTitle,
         ));
       }
     }
@@ -220,26 +200,31 @@ class LevelViewModel extends StateNotifier<LevelState> {
     return result;
   }
 
+  /// Level unlock logic:
+  /// - Level 0 (pre-test): always available
+  /// - Level 1: always available
+  /// - Level N: available after level N-1 is completed
+  /// - Quiz levels after gate (11, 16, 21): require passing score on previous quiz
   bool _isUnlocked(
     int levelNumber,
     List<int> completed,
     Map<String, int> quizScores,
   ) {
-    if (levelNumber == 1) return true;
+    // Level 0 (pre-test) and level 1 are always unlocked
+    if (levelNumber == 0 || levelNumber == 1) return true;
 
     final prev = levelNumber - 1;
-    final prevCompleted = completed.contains(prev);
 
+    // Gate levels after quiz checkpoints
     if (levelNumber == 11 || levelNumber == 16 || levelNumber == 21) {
       final quizLevel = levelNumber - 1;
       final quizScore = quizScores[quizLevel.toString()] ?? 0;
-      // Cek passingScore dari Firestore jika tersedia
       final fsLevel = getLevelContent(quizLevel);
       final passingScore = fsLevel?.passingScore ?? 70;
       return quizScore >= passingScore;
     }
 
-    return prevCompleted;
+    return completed.contains(prev);
   }
 
   // ── Actions ──────────────────────────────────────────────────────────────
@@ -264,13 +249,7 @@ class LevelViewModel extends StateNotifier<LevelState> {
       await badgeService.checkAndAwardBadges(updatedUser);
 
       final entries = _buildEntries(updatedUser);
-      final showPretest = levelNumber == 1 && !user.pretestDone;
-
-      state = state.copyWith(
-        entries: entries,
-        isLoading: false,
-        showPretest: showPretest,
-      );
+      state = state.copyWith(entries: entries, isLoading: false);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -287,7 +266,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
     final user = _user;
     if (user == null) return;
 
-    // Cek passingScore dari Firestore atau fallback hardcoded
     final fsLevel = getLevelContent(levelNumber);
     final passingScore = fsLevel?.passingScore ?? 70;
     final passed = score >= passingScore;
@@ -335,78 +313,6 @@ class LevelViewModel extends StateNotifier<LevelState> {
       );
     }
   }
-
-  Future<void> submitPretest({
-    required int score,
-    required List<int> answers,
-  }) async {
-    final user = _user;
-    if (user == null) return;
-
-    state = state.copyWith(isLoading: true);
-    try {
-      await _levelService.savePretest(
-        userId: user.id,
-        score: score,
-        answers: answers,
-      );
-
-      final updatedUser = user.copyWith(pretestDone: true);
-      _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
-
-      final entries = _buildEntries(updatedUser);
-      state = state.copyWith(
-        entries: entries,
-        isLoading: false,
-        showPretest: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Gagal menyimpan hasil pretest.',
-      );
-    }
-  }
-
-  Future<void> submitPosttest({
-    required int score,
-    required List<int> answers,
-  }) async {
-    final user = _user;
-    if (user == null) return;
-
-    state = state.copyWith(isLoading: true);
-    try {
-      await _levelService.savePosttest(
-        userId: user.id,
-        score: score,
-        answers: answers,
-      );
-
-      final updatedUser = user.copyWith(posttestDone: true);
-      _ref.read(authViewModelProvider.notifier).updateUser(updatedUser);
-
-      state = state.copyWith(
-        isLoading: false,
-        showPosttest: false,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Gagal menyimpan hasil posttest.',
-      );
-    }
-  }
-
-  void clearShowPretest() => state = state.copyWith(showPretest: false);
-
-  void triggerPosttest() {
-    final user = _user;
-    if (user == null || user.posttestDone) return;
-    state = state.copyWith(showPosttest: true);
-  }
-
-  void clearShowPosttest() => state = state.copyWith(showPosttest: false);
 
   void clearError() => state = state.copyWith(errorMessage: null);
 }

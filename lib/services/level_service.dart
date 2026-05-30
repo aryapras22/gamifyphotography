@@ -1,5 +1,5 @@
 // lib/services/level_service.dart
-// TASK-06 / TASK-07 — Firestore operations untuk level progress & quiz results
+// Firestore operations for level progress & quiz results
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -69,55 +69,7 @@ class LevelService {
     });
   }
 
-  // ── Pretest / Posttest ──────────────────────────────────────────────────
-
-  /// Simpan hasil pretest ke Firestore (koleksi quiz_results) dan tandai pretestDone.
-  Future<void> savePretest({
-    required String userId,
-    required int score,
-    required List<int> answers,
-  }) async {
-    final batch = _db.batch();
-
-    // Simpan ke quiz_results
-    final resultRef = _db.collection('quiz_results').doc();
-    batch.set(resultRef, {
-      'userId': userId,
-      'type': 'pretest',
-      'score': score,
-      'answers': answers,
-      'submittedAt': FieldValue.serverTimestamp(),
-    });
-
-    // Tandai pretestDone di user doc
-    batch.update(_userRef(userId), {'pretestDone': true});
-
-    await batch.commit();
-  }
-
-  /// Simpan hasil posttest ke Firestore (koleksi quiz_results) dan tandai posttestDone.
-  Future<void> savePosttest({
-    required String userId,
-    required int score,
-    required List<int> answers,
-  }) async {
-    final batch = _db.batch();
-
-    final resultRef = _db.collection('quiz_results').doc();
-    batch.set(resultRef, {
-      'userId': userId,
-      'type': 'posttest',
-      'score': score,
-      'answers': answers,
-      'submittedAt': FieldValue.serverTimestamp(),
-    });
-
-    batch.update(_userRef(userId), {'posttestDone': true});
-
-    await batch.commit();
-  }
-
-  /// Simpan hasil quiz evaluasi (level 10/15/20/25) ke quiz_results.
+  /// Simpan hasil quiz ke collection quiz_results (untuk analytics).
   Future<void> saveQuizResult({
     required String userId,
     required int levelNumber,

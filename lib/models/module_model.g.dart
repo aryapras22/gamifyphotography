@@ -23,6 +23,9 @@ _$ModuleModelImpl _$$ModuleModelImplFromJson(Map<String, dynamic> json) =>
       howToUse: json['howToUse'] as String? ?? '',
       howToUseImageUrl: json['howToUseImageUrl'] as String?,
       type: json['type'] as String? ?? 'materi',
+      hasPreQuizMaterial: json['hasPreQuizMaterial'] as bool? ?? false,
+      preQuizContent: json['preQuizContent'] as String? ?? '',
+      preQuizTitle: json['preQuizTitle'] as String? ?? '',
     );
 
 Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
@@ -38,4 +41,7 @@ Map<String, dynamic> _$$ModuleModelImplToJson(_$ModuleModelImpl instance) =>
       'howToUse': instance.howToUse,
       'howToUseImageUrl': instance.howToUseImageUrl,
       'type': instance.type,
+      'hasPreQuizMaterial': instance.hasPreQuizMaterial,
+      'preQuizContent': instance.preQuizContent,
+      'preQuizTitle': instance.preQuizTitle,
     };

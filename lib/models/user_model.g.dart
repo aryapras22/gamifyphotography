@@ -53,8 +53,6 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
             (k, e) => MapEntry(k, (e as num).toInt()),
           ) ??
           const {},
-      pretestDone: json['pretestDone'] as bool? ?? false,
-      posttestDone: json['posttestDone'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
@@ -76,6 +74,4 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'createdAt': instance.createdAt?.toIso8601String(),
       'completedLevels': instance.completedLevels,
       'quizScores': instance.quizScores,
-      'pretestDone': instance.pretestDone,
-      'posttestDone': instance.posttestDone,
     };

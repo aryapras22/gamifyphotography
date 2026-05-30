@@ -25,18 +25,27 @@ mixin _$ModuleModel {
   String get title => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   String get materialContent =>
-      throw _privateConstructorUsedError; // teks materi (opsional — konten detail ada di levels)
+      throw _privateConstructorUsedError; // teks materi (opsional)
   int get order => throw _privateConstructorUsedError; // urutan level
   bool get isCompleted => throw _privateConstructorUsedError;
-  int get levelCount =>
-      throw _privateConstructorUsedError; // jumlah level dalam modul (untuk tampilan UI)
+  int get levelCount => throw _privateConstructorUsedError;
   List<String> get referenceImageUrls =>
       throw _privateConstructorUsedError; // foto contoh dari firebase
   String get howToUse =>
-      throw _privateConstructorUsedError; // cara penggunaan dari firebase (page2.howToUse)
+      throw _privateConstructorUsedError; // cara penggunaan (page2.howToUse)
   String? get howToUseImageUrl =>
-      throw _privateConstructorUsedError; // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
-  String get type => throw _privateConstructorUsedError;
+      throw _privateConstructorUsedError; // visual guide dari firebase
+  String get type =>
+      throw _privateConstructorUsedError; // tipe modul: 'materi' atau 'quiz'
+  // ── Pre-quiz material (untuk quiz dengan materi WYSIWYG sebelumnya) ─────
+  /// Jika true, tampilkan halaman materi sebelum quiz dimulai
+  bool get hasPreQuizMaterial => throw _privateConstructorUsedError;
+
+  /// Konten rich text HTML untuk materi pra-quiz
+  String get preQuizContent => throw _privateConstructorUsedError;
+
+  /// Judul halaman materi pra-quiz
+  String get preQuizTitle => throw _privateConstructorUsedError;
 
   /// Serializes this ModuleModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -67,6 +76,9 @@ abstract class $ModuleModelCopyWith<$Res> {
     String howToUse,
     String? howToUseImageUrl,
     String type,
+    bool hasPreQuizMaterial,
+    String preQuizContent,
+    String preQuizTitle,
   });
 }
 
@@ -96,6 +108,9 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
     Object? howToUse = null,
     Object? howToUseImageUrl = freezed,
     Object? type = null,
+    Object? hasPreQuizMaterial = null,
+    Object? preQuizContent = null,
+    Object? preQuizTitle = null,
   }) {
     return _then(
       _value.copyWith(
@@ -143,6 +158,18 @@ class _$ModuleModelCopyWithImpl<$Res, $Val extends ModuleModel>
                 ? _value.type
                 : type // ignore: cast_nullable_to_non_nullable
                       as String,
+            hasPreQuizMaterial: null == hasPreQuizMaterial
+                ? _value.hasPreQuizMaterial
+                : hasPreQuizMaterial // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            preQuizContent: null == preQuizContent
+                ? _value.preQuizContent
+                : preQuizContent // ignore: cast_nullable_to_non_nullable
+                      as String,
+            preQuizTitle: null == preQuizTitle
+                ? _value.preQuizTitle
+                : preQuizTitle // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -170,6 +197,9 @@ abstract class _$$ModuleModelImplCopyWith<$Res>
     String howToUse,
     String? howToUseImageUrl,
     String type,
+    bool hasPreQuizMaterial,
+    String preQuizContent,
+    String preQuizTitle,
   });
 }
 
@@ -198,6 +228,9 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
     Object? howToUse = null,
     Object? howToUseImageUrl = freezed,
     Object? type = null,
+    Object? hasPreQuizMaterial = null,
+    Object? preQuizContent = null,
+    Object? preQuizTitle = null,
   }) {
     return _then(
       _$ModuleModelImpl(
@@ -245,6 +278,18 @@ class __$$ModuleModelImplCopyWithImpl<$Res>
             ? _value.type
             : type // ignore: cast_nullable_to_non_nullable
                   as String,
+        hasPreQuizMaterial: null == hasPreQuizMaterial
+            ? _value.hasPreQuizMaterial
+            : hasPreQuizMaterial // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        preQuizContent: null == preQuizContent
+            ? _value.preQuizContent
+            : preQuizContent // ignore: cast_nullable_to_non_nullable
+                  as String,
+        preQuizTitle: null == preQuizTitle
+            ? _value.preQuizTitle
+            : preQuizTitle // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -265,6 +310,9 @@ class _$ModuleModelImpl implements _ModuleModel {
     this.howToUse = '',
     this.howToUseImageUrl,
     this.type = 'materi',
+    this.hasPreQuizMaterial = false,
+    this.preQuizContent = '',
+    this.preQuizTitle = '',
   }) : _referenceImageUrls = referenceImageUrls;
 
   factory _$ModuleModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -279,7 +327,7 @@ class _$ModuleModelImpl implements _ModuleModel {
   @override
   @JsonKey()
   final String materialContent;
-  // teks materi (opsional — konten detail ada di levels)
+  // teks materi (opsional)
   @override
   final int order;
   // urutan level
@@ -289,9 +337,7 @@ class _$ModuleModelImpl implements _ModuleModel {
   @override
   @JsonKey()
   final int levelCount;
-  // jumlah level dalam modul (untuk tampilan UI)
   final List<String> _referenceImageUrls;
-  // jumlah level dalam modul (untuk tampilan UI)
   @override
   @JsonKey()
   List<String> get referenceImageUrls {
@@ -305,17 +351,33 @@ class _$ModuleModelImpl implements _ModuleModel {
   @override
   @JsonKey()
   final String howToUse;
-  // cara penggunaan dari firebase (page2.howToUse)
+  // cara penggunaan (page2.howToUse)
   @override
   final String? howToUseImageUrl;
-  // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+  // visual guide dari firebase
   @override
   @JsonKey()
   final String type;
+  // tipe modul: 'materi' atau 'quiz'
+  // ── Pre-quiz material (untuk quiz dengan materi WYSIWYG sebelumnya) ─────
+  /// Jika true, tampilkan halaman materi sebelum quiz dimulai
+  @override
+  @JsonKey()
+  final bool hasPreQuizMaterial;
+
+  /// Konten rich text HTML untuk materi pra-quiz
+  @override
+  @JsonKey()
+  final String preQuizContent;
+
+  /// Judul halaman materi pra-quiz
+  @override
+  @JsonKey()
+  final String preQuizTitle;
 
   @override
   String toString() {
-    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount, referenceImageUrls: $referenceImageUrls, howToUse: $howToUse, howToUseImageUrl: $howToUseImageUrl, type: $type)';
+    return 'ModuleModel(id: $id, title: $title, description: $description, materialContent: $materialContent, order: $order, isCompleted: $isCompleted, levelCount: $levelCount, referenceImageUrls: $referenceImageUrls, howToUse: $howToUse, howToUseImageUrl: $howToUseImageUrl, type: $type, hasPreQuizMaterial: $hasPreQuizMaterial, preQuizContent: $preQuizContent, preQuizTitle: $preQuizTitle)';
   }
 
   @override
@@ -342,7 +404,13 @@ class _$ModuleModelImpl implements _ModuleModel {
                 other.howToUse == howToUse) &&
             (identical(other.howToUseImageUrl, howToUseImageUrl) ||
                 other.howToUseImageUrl == howToUseImageUrl) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.hasPreQuizMaterial, hasPreQuizMaterial) ||
+                other.hasPreQuizMaterial == hasPreQuizMaterial) &&
+            (identical(other.preQuizContent, preQuizContent) ||
+                other.preQuizContent == preQuizContent) &&
+            (identical(other.preQuizTitle, preQuizTitle) ||
+                other.preQuizTitle == preQuizTitle));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -360,6 +428,9 @@ class _$ModuleModelImpl implements _ModuleModel {
     howToUse,
     howToUseImageUrl,
     type,
+    hasPreQuizMaterial,
+    preQuizContent,
+    preQuizTitle,
   );
 
   /// Create a copy of ModuleModel
@@ -389,6 +460,9 @@ abstract class _ModuleModel implements ModuleModel {
     final String howToUse,
     final String? howToUseImageUrl,
     final String type,
+    final bool hasPreQuizMaterial,
+    final String preQuizContent,
+    final String preQuizTitle,
   }) = _$ModuleModelImpl;
 
   factory _ModuleModel.fromJson(Map<String, dynamic> json) =
@@ -401,21 +475,33 @@ abstract class _ModuleModel implements ModuleModel {
   @override
   String get description;
   @override
-  String get materialContent; // teks materi (opsional — konten detail ada di levels)
+  String get materialContent; // teks materi (opsional)
   @override
   int get order; // urutan level
   @override
   bool get isCompleted;
   @override
-  int get levelCount; // jumlah level dalam modul (untuk tampilan UI)
+  int get levelCount;
   @override
   List<String> get referenceImageUrls; // foto contoh dari firebase
   @override
-  String get howToUse; // cara penggunaan dari firebase (page2.howToUse)
+  String get howToUse; // cara penggunaan (page2.howToUse)
   @override
-  String? get howToUseImageUrl; // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
+  String? get howToUseImageUrl; // visual guide dari firebase
   @override
-  String get type;
+  String get type; // tipe modul: 'materi' atau 'quiz'
+  // ── Pre-quiz material (untuk quiz dengan materi WYSIWYG sebelumnya) ─────
+  /// Jika true, tampilkan halaman materi sebelum quiz dimulai
+  @override
+  bool get hasPreQuizMaterial;
+
+  /// Konten rich text HTML untuk materi pra-quiz
+  @override
+  String get preQuizContent;
+
+  /// Judul halaman materi pra-quiz
+  @override
+  String get preQuizTitle;
 
   /// Create a copy of ModuleModel
   /// with the given fields replaced by the non-null parameter values.

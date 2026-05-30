@@ -9,15 +9,24 @@ class ModuleModel with _$ModuleModel {
     required String id,
     required String title,
     required String description,
-    @Default('') String materialContent, // teks materi (opsional — konten detail ada di levels)
-    required int order,                  // urutan level
+    @Default('') String materialContent, // teks materi (opsional)
+    required int order,                   // urutan level
     @Default(false) bool isCompleted,
-    @Default(0) int levelCount,          // jumlah level dalam modul (untuk tampilan UI)
+    @Default(0) int levelCount,
     @Default([]) List<String> referenceImageUrls, // foto contoh dari firebase
-    @Default('') String howToUse,        // cara penggunaan dari firebase (page2.howToUse)
-    String? howToUseImageUrl,            // visual guide SVG/image dari firebase (page2.howToUseImageUrl)
-    @Default('materi') String type,      // tipe modul: 'materi' atau 'quiz'
+    @Default('') String howToUse,         // cara penggunaan (page2.howToUse)
+    String? howToUseImageUrl,             // visual guide dari firebase
+    @Default('materi') String type,       // tipe modul: 'materi' atau 'quiz'
+
+    // ── Pre-quiz material (untuk quiz dengan materi WYSIWYG sebelumnya) ─────
+    /// Jika true, tampilkan halaman materi sebelum quiz dimulai
+    @Default(false) bool hasPreQuizMaterial,
+    /// Konten rich text HTML untuk materi pra-quiz
+    @Default('') String preQuizContent,
+    /// Judul halaman materi pra-quiz
+    @Default('') String preQuizTitle,
   }) = _ModuleModel;
 
-  factory ModuleModel.fromJson(Map<String, dynamic> json) => _$ModuleModelFromJson(json);
+  factory ModuleModel.fromJson(Map<String, dynamic> json) =>
+      _$ModuleModelFromJson(json);
 }

@@ -12,8 +12,6 @@ class CraftingState {
   final int bridgeProgress;
   final int maxBridgeSegments;
   final bool isLoading;
-  /// true saat crafting baru saja selesai dan posttest perlu ditampilkan
-  final bool triggerPosttest;
 
   CraftingState({
     this.craftingDone = false,
@@ -23,7 +21,6 @@ class CraftingState {
     this.bridgeProgress = 0,
     this.maxBridgeSegments = 5,
     this.isLoading = false,
-    this.triggerPosttest = false,
   });
 
   CraftingState copyWith({
@@ -34,7 +31,6 @@ class CraftingState {
     int? bridgeProgress,
     int? maxBridgeSegments,
     bool? isLoading,
-    bool? triggerPosttest,
   }) {
     return CraftingState(
       craftingDone: craftingDone ?? this.craftingDone,
@@ -44,7 +40,6 @@ class CraftingState {
       bridgeProgress: bridgeProgress ?? this.bridgeProgress,
       maxBridgeSegments: maxBridgeSegments ?? this.maxBridgeSegments,
       isLoading: isLoading ?? this.isLoading,
-      triggerPosttest: triggerPosttest ?? this.triggerPosttest,
     );
   }
 }
@@ -107,10 +102,6 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
         final newProgress = state.bridgeProgress + 1;
         final justFinished = newProgress >= state.maxBridgeSegments;
 
-        // Cek apakah posttest perlu ditampilkan
-        final currentUser = _ref.read(authViewModelProvider).currentUser;
-        final needPosttest = justFinished && (currentUser?.posttestDone == false);
-
         // Get next cost from Firestore items
         final itemsAsync = _ref.read(craftingItemsProvider);
         final items = itemsAsync.valueOrNull ?? [];
@@ -123,7 +114,6 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
           bridgeProgress: newProgress,
           requiredPoints: nextCost,
           isLoading: false,
-          triggerPosttest: needPosttest,
         );
       } else {
         state = state.copyWith(isLoading: false);
@@ -132,7 +122,4 @@ class CraftingViewModel extends StateNotifier<CraftingState> {
       state = state.copyWith(isLoading: false);
     }
   }
-
-  /// Reset triggerPosttest setelah posttest ditampilkan
-  void clearPosttestTrigger() => state = state.copyWith(triggerPosttest: false);
 }

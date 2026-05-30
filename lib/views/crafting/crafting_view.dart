@@ -10,7 +10,6 @@ import '../../providers/crafting_items_provider.dart';
 import '../../view_models/crafting_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../widgets/brutal_widgets.dart';
-import '../quiz/pretest_view.dart';
 
 class CraftingView extends ConsumerStatefulWidget {
   const CraftingView({super.key});
@@ -43,18 +42,6 @@ class _CraftingViewState extends ConsumerState<CraftingView> {
       if (prev?.currentUser?.craftingBalance != next.currentUser?.craftingBalance ||
           prev?.currentUser?.points != next.currentUser?.points) {
         ref.read(craftingViewModelProvider.notifier).loadCraftingStatus();
-      }
-    });
-
-    // Tampilkan posttest saat crafting selesai
-    ref.listen<CraftingState>(craftingViewModelProvider, (prev, next) {
-      if (next.triggerPosttest && !(prev?.triggerPosttest ?? false)) {
-        ref.read(craftingViewModelProvider.notifier).clearPosttestTrigger();
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => PretestView(testType: TestType.posttest),
-          ),
-        );
       }
     });
 

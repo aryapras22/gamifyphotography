@@ -22,15 +22,11 @@ class UserModel with _$UserModel {
     @Default([false, false, false, false, false, false, false]) List<bool> weekHistory,
     DateTime? createdAt,
 
-    // ── Level System (TASK-06) ────────────────────────────────────────────
-    /// Level materi/quiz yang sudah diselesaikan (nomor 1–25)
+    // ── Level System ──────────────────────────────────────────────────────
+    /// Level materi/quiz yang sudah diselesaikan (nomor 0–26)
     @Default([]) List<int> completedLevels,
     /// Skor quiz per level: {levelNumber: score}
     @Default({}) Map<String, int> quizScores,
-    /// Apakah pretest sudah dikerjakan
-    @Default(false) bool pretestDone,
-    /// Apakah posttest sudah dikerjakan
-    @Default(false) bool posttestDone,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

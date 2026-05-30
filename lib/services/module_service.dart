@@ -43,6 +43,11 @@ class ModuleService {
       data.putIfAbsent('levelCount', () => 0);
       data.putIfAbsent('type', () => 'materi');
 
+      // Pre-quiz material fields
+      data.putIfAbsent('hasPreQuizMaterial', () => false);
+      data.putIfAbsent('preQuizContent', () => '');
+      data.putIfAbsent('preQuizTitle', () => '');
+
       if (!data.containsKey('referenceImageUrls') || data['referenceImageUrls'] == null) {
         final page1 = raw['page1'];
         final urls = (page1 is Map ? page1['referenceImageUrls'] : null);
