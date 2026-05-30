@@ -6,7 +6,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/app_colors.dart';
-import '../../core/pretest_questions.dart';
 import '../../models/level_model.dart';
 import '../../view_models/level_view_model.dart';
 import '../../providers/service_providers.dart';
@@ -32,7 +31,7 @@ class _PretestViewState extends ConsumerState<PretestView> {
   final List<int?> _selectedAnswers = [];
   bool _started = false;
   bool _submitting = false;
-  // TASK-M07: soal dari Firestore (jika tersedia) atau fallback hardcoded
+  // Soal dari Firestore
   List<QuizQuestion> _questions = [];
   bool _questionsLoaded = false;
 
@@ -49,28 +48,24 @@ class _PretestViewState extends ConsumerState<PretestView> {
     _loadQuestions();
   }
 
-  /// TASK-M07: Muat soal dari Firestore, fallback ke hardcoded jika kosong/error
+  /// Load questions from Firestore (Firebase-only, no hardcoded fallback)
   Future<void> _loadQuestions() async {
     try {
       final service = ref.read(firestoreLevelContentServiceProvider);
       final firestoreQuestions = await service.getPretestQuestions();
-      if (firestoreQuestions.isNotEmpty) {
-        setState(() {
-          _questions = firestoreQuestions;
-          _selectedAnswers.addAll(List.filled(_questions.length, null));
-          _questionsLoaded = true;
-        });
-        return;
-      }
+      setState(() {
+        _questions = firestoreQuestions;
+        _selectedAnswers.addAll(List.filled(_questions.length, null));
+        _questionsLoaded = true;
+      });
     } catch (_) {
-      // Firestore gagal — gunakan fallback
+      // Firestore failed — show empty state
+      setState(() {
+        _questions = [];
+        _selectedAnswers.clear();
+        _questionsLoaded = true;
+      });
     }
-    // Fallback ke hardcoded
-    setState(() {
-      _questions = PretestQuestions.questions;
-      _selectedAnswers.addAll(List.filled(_questions.length, null));
-      _questionsLoaded = true;
-    });
   }
 
   void _selectAnswer(int optionIndex) {

@@ -1,45 +1,63 @@
-import '../models/challenge_model.dart';
+// lib/services/challenge_service.dart
+// Firebase-only — no hardcoded instructions
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
+import '../models/challenge_model.dart';
 
 class ChallengeService {
+  final _db = FirebaseFirestore.instance;
+
+  /// Fetch challenge/mission data from Firestore modules collection.
+  /// The instruction comes from the module's page2.howToUse or a dedicated field.
   Future<ChallengeModel> getChallenge(String moduleId) async {
-    await Future.delayed(const Duration(seconds: 1));
+    final snap = await _db.collection('modules').doc(moduleId).get();
+    if (!snap.exists) {
+      // Try finding by moduleId field or legacy ID pattern
+      final query = await _db
+          .collection('modules')
+          .where('moduleId', isEqualTo: moduleId)
+          .limit(1)
+          .get();
+      if (query.docs.isNotEmpty) {
+        final data = query.docs.first.data();
+        return _buildChallenge(moduleId, data);
+      }
+      // Return a generic challenge if module not found
+      return ChallengeModel(
+        id: 'c_$moduleId',
+        moduleId: moduleId,
+        instruction: 'Ambil foto untuk menyelesaikan tantangan ini.',
+        pointReward: 50,
+      );
+    }
+    return _buildChallenge(moduleId, snap.data()!);
+  }
+
+  ChallengeModel _buildChallenge(String moduleId, Map<String, dynamic> data) {
+    // Try to get challenge instruction from various possible fields
+    String instruction = 'Ambil foto untuk menyelesaikan tantangan ini.';
+
+    if (data['challengeInstruction'] != null && data['challengeInstruction'] != '') {
+      instruction = data['challengeInstruction'] as String;
+    } else if (data['page2'] is Map) {
+      final page2 = data['page2'] as Map;
+      if (page2['howToUse'] != null && page2['howToUse'] != '') {
+        instruction = 'Ambil foto menggunakan teknik: ${data['title'] ?? moduleId}';
+      }
+    }
+
+    final pointReward = (data['pointReward'] as num?)?.toInt() ?? 50;
+
     return ChallengeModel(
       id: 'c_$moduleId',
       moduleId: moduleId,
-      instruction: _getInstruction(moduleId),
-      pointReward: 50,
+      instruction: instruction,
+      pointReward: pointReward,
     );
-  }
-
-  String _getInstruction(String moduleId) {
-    switch (moduleId) {
-      case 'M01':
-        return 'Ambil foto menggunakan Rule of Thirds.';
-      case 'M02':
-        return 'Ambil foto menggunakan Leading Lines.';
-      case 'M03':
-        return 'Ambil foto menggunakan Framing within a Frame.';
-      case 'M04':
-        return 'Ambil foto menggunakan Symmetry and Patterns.';
-      case 'M05':
-        return 'Ambil foto menggunakan Golden Triangle.';
-      case 'M06':
-        return 'Ambil foto menggunakan Negative Space.';
-      case 'M07':
-        return 'Ambil foto menggunakan Rule of Odds.';
-      case 'M08':
-        return 'Ambil foto menggunakan Depth of Field.';
-      case 'M09':
-        return 'Ambil foto menggunakan Point of View.';
-      case 'M10':
-        return 'Ambil foto menggunakan Center Dominance.';
-      default:
-        return 'Ambil foto untuk menyelesaikan tantangan ini.';
-    }
   }
 
   Future<String> uploadPhoto(XFile file) async {
@@ -62,6 +80,7 @@ class ChallengeService {
   }
 
   Future<void> completeChallenge(String challengeId) async {
-    await Future.delayed(const Duration(seconds: 1));
+    // Challenge completion is tracked via photo_submissions collection
+    // No additional action needed here
   }
 }

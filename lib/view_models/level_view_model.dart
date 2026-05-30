@@ -8,8 +8,6 @@ import '../models/user_model.dart';
 import '../services/level_service.dart';
 import '../services/firestore_level_content_service.dart';
 import '../providers/service_providers.dart';
-// ignore: deprecated_member_use_from_same_package
-import '../core/level_content_data.dart';
 import 'auth_view_model.dart';
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -20,7 +18,7 @@ class LevelEntry {
   final LevelConfig config;
   final LevelStatus status;
   final int? quizScore;
-  /// Firestore level data — null jika belum dimuat atau fallback ke hardcoded
+  /// Firestore level data
   final FirestoreLevel? firestoreLevel;
 
   const LevelEntry({
@@ -99,25 +97,21 @@ class LevelViewModel extends StateNotifier<LevelState> {
   // ── Content Loading ───────────────────────────────────────────────────────
 
   /// Muat konten level dari Firestore.
-  /// Fallback otomatis ke LevelContentData hardcoded jika Firestore gagal/kosong.
   Future<void> loadLevelContent() async {
     state = state.copyWith(isContentLoading: true);
     try {
       final levels = await _firestoreLevelContentService.getAllActiveLevels();
-      if (levels.isNotEmpty) {
-        state = state.copyWith(
-          firestoreLevels: levels,
-          isContentLoading: false,
-        );
-        debugPrint('[LevelViewModel] Loaded ${levels.length} levels from Firestore');
-      } else {
-        // Firestore kosong — gunakan fallback hardcoded (zero downtime)
-        debugPrint('[LevelViewModel] Firestore empty, using hardcoded fallback');
-        state = state.copyWith(isContentLoading: false);
-      }
+      state = state.copyWith(
+        firestoreLevels: levels,
+        isContentLoading: false,
+      );
+      debugPrint('[LevelViewModel] Loaded ${levels.length} levels from Firestore');
     } catch (e) {
-      debugPrint('[LevelViewModel] Firestore content error, fallback: $e');
-      state = state.copyWith(isContentLoading: false);
+      debugPrint('[LevelViewModel] Firestore content error: $e');
+      state = state.copyWith(
+        isContentLoading: false,
+        errorMessage: 'Gagal memuat konten level. Periksa koneksi internet.',
+      );
     }
   }
 
@@ -155,7 +149,7 @@ class LevelViewModel extends StateNotifier<LevelState> {
     final completed = user.completedLevels;
     final quizScores = user.quizScores;
 
-    // Gunakan Firestore levels jika tersedia, fallback ke hardcoded
+    // Build entries from Firestore levels
     final configs = _resolveConfigs();
 
     return configs.map((config) {
@@ -194,73 +188,31 @@ class LevelViewModel extends StateNotifier<LevelState> {
     }).toList();
   }
 
-  /// Resolve konfigurasi level: merge Firestore data ke LevelConfig hardcoded.
-  /// Firestore data digunakan untuk konten (page1/page2), hardcoded untuk struktur.
-  /// Falls back to LevelContentData.levels if Firestore is empty.
-  /// If Firestore has partial data, merges with hardcoded to ensure all levels exist.
+  /// Resolve konfigurasi level dari Firestore data.
+  /// Firestore is the single source of truth — no hardcoded fallback.
   List<LevelConfig> _resolveConfigs() {
     if (state.firestoreLevels.isEmpty) {
-      // ignore: deprecated_member_use_from_same_package
-      return LevelContentData.levels;
+      return [];
     }
 
-    // Build a map of Firestore levels by levelNumber for quick lookup
-    final fsMap = <int, FirestoreLevel>{};
-    for (final fs in state.firestoreLevels) {
-      fsMap[fs.levelNumber] = fs;
-    }
-
-    // ignore: deprecated_member_use_from_same_package
-    final hardcoded = LevelContentData.levels;
-
-    // Merge: use Firestore data when available, fallback to hardcoded
     final result = <LevelConfig>[];
-    for (final hc in hardcoded) {
-      final fs = fsMap[hc.levelNumber];
-      if (fs != null) {
-        if (fs.isMateri) {
-          result.add(LevelConfig(
-            levelNumber: fs.levelNumber,
-            title: fs.title,
-            type: fs.type,
-            materiContent: fs.toMateriContent(),
-            passingScore: fs.passingScore,
-          ));
-        } else {
-          result.add(LevelConfig(
-            levelNumber: fs.levelNumber,
-            title: fs.title,
-            type: fs.type,
-            questions: const [],
-            passingScore: fs.passingScore,
-          ));
-        }
-      } else {
-        // Use hardcoded config for levels not yet in Firestore
-        result.add(hc);
-      }
-    }
-
-    // Also add any Firestore levels beyond hardcoded range
     for (final fs in state.firestoreLevels) {
-      if (!hardcoded.any((hc) => hc.levelNumber == fs.levelNumber)) {
-        if (fs.isMateri) {
-          result.add(LevelConfig(
-            levelNumber: fs.levelNumber,
-            title: fs.title,
-            type: fs.type,
-            materiContent: fs.toMateriContent(),
-            passingScore: fs.passingScore,
-          ));
-        } else {
-          result.add(LevelConfig(
-            levelNumber: fs.levelNumber,
-            title: fs.title,
-            type: fs.type,
-            questions: const [],
-            passingScore: fs.passingScore,
-          ));
-        }
+      if (fs.isMateri) {
+        result.add(LevelConfig(
+          levelNumber: fs.levelNumber,
+          title: fs.title,
+          type: fs.type,
+          materiContent: fs.toMateriContent(),
+          passingScore: fs.passingScore,
+        ));
+      } else {
+        result.add(LevelConfig(
+          levelNumber: fs.levelNumber,
+          title: fs.title,
+          type: fs.type,
+          questions: const [],
+          passingScore: fs.passingScore,
+        ));
       }
     }
 

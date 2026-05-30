@@ -60,21 +60,19 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
 
       if (levelId != null) {
         final fsQuestions = await service.getQuizQuestions(levelId);
-        if (fsQuestions.isNotEmpty) {
-          setState(() {
-            _questions = fsQuestions;
-            _isLoading = false;
-          });
-          return;
-        }
+        setState(() {
+          _questions = fsQuestions;
+          _isLoading = false;
+        });
+        return;
       }
     } catch (e) {
       debugPrint('Gagal memuat soal dari Firestore: $e');
     }
 
-    // Fallback to hardcoded configs
+    // Firestore failed or no questions found
     setState(() {
-      _questions = widget.config.questions ?? [];
+      _questions = [];
       _isLoading = false;
     });
   }
