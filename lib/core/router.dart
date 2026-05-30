@@ -10,7 +10,7 @@ import '../views/home/main_layout_view.dart';
 import '../views/mission/module_detail_view.dart';
 import '../views/mission/challenge_view.dart';
 import '../views/mission/feedback_view.dart';
-import '../views/crafting/crafting_view.dart';
+import '../views/bonus_mission/bonus_mission_list_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
 import '../views/profile/profile_progress_view.dart';
 import '../views/progress/progress_view.dart';
@@ -82,8 +82,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const FeedbackView(),
       ),
       GoRoute(
-        path: '/crafting',
-        builder: (context, state) => const CraftingView(),
+        path: '/bonus-missions',
+        builder: (context, state) => const BonusMissionListView(),
       ),
       GoRoute(
         path: '/progress',

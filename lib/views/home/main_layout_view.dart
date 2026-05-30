@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../home/home_view.dart';
-import '../crafting/crafting_view.dart';
+import '../bonus_mission/bonus_mission_list_view.dart';
 import '../leaderboard/leaderboard_view.dart';
 import '../profile/profile_progress_view.dart';
 import '../mission/custom_camera_view.dart';
@@ -22,7 +22,7 @@ class MainLayoutView extends ConsumerStatefulWidget {
 class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
   final List<Widget> _pages = [
     const HomeView(),
-    const CraftingView(),
+    const BonusMissionListView(),
     const LeaderboardView(),
     const ProfileProgressView(),
   ];
@@ -113,11 +113,11 @@ class _MainLayoutViewState extends ConsumerState<MainLayoutView> {
                         onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 0,
                       ),
                     ),
-                    // Tab 2: Kreasi (Crafting)
+                    // Tab 2: Misi Tambahan (Bonus Missions)
                     Expanded(
                       child: _TabItem(
-                        icon: Icons.handyman_rounded,
-                        label: 'Kreasi',
+                        icon: Icons.add_task_rounded,
+                        label: 'Misi+',
                         isActive: currentIndex == 1,
                         onTap: () => ref.read(mainLayoutIndexProvider.notifier).state = 1,
                       ),

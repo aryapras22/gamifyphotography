@@ -117,7 +117,6 @@ class DailyLoginViewModel extends StateNotifier<DailyLoginState> {
       if (user != null) {
         final updatedUser = user.copyWith(
           points: user.points + kDailyLoginPoints,
-          craftingBalance: user.craftingBalance + kDailyLoginPoints,
           level: calculateLevel(user.points + kDailyLoginPoints),
           streakCount: newStreak,
           lastLoginDate: DateTime.now(),

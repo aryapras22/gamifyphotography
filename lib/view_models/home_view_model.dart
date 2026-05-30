@@ -23,8 +23,4 @@ class HomeViewModel {
   void navigateToMission(BuildContext context) {
     context.go('/mission');
   }
-
-  void navigateToCrafting(BuildContext context) {
-    context.go('/crafting');
-  }
 }

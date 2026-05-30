@@ -26,11 +26,9 @@ mixin _$UserModel {
   String get email => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
   int get points => throw _privateConstructorUsedError;
-  int get craftingBalance => throw _privateConstructorUsedError;
   int get level => throw _privateConstructorUsedError;
   List<String> get earnedBadgeIds => throw _privateConstructorUsedError;
   List<String> get completedPhotoUrls => throw _privateConstructorUsedError;
-  int get bridgeProgress => throw _privateConstructorUsedError;
   List<String> get completedModuleIds => throw _privateConstructorUsedError;
   int get streakCount => throw _privateConstructorUsedError;
   DateTime? get lastLoginDate => throw _privateConstructorUsedError;
@@ -64,11 +62,9 @@ abstract class $UserModelCopyWith<$Res> {
     String email,
     String role,
     int points,
-    int craftingBalance,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
-    int bridgeProgress,
     List<String> completedModuleIds,
     int streakCount,
     DateTime? lastLoginDate,
@@ -99,11 +95,9 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? email = null,
     Object? role = null,
     Object? points = null,
-    Object? craftingBalance = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
-    Object? bridgeProgress = null,
     Object? completedModuleIds = null,
     Object? streakCount = null,
     Object? lastLoginDate = freezed,
@@ -134,10 +128,6 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.points
                 : points // ignore: cast_nullable_to_non_nullable
                       as int,
-            craftingBalance: null == craftingBalance
-                ? _value.craftingBalance
-                : craftingBalance // ignore: cast_nullable_to_non_nullable
-                      as int,
             level: null == level
                 ? _value.level
                 : level // ignore: cast_nullable_to_non_nullable
@@ -150,10 +140,6 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.completedPhotoUrls
                 : completedPhotoUrls // ignore: cast_nullable_to_non_nullable
                       as List<String>,
-            bridgeProgress: null == bridgeProgress
-                ? _value.bridgeProgress
-                : bridgeProgress // ignore: cast_nullable_to_non_nullable
-                      as int,
             completedModuleIds: null == completedModuleIds
                 ? _value.completedModuleIds
                 : completedModuleIds // ignore: cast_nullable_to_non_nullable
@@ -203,11 +189,9 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String email,
     String role,
     int points,
-    int craftingBalance,
     int level,
     List<String> earnedBadgeIds,
     List<String> completedPhotoUrls,
-    int bridgeProgress,
     List<String> completedModuleIds,
     int streakCount,
     DateTime? lastLoginDate,
@@ -237,11 +221,9 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? email = null,
     Object? role = null,
     Object? points = null,
-    Object? craftingBalance = null,
     Object? level = null,
     Object? earnedBadgeIds = null,
     Object? completedPhotoUrls = null,
-    Object? bridgeProgress = null,
     Object? completedModuleIds = null,
     Object? streakCount = null,
     Object? lastLoginDate = freezed,
@@ -272,10 +254,6 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.points
             : points // ignore: cast_nullable_to_non_nullable
                   as int,
-        craftingBalance: null == craftingBalance
-            ? _value.craftingBalance
-            : craftingBalance // ignore: cast_nullable_to_non_nullable
-                  as int,
         level: null == level
             ? _value.level
             : level // ignore: cast_nullable_to_non_nullable
@@ -288,10 +266,6 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value._completedPhotoUrls
             : completedPhotoUrls // ignore: cast_nullable_to_non_nullable
                   as List<String>,
-        bridgeProgress: null == bridgeProgress
-            ? _value.bridgeProgress
-            : bridgeProgress // ignore: cast_nullable_to_non_nullable
-                  as int,
         completedModuleIds: null == completedModuleIds
             ? _value._completedModuleIds
             : completedModuleIds // ignore: cast_nullable_to_non_nullable
@@ -334,11 +308,9 @@ class _$UserModelImpl implements _UserModel {
     required this.email,
     this.role = 'user',
     this.points = 0,
-    this.craftingBalance = 0,
     this.level = 1,
     final List<String> earnedBadgeIds = const [],
     final List<String> completedPhotoUrls = const [],
-    this.bridgeProgress = 0,
     final List<String> completedModuleIds = const [],
     this.streakCount = 0,
     this.lastLoginDate,
@@ -378,9 +350,6 @@ class _$UserModelImpl implements _UserModel {
   final int points;
   @override
   @JsonKey()
-  final int craftingBalance;
-  @override
-  @JsonKey()
   final int level;
   final List<String> _earnedBadgeIds;
   @override
@@ -401,9 +370,6 @@ class _$UserModelImpl implements _UserModel {
     return EqualUnmodifiableListView(_completedPhotoUrls);
   }
 
-  @override
-  @JsonKey()
-  final int bridgeProgress;
   final List<String> _completedModuleIds;
   @override
   @JsonKey()
@@ -457,7 +423,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, craftingBalance: $craftingBalance, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, bridgeProgress: $bridgeProgress, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt, completedLevels: $completedLevels, quizScores: $quizScores)';
+    return 'UserModel(id: $id, name: $name, email: $email, role: $role, points: $points, level: $level, earnedBadgeIds: $earnedBadgeIds, completedPhotoUrls: $completedPhotoUrls, completedModuleIds: $completedModuleIds, streakCount: $streakCount, lastLoginDate: $lastLoginDate, weekHistory: $weekHistory, createdAt: $createdAt, completedLevels: $completedLevels, quizScores: $quizScores)';
   }
 
   @override
@@ -470,8 +436,6 @@ class _$UserModelImpl implements _UserModel {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.points, points) || other.points == points) &&
-            (identical(other.craftingBalance, craftingBalance) ||
-                other.craftingBalance == craftingBalance) &&
             (identical(other.level, level) || other.level == level) &&
             const DeepCollectionEquality().equals(
               other._earnedBadgeIds,
@@ -481,8 +445,6 @@ class _$UserModelImpl implements _UserModel {
               other._completedPhotoUrls,
               _completedPhotoUrls,
             ) &&
-            (identical(other.bridgeProgress, bridgeProgress) ||
-                other.bridgeProgress == bridgeProgress) &&
             const DeepCollectionEquality().equals(
               other._completedModuleIds,
               _completedModuleIds,
@@ -516,11 +478,9 @@ class _$UserModelImpl implements _UserModel {
     email,
     role,
     points,
-    craftingBalance,
     level,
     const DeepCollectionEquality().hash(_earnedBadgeIds),
     const DeepCollectionEquality().hash(_completedPhotoUrls),
-    bridgeProgress,
     const DeepCollectionEquality().hash(_completedModuleIds),
     streakCount,
     lastLoginDate,
@@ -551,11 +511,9 @@ abstract class _UserModel implements UserModel {
     required final String email,
     final String role,
     final int points,
-    final int craftingBalance,
     final int level,
     final List<String> earnedBadgeIds,
     final List<String> completedPhotoUrls,
-    final int bridgeProgress,
     final List<String> completedModuleIds,
     final int streakCount,
     final DateTime? lastLoginDate,
@@ -579,15 +537,11 @@ abstract class _UserModel implements UserModel {
   @override
   int get points;
   @override
-  int get craftingBalance;
-  @override
   int get level;
   @override
   List<String> get earnedBadgeIds;
   @override
   List<String> get completedPhotoUrls;
-  @override
-  int get bridgeProgress;
   @override
   List<String> get completedModuleIds;
   @override

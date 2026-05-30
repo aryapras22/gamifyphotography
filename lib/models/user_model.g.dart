@@ -13,7 +13,6 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       role: json['role'] as String? ?? 'user',
       points: (json['points'] as num?)?.toInt() ?? 0,
-      craftingBalance: (json['craftingBalance'] as num?)?.toInt() ?? 0,
       level: (json['level'] as num?)?.toInt() ?? 1,
       earnedBadgeIds:
           (json['earnedBadgeIds'] as List<dynamic>?)
@@ -25,7 +24,6 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      bridgeProgress: (json['bridgeProgress'] as num?)?.toInt() ?? 0,
       completedModuleIds:
           (json['completedModuleIds'] as List<dynamic>?)
               ?.map((e) => e as String)
@@ -62,11 +60,9 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'email': instance.email,
       'role': instance.role,
       'points': instance.points,
-      'craftingBalance': instance.craftingBalance,
       'level': instance.level,
       'earnedBadgeIds': instance.earnedBadgeIds,
       'completedPhotoUrls': instance.completedPhotoUrls,
-      'bridgeProgress': instance.bridgeProgress,
       'completedModuleIds': instance.completedModuleIds,
       'streakCount': instance.streakCount,
       'lastLoginDate': instance.lastLoginDate?.toIso8601String(),

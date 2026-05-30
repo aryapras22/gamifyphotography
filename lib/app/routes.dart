@@ -7,7 +7,6 @@ import '../views/home/main_layout_view.dart';
 import '../views/mission/module_detail_view.dart';
 import '../views/mission/challenge_view.dart';
 import '../views/mission/feedback_view.dart';
-import '../views/crafting/crafting_view.dart';
 import '../views/progress/progress_view.dart';
 import '../views/leaderboard/leaderboard_view.dart';
 import '../views/profile/profile_view.dart';
@@ -44,10 +43,6 @@ GoRouter getRouter(String initialRoute) => GoRouter(
     GoRoute(
       path: '/mission/feedback',
       builder: (context, state) => const FeedbackView(),
-    ),
-    GoRoute(
-      path: '/crafting',
-      builder: (context, state) => const CraftingView(),
     ),
     GoRoute(
       path: '/progress',

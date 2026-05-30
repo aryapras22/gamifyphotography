@@ -83,6 +83,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── Bonus missions ───────────────────────────────────────────────────────
+    // Read-only for authenticated users; write restricted to admin.
+
+    match /bonus_missions/{missionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
     // ── Photo submissions ────────────────────────────────────────────────────
 
     match /photo_submissions/{id} {
