@@ -8,6 +8,7 @@ import '../../view_models/daily_login_view_model.dart';
 import '../../view_models/mission_view_model.dart';
 import '../../view_models/level_view_model.dart';
 import '../../view_models/progress_view_model.dart';
+import '../../view_models/leaderboard_view_model.dart';
 import '../../models/module_model.dart';
 import '../../providers/submission_providers.dart';
 import '../../providers/service_providers.dart';
@@ -37,6 +38,12 @@ class _HomeViewState extends ConsumerState<HomeView> {
       ref.read(progressViewModelProvider.notifier).loadUserProgress();
       ref.read(progressViewModelProvider.notifier).loadBadges();
       ref.read(dailyLoginViewModelProvider.notifier).initialize();
+
+      // Load leaderboard untuk mendapatkan currentUserRank
+      final userId = ref.read(authViewModelProvider).currentUser?.id ?? '';
+      if (userId.isNotEmpty) {
+        ref.read(leaderboardViewModelProvider.notifier).loadLeaderboard(userId);
+      }
     });
   }
 
@@ -63,6 +70,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
     final missionState = ref.watch(missionViewModelProvider);
     final levelState = ref.watch(levelViewModelProvider);
     final progressState = ref.watch(progressViewModelProvider);
+
+    // Watch leaderboard untuk rank dinamis
+    final leaderboardState = ref.watch(leaderboardViewModelProvider);
+    final userRank = leaderboardState.currentUserRank;
+    final rankDisplay = leaderboardState.isLoading
+        ? '...'
+        : userRank > 0
+            ? '#$userRank'
+            : '-';
 
     final userName = user?.name ?? 'Fotografer';
     final firstName = userName.split(' ').first;
@@ -236,7 +252,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _StatCard(
-                      value: '#12',
+                      value: rankDisplay,
                       label: 'Peringkat',
                       isAccent: true,
                     ),

@@ -163,20 +163,47 @@ class _LeaderboardViewState extends ConsumerState<LeaderboardView> {
                           ],
 
                           // Rest of Papan Peringkat Users
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: rest.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final entry = rest[index];
-                              final isYou = entry.userId == currentUserId;
-                              return _LeaderboardItemRow(
-                                user: entry,
-                                isCurrentUser: isYou,
-                              );
-                            },
-                          ),
+                          if (rest.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.people_outline_rounded,
+                                    size: 40,
+                                    color: Color(0xFF94A3B8),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Belum ada peserta lain',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF94A3B8),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Jadilah yang pertama di papan peringkat!',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF94A3B8),
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Column(
+                              children: [
+                                for (int i = 0; i < rest.length; i++) ...[
+                                  _LeaderboardItemRow(
+                                    user: rest[i],
+                                    isCurrentUser: rest[i].userId == currentUserId,
+                                  ),
+                                  if (i < rest.length - 1) const SizedBox(height: 8),
+                                ],
+                              ],
+                            ),
                         ],
                       ),
                     ),
