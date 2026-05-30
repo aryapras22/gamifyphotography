@@ -9,6 +9,7 @@ import '../../core/app_colors.dart';
 import '../../models/level_model.dart';
 import '../../view_models/level_view_model.dart';
 import '../../providers/service_providers.dart';
+import '../widgets/app_network_image.dart';
 
 enum TestType { pretest, posttest }
 
@@ -498,32 +499,12 @@ class _InfoRow extends StatelessWidget {
 /// TASK-M07: Render gambar soal — network atau asset
 Widget _buildQuestionImage(String url, {double height = 200}) {
   if (url.startsWith('http')) {
-    return Image.network(
-      url,
+    return AppNetworkImage(
+      url: url,
       height: height,
+      width: double.infinity,
       fit: BoxFit.cover,
-      loadingBuilder: (_, child, progress) => progress == null
-          ? child
-          : SizedBox(
-              height: height,
-              child: const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.brandBlue,
-                  strokeWidth: 2,
-                ),
-              ),
-            ),
-      errorBuilder: (_, __, ___) => Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: AppColors.cardBorder,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Center(
-          child: Icon(Icons.image_not_supported_rounded,
-              size: 40, color: AppColors.disabled),
-        ),
-      ),
+      borderRadius: BorderRadius.circular(16),
     );
   }
   return Image.asset(

@@ -8,6 +8,7 @@ import '../../models/level_model.dart';
 import '../../providers/service_providers.dart';
 import '../../view_models/level_view_model.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 
 class QuizLevelView extends ConsumerStatefulWidget {
   final LevelConfig config;
@@ -142,23 +143,21 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
         total: _questions.length,
         passed: passed,
         xpReward: _correctCount * 20,
-        onActionPressed: () {
-          // Close dialog
+        onRetry: () {
+          // Close dialog and restart the quiz from the beginning
           Navigator.pop(dialogCtx);
-          
-          if (passed) {
-            // Go back to home or level list
-            Navigator.pop(context);
-          } else {
-            // Restart quiz
-            setState(() {
-              _currentIndex = 0;
-              _pickedIndex = null;
-              _submitted = false;
-              _correctCount = 0;
-              _answers.clear();
-            });
-          }
+          setState(() {
+            _currentIndex = 0;
+            _pickedIndex = null;
+            _submitted = false;
+            _correctCount = 0;
+            _answers.clear();
+          });
+        },
+        onBackHome: () {
+          // Close dialog and leave the quiz view
+          Navigator.pop(dialogCtx);
+          Navigator.pop(context);
         },
       ),
     );
@@ -293,7 +292,13 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
                       itemBuilder: (context, idx) {
                         final letter = String.fromCharCode(65 + idx);
                         final isPicked = _pickedIndex == idx;
-                        final isCorrect = _submitted && idx == q.correctIndex;
+                        // Only reveal the correct answer when the user actually
+                        // picked it. If the user answered wrong, do NOT show
+                        // which option was correct.
+                        final answeredCorrectly =
+                            _submitted && _pickedIndex == q.correctIndex;
+                        final isCorrect =
+                            answeredCorrectly && idx == q.correctIndex;
                         final isWrong = _submitted && isPicked && idx != q.correctIndex;
 
                         Color bg = Colors.white;
@@ -408,7 +413,13 @@ class _QuizLevelViewState extends ConsumerState<QuizLevelView> {
 
   Widget _buildQuestionImage(String url) {
     if (url.startsWith('http')) {
-      return Image.network(url, height: 180, width: double.infinity, fit: BoxFit.cover);
+      return AppNetworkImage(
+        url: url,
+        height: 180,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        borderRadius: BorderRadius.circular(14),
+      );
     }
     return Image.asset(url, height: 180, width: double.infinity, fit: BoxFit.cover);
   }
@@ -484,14 +495,16 @@ class _QuizResultModal extends StatelessWidget {
   final int total;
   final bool passed;
   final int xpReward;
-  final VoidCallback onActionPressed;
+  final VoidCallback onRetry;
+  final VoidCallback onBackHome;
 
   const _QuizResultModal({
     required this.score,
     required this.total,
     required this.passed,
     required this.xpReward,
-    required this.onActionPressed,
+    required this.onRetry,
+    required this.onBackHome,
   });
 
   @override
@@ -564,12 +577,33 @@ class _QuizResultModal extends StatelessWidget {
                   const SizedBox(height: 24),
                 ],
 
-                // Action button
+                // Action buttons — retry and back to home
                 BrutalButton(
                   fullWidth: true,
-                  onPressed: onActionPressed,
+                  onPressed: onRetry,
+                  variant: BrutalButtonVariant.accent,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.refresh_rounded, color: Colors.black, size: 18),
+                      SizedBox(width: 8),
+                      Text('ULANGI QUIZ'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                BrutalButton(
+                  fullWidth: true,
+                  onPressed: onBackHome,
                   variant: BrutalButtonVariant.primary,
-                  child: Text(passed ? 'LANJUT' : 'ULANGI'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.home_rounded, color: Colors.white, size: 18),
+                      SizedBox(width: 8),
+                      Text('KEMBALI KE BERANDA'),
+                    ],
+                  ),
                 ),
               ],
             ),

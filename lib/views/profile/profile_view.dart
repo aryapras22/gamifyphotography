@@ -13,6 +13,7 @@ import '../../models/photo_submission_model.dart';
 import '../../providers/service_providers.dart';
 import '../../providers/submission_providers.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 
 class ProfileTab extends ConsumerStatefulWidget {
   const ProfileTab({super.key});
@@ -692,13 +693,12 @@ class _SubmissionHistoryCard extends StatelessWidget {
             child: SizedBox(
               width: 72,
               height: 72,
-              child: Image.network(
-                submission.photoUrl,
+              child: AppNetworkImage(
+                url: submission.photoUrl,
+                width: 72,
+                height: 72,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: const Color(0xFFF1F5F9),
-                  child: const Icon(Icons.broken_image_rounded, color: Color(0xFFCBD5E1), size: 28),
-                ),
+                borderRadius: BorderRadius.zero,
               ),
             ),
           ),

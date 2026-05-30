@@ -9,6 +9,7 @@ import '../../view_models/challenge_view_model.dart';
 import '../../providers/submission_providers.dart';
 import '../../models/photo_submission_model.dart';
 import '../widgets/animated_3d_button.dart';
+import '../widgets/app_network_image.dart';
 import '../../models/module_model.dart';
 import '../../core/app_text_styles.dart';
 class ModuleDetailView extends ConsumerStatefulWidget {
@@ -276,29 +277,16 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     if (url != null && url.isNotEmpty && url.startsWith('http')) {
       final bool isSvg = url.toLowerCase().endsWith('.svg') || url.contains('.svg?');
       if (isSvg) {
-        return SvgPicture.network(
-          url,
+        return AppNetworkSvg(
+          url: url,
           fit: BoxFit.contain,
-          placeholderBuilder: (_) => const Center(
-            child: CircularProgressIndicator(
-              color: AppColors.brandBlue,
-              strokeWidth: 2,
-            ),
-          ),
+          borderRadius: BorderRadius.zero,
         );
       } else {
-        return Image.network(
-          url,
+        return AppNetworkImage(
+          url: url,
           fit: BoxFit.contain,
-          loadingBuilder: (_, child, progress) => progress == null
-              ? child
-              : const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.brandBlue,
-                    strokeWidth: 2,
-                  ),
-                ),
-          errorBuilder: (_, __, ___) => _guidePlaceholder(),
+          borderRadius: BorderRadius.zero,
         );
       }
     }
@@ -307,12 +295,6 @@ class _ModuleDetailViewState extends ConsumerState<ModuleDetailView> {
     return SvgPicture.asset(
       _getVisualGuideAsset(module.id),
       fit: BoxFit.contain,
-    );
-  }
-
-  Widget _guidePlaceholder() {
-    return const Center(
-      child: Icon(Icons.broken_image_rounded, size: 48, color: AppColors.disabled),
     );
   }
 
@@ -581,8 +563,11 @@ class _PendingReviewCard extends StatelessWidget {
                 builder: (_) => Dialog(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.network(submission.photoUrl,
-                        fit: BoxFit.contain),
+                    child: AppNetworkImage(
+                      url: submission.photoUrl,
+                      fit: BoxFit.contain,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -810,30 +795,10 @@ class _ExamplePhotoGalleryState extends State<_ExamplePhotoGallery> {
                 // Let's use buildLevelImage-like logic but specifically tailored for ExamplePhotoGallery.
                 final url = widget.photoPaths[index];
                 if (url.startsWith('http')) {
-                  return Image.network(
-                    url,
+                  return AppNetworkImage(
+                    url: url,
                     fit: BoxFit.contain,  // NEVER use cover — see note above
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppColors.backgroundGray,
-                      child: const Center(
-                        child: Icon(
-                          Icons.broken_image_rounded,
-                          size: 48,
-                          color: AppColors.disabled,
-                        ),
-                      ),
-                    ),
-                    loadingBuilder: (_, child, progress) => progress == null
-                        ? child
-                        : Container(
-                            color: AppColors.backgroundGray,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.brandBlue,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                          ),
+                    borderRadius: BorderRadius.zero,
                   );
                 }
 

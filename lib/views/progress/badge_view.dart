@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/app_colors.dart';
 import '../../models/badge_model.dart';
 import '../../view_models/auth_view_model.dart';
+import '../widgets/app_network_image.dart';
 import '../../view_models/progress_view_model.dart';
 
 class BadgeView extends ConsumerStatefulWidget {
@@ -134,7 +135,7 @@ class _BadgeCard extends StatelessWidget {
                     width: 48,
                     height: 48,
                     fit: BoxFit.contain,
-                    placeholder: (context, url) => const Icon(Icons.shield, size: 48, color: Colors.amber),
+                    placeholder: (context, url) => const AppSkeleton(width: 48, height: 48),
                     errorWidget: (context, url, error) => const Icon(Icons.shield, size: 48, color: Colors.amber),
                   )
                 : const Icon(Icons.shield, size: 48, color: Colors.amber),

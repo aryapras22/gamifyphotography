@@ -8,6 +8,7 @@ import '../../core/app_text_styles.dart';
 import '../../view_models/challenge_view_model.dart';
 import '../../view_models/badge_view_model.dart';
 import '../widgets/animated_3d_button.dart';
+import '../widgets/app_network_image.dart';
 import '../widgets/badge_unlock_sheet.dart';
 
 class FeedbackView extends ConsumerStatefulWidget {
@@ -190,27 +191,12 @@ class _PhotoPreview extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: _hasPhoto
           ? (_isNetwork
-              ? Image.network(
-                  photoUrl!,
+              ? AppNetworkImage(
+                  url: photoUrl!,
                   height: 220,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return SizedBox(
-                      height: 220,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: progress.expectedTotalBytes != null
-                              ? progress.cumulativeBytesLoaded /
-                                  progress.expectedTotalBytes!
-                              : null,
-                          color: AppColors.brandBlue,
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (_, __, ___) => _buildEmpty(),
+                  borderRadius: BorderRadius.circular(20),
                 )
               : Image.file(
                   File(photoUrl!),

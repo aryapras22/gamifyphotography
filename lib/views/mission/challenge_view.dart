@@ -9,6 +9,7 @@ import '../../view_models/mission_view_model.dart';
 import '../../view_models/level_view_model.dart';
 import '../../providers/submission_providers.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 import 'custom_camera_view.dart';
 import 'submission_status_view.dart';
 import 'dart:io';
@@ -151,20 +152,10 @@ class _ChallengeViewState extends ConsumerState<ChallengeView> {
                         child: AspectRatio(
                           aspectRatio: 9 / 16,
                           child: _isNetworkUrl(challenge.uploadedPhotoUrl)
-                              ? Image.network(
-                                  challenge.uploadedPhotoUrl!,
+                              ? AppNetworkImage(
+                                  url: challenge.uploadedPhotoUrl!,
                                   fit: BoxFit.contain,
-                                  loadingBuilder: (context, child, progress) {
-                                    if (progress == null) return child;
-                                    return Container(
-                                      color: AppColors.backgroundGray,
-                                      child: const Center(
-                                        child: CircularProgressIndicator(color: Colors.black),
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (_, __, ___) =>
-                                      const _PhotoErrorPlaceholder(),
+                                  borderRadius: BorderRadius.zero,
                                 )
                               : Image.file(
                                   File(challenge.uploadedPhotoUrl!),

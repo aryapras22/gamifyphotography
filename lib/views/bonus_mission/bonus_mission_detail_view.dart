@@ -12,6 +12,7 @@ import '../../view_models/auth_view_model.dart';
 import '../../providers/service_providers.dart';
 import '../../providers/submission_providers.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 import '../mission/custom_camera_view.dart';
 
 class BonusMissionDetailView extends ConsumerStatefulWidget {
@@ -198,7 +199,11 @@ class _BonusPage1State extends State<_BonusPage1> {
                         itemBuilder: (context, idx) {
                           final url = imageUrls[idx];
                           if (url.startsWith('http')) {
-                            return Image.network(url, fit: BoxFit.cover);
+                            return AppNetworkImage(
+                              url: url,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.zero,
+                            );
                           } else {
                             return Image.asset(url, fit: BoxFit.cover);
                           }

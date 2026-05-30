@@ -11,8 +11,8 @@ import '../../view_models/progress_view_model.dart';
 import '../../view_models/leaderboard_view_model.dart';
 import '../../models/module_model.dart';
 import '../../providers/submission_providers.dart';
-import '../../providers/service_providers.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 import '../progress/level_detail_view.dart';
 import '../progress/progress_view.dart';
 import '../quiz/quiz_level_view.dart';
@@ -437,7 +437,11 @@ class _HomeViewState extends ConsumerState<HomeView> {
     if (urls.isNotEmpty) {
       final url = urls.first;
       if (url.startsWith('http')) {
-        return Image.network(url, fit: BoxFit.cover);
+        return AppNetworkImage(
+          url: url,
+          fit: BoxFit.cover,
+          borderRadius: BorderRadius.zero,
+        );
       } else {
         return Image.asset(url, fit: BoxFit.cover);
       }

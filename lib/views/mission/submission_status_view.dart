@@ -6,6 +6,7 @@ import '../../core/app_text_styles.dart';
 import '../../models/photo_submission_model.dart';
 import '../../providers/submission_providers.dart';
 import '../widgets/animated_3d_button.dart';
+import '../widgets/app_network_image.dart';
 
 class SubmissionStatusView extends ConsumerStatefulWidget {
   final String moduleId;
@@ -110,45 +111,10 @@ class _SubmissionStatusViewState extends ConsumerState<SubmissionStatusView> {
             width: double.infinity,
             child: AspectRatio(
               aspectRatio: 9 / 16,
-              child: Image.network(
-                submission.photoUrl,
+              child: AppNetworkImage(
+                url: submission.photoUrl,
                 fit: BoxFit.contain,
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return Container(
-                    color: AppColors.backgroundGray,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: progress.expectedTotalBytes != null
-                            ? progress.cumulativeBytesLoaded /
-                                progress.expectedTotalBytes!
-                            : null,
-                        color: AppColors.brandBlue,
-                      ),
-                    ),
-                  );
-                },
-                errorBuilder: (_, __, ___) => AspectRatio(
-                  aspectRatio: 9 / 16,
-                  child: Container(
-                    color: AppColors.backgroundGray,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.broken_image_rounded,
-                            size: 56, color: AppColors.disabled),
-                        SizedBox(height: 12),
-                        Text(
-                          'Gagal memuat foto',
-                          style: TextStyle(
-                            color: AppColors.secondaryText,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                borderRadius: BorderRadius.zero,
               ),
             ),
           ),

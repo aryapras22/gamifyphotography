@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/app_colors.dart';
@@ -11,6 +10,7 @@ import '../../view_models/level_view_model.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../providers/service_providers.dart';
 import '../widgets/brutal_widgets.dart';
+import '../widgets/app_network_image.dart';
 import '../mission/custom_camera_view.dart';
 
 class LevelDetailView extends ConsumerStatefulWidget {
@@ -209,7 +209,11 @@ class _Page1State extends State<_Page1> {
                         itemBuilder: (context, idx) {
                           final url = imageUrls[idx];
                           if (url.startsWith('http')) {
-                            return Image.network(url, fit: BoxFit.cover);
+                            return AppNetworkImage(
+                              url: url,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.zero,
+                            );
                           } else {
                             return Image.asset(url, fit: BoxFit.cover);
                           }
@@ -534,15 +538,10 @@ class _Page2State extends ConsumerState<_Page2> {
                           children: [
                             if (visualGuideUrl != null && visualGuideUrl.isNotEmpty && visualGuideUrl.startsWith('http'))
                               Positioned.fill(
-                                child: SvgPicture.network(
-                                  visualGuideUrl,
+                                child: AppNetworkSvg(
+                                  url: visualGuideUrl,
                                   fit: BoxFit.contain,
-                                  placeholderBuilder: (_) => const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.brandAccent,
-                                    ),
-                                  ),
+                                  borderRadius: BorderRadius.zero,
                                 ),
                               )
                             else
